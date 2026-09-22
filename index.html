@@ -1,0 +1,1635 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Pelaporan MUT (Mobil Uji Tanah) - Pupuk Indonesia</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Load Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Load html2pdf for exporting reports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#16a34a', // green-600
+                        secondary: '#4ade80', // green-400
+                        dark: '#1f2937', // gray-800
+                        light: '#f3f4f6', // gray-100
+                        accent: '#eab308', // yellow-500
+                        piBlue: '#005baa', // Pupuk Indonesia Blue
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 50;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+        }
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-low { @apply bg-red-100 text-red-800 border-red-300; }
+        .status-medium { @apply bg-yellow-100 text-yellow-800 border-yellow-300; }
+        .status-high { @apply bg-green-100 text-green-800 border-green-300; }
+        
+        /* Specific style for hidden pdf container to render correctly */
+        #district-pdf-export-container {
+            position: absolute;
+            left: -9999px;
+            top: 0;
+            width: 1000px; /* Fixed width for consistent PDF rendering */
+            background: white;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body class="text-slate-800 flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-slate-200 flex flex-col transition-all duration-300 z-20" id="sidebar">
+        <div class="h-16 flex items-center px-6 border-b border-slate-200 justify-between">
+            <div class="flex items-center gap-3 text-primary">
+                <!-- Logo Official Pupuk Indonesia -->
+                <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Logo_Pupuk_Indonesia_%28Persero%29.png" alt="Pupuk Indonesia Logo" class="h-9 w-auto object-contain" crossorigin="anonymous" onerror="this.src='https://placehold.co/120x40/005baa/ffffff?text=Pupuk+Indonesia'">
+                <div class="flex flex-col">
+                    <span class="font-bold text-lg leading-none tracking-tight text-slate-800">MUT Apps</span>
+                    <span class="text-[10px] text-slate-500 tracking-wider uppercase font-semibold">Pupuk Indonesia</span>
+                </div>
+            </div>
+            <button id="close-sidebar" class="lg:hidden text-slate-500 hover:text-slate-800" onclick="toggleSidebar()">
+                <i class="ph ph-x text-xl"></i>
+            </button>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+            <a href="#" onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg bg-green-50 text-primary font-medium transition-colors">
+                <i class="ph ph-squares-four text-xl"></i>
+                Dashboard
+            </a>
+            <a href="#" onclick="switchTab('input-data')" id="nav-input-data" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                <i class="ph ph-note-pencil text-xl"></i>
+                Input Data Uji
+            </a>
+            <a href="#" onclick="switchTab('riwayat')" id="nav-riwayat" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                <i class="ph ph-list-dashes text-xl"></i>
+                Riwayat Uji
+            </a>
+            <a href="#" onclick="switchTab('kecamatan')" id="nav-kecamatan" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                <i class="ph ph-buildings text-xl"></i>
+                Rekap Kecamatan
+            </a>
+            <a href="#" onclick="switchTab('rekomendasi')" id="nav-rekomendasi" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+                <i class="ph ph-plant text-xl"></i>
+                Peta & Rekomendasi
+            </a>
+        </nav>
+
+        <!-- Officer Info Badge in Sidebar -->
+        <div class="p-4 border-t border-slate-200 bg-slate-50">
+            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Tim Petugas MUT</p>
+            <div class="space-y-3 text-xs">
+                <!-- Officer 1 -->
+                <div class="flex items-start gap-2 text-slate-700">
+                    <i class="ph-fill ph-user-circle text-green-600 text-xl mt-0.5"></i>
+                    <div>
+                        <p class="font-bold text-slate-800 leading-tight">Ahmad Subagja, S.P.</p>
+                        <p class="text-[10px] text-slate-500 font-mono">NIK: 91204821</p>
+                        <span class="inline-block text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-medium mt-1">Agronomis MUT</span>
+                    </div>
+                </div>
+                <!-- Officer 2 -->
+                <div class="flex items-start gap-2 text-slate-700">
+                    <i class="ph-fill ph-user-circle text-amber-600 text-xl mt-0.5"></i>
+                    <div>
+                        <p class="font-bold text-slate-800 leading-tight">Budi Santoso, S.P.</p>
+                        <p class="text-[10px] text-slate-500 font-mono">NIK: 91204822</p>
+                        <span class="inline-block text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-medium mt-1">Agronomis MUT</span>
+                    </div>
+                </div>
+                <!-- Officer 3 -->
+                <div class="flex items-start gap-2 text-slate-700">
+                    <i class="ph-fill ph-user-circle text-blue-600 text-xl mt-0.5"></i>
+                    <div>
+                        <p class="font-bold text-slate-800 leading-tight">Candra Wijaya, S.P.</p>
+                        <p class="text-[10px] text-slate-500 font-mono">NIK: 91204823</p>
+                        <span class="inline-block text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-medium mt-1">Agronomis MUT</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-slate-50 relative">
+        
+        <div id="mobile-overlay" class="fixed inset-0 bg-slate-900/50 z-10 hidden lg:hidden" onclick="toggleSidebar()"></div>
+
+        <!-- Top Header -->
+        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-8 z-10">
+            <button onclick="toggleSidebar()" class="lg:hidden text-slate-600 hover:text-slate-900 focus:outline-none">
+                <i class="ph ph-list text-2xl"></i>
+            </button>
+            <h1 class="text-xl font-semibold text-slate-800" id="page-title">Dashboard Utama</h1>
+            
+            <div class="flex items-center gap-4">
+                <button class="text-slate-500 hover:text-primary transition-colors relative" onclick="showNotification('Sinkronisasi data berhasil', 'success')" title="Sinkronkan Data">
+                    <i class="ph ph-arrows-clockwise text-xl"></i>
+                </button>
+                <div class="text-sm text-slate-500 hidden sm:block" id="current-date"></div>
+            </div>
+        </header>
+
+        <!-- Scrollable Content Area -->
+        <div class="flex-1 overflow-y-auto p-4 lg:p-8">
+            
+            <!-- TAB 1: Dashboard -->
+            <div id="tab-dashboard" class="tab-content active max-w-7xl mx-auto">
+                <!-- Quick Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex items-center">
+                        <div class="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 mr-4">
+                            <i class="ph ph-flask text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-500 font-medium">Total Uji</p>
+                            <h3 class="text-2xl font-bold text-slate-800" id="stat-total">0</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex items-center">
+                        <div class="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center text-green-500 mr-4">
+                            <i class="ph ph-map-pin text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-500 font-medium">Desa Terkunjungi</p>
+                            <h3 class="text-2xl font-bold text-slate-800" id="stat-desa">0</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex items-center">
+                        <div class="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 mr-4">
+                            <i class="ph ph-warning-circle text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-500 font-medium">pH Kritis (&lt; 5.5)</p>
+                            <h3 class="text-2xl font-bold text-slate-800" id="stat-kritis">0</h3>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex items-center">
+                        <div class="w-14 h-14 rounded-full bg-purple-50 flex items-center justify-center text-purple-500 mr-4">
+                            <i class="ph ph-trend-up text-2xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-slate-500 font-medium">C-Organik Baik (&gt;2%)</p>
+                            <h3 class="text-2xl font-bold text-slate-800" id="stat-corganik">0%</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+                        <h2 class="text-lg font-semibold text-slate-800 mb-4">Distribusi pH Tanah</h2>
+                        <div class="h-64 relative w-full">
+                            <canvas id="phChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+                        <h2 class="text-lg font-semibold text-slate-800 mb-4">Status Hara (N, P, K) Dominan</h2>
+                        <div class="h-64 relative w-full">
+                            <canvas id="npkChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-semibold text-slate-800">Uji Tanah Terbaru</h2>
+                        <button onclick="switchTab('riwayat')" class="text-primary hover:text-green-700 text-sm font-medium">Lihat Semua</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-200 text-sm text-slate-500">
+                                    <th class="pb-3 font-medium">Tanggal</th>
+                                    <th class="pb-3 font-medium">Petani & Kontak</th>
+                                    <th class="pb-3 font-medium">Lokasi (Kec/Desa)</th>
+                                    <th class="pb-3 font-medium">Petugas Uji</th>
+                                    <th class="pb-3 font-medium">pH</th>
+                                    <th class="pb-3 font-medium">Kadar C-Organik</th>
+                                    <th class="pb-3 font-medium">Status NPK</th>
+                                    <th class="pb-3 font-medium">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-table-body" class="text-sm"></tbody>
+                        </table>
+                        <div id="empty-dashboard-state" class="hidden text-center py-8 text-slate-500">
+                            Belum ada data uji tanah.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: Input Data Form -->
+            <div id="tab-input-data" class="tab-content max-w-4xl mx-auto">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                    <div class="bg-primary px-6 py-4 border-b border-green-700 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-lg font-semibold text-white flex items-center gap-2" id="form-header-title">
+                                <i class="ph ph-note-pencil text-xl"></i> Form Pelaporan Hasil Uji Tanah
+                            </h2>
+                            <p class="text-green-100 text-sm mt-0.5">Masukkan hasil pengujian dari Perangkat Mobil Uji Tanah (MUT).</p>
+                        </div>
+                        <span id="edit-badge" class="hidden bg-yellow-400 text-yellow-950 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider">Mode Edit Data</span>
+                    </div>
+                    
+                    <form id="ujiForm" class="p-6 md:p-8" onsubmit="handleFormSubmit(event)">
+                        
+                        <!-- Section 1: Data Lokasi & Petani -->
+                        <h3 class="text-md font-bold text-slate-700 mb-4 pb-2 border-b border-slate-200 flex items-center gap-2">
+                            <i class="ph ph-user-list text-primary"></i> 1. Identitas Petani, Petugas & Lokasi Lahan
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal Uji *</label>
+                                <input type="date" id="input-tanggal" required class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+
+                            <!-- Petugas Uji Selector -->
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Petugas Uji Lapangan (MUT) *</label>
+                                <select id="input-petugas" required class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-medium bg-slate-50 text-xs sm:text-sm">
+                                    <option value="">Pilih Petugas MUT</option>
+                                    <option value="Ahmad Subagja, S.P. (Agronomis MUT)">Ahmad Subagja, S.P. (Agronomis MUT)</option>
+                                    <option value="Budi Santoso, S.P. (Agronomis MUT)">Budi Santoso, S.P. (Agronomis MUT)</option>
+                                    <option value="Candra Wijaya, S.P. (Agronomis MUT)">Candra Wijaya, S.P. (Agronomis MUT)</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Nama Petani / Kelompok Tani *</label>
+                                <input type="text" id="input-petani" required placeholder="Contoh: Bpk. Sugeng / Poktan Tani Jaya" class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Kontak Petani (No. HP/WA) *</label>
+                                <input type="tel" id="input-kontak" required placeholder="Contoh: 081234567890" class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Provinsi *</label>
+                                <input type="text" id="input-provinsi" required placeholder="Contoh: Jawa Barat" class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Kabupaten/Kota *</label>
+                                <input type="text" id="input-kabupaten" required placeholder="Contoh: Karawang" class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Kecamatan *</label>
+                                <input type="text" id="input-kecamatan" required placeholder="Contoh: Telukjambe Timur" class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Desa/Kelurahan *</label>
+                                <input type="text" id="input-desa" required placeholder="Contoh: Sukamakmur" class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Komoditas Utama *</label>
+                                <select id="input-komoditas" required class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <option value="">Pilih Komoditas</option>
+                                    <option value="Padi Sawah">Padi Sawah</option>
+                                    <option value="Singkong">Singkong</option>
+                                    <option value="Jagung">Jagung</option>
+                                    <option value="Kedelai">Kedelai</option>
+                                    <option value="Bawang Merah">Bawang Merah</option>
+                                    <option value="Cabai">Cabai</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-slate-700 mb-1">Koordinat GPS (Opsional)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="input-lat" placeholder="Latitude (e.g., -6.2088)" class="flex-1 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <input type="text" id="input-lng" placeholder="Longitude (e.g., 106.8456)" class="flex-1 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <button type="button" onclick="getLocation()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-md border border-slate-300 transition-colors flex items-center gap-1 text-sm" title="Ambil lokasi saat ini">
+                                        <i class="ph ph-crosshair text-lg"></i> GPS
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Hasil Analisis Tanah -->
+                        <h3 class="text-md font-bold text-slate-700 mb-4 pb-2 border-b border-slate-200 flex items-center gap-2">
+                            <i class="ph ph-flask text-primary"></i> 2. Hasil Analisis Kimia Tanah
+                        </h3>
+                        
+                        <div class="bg-slate-50 p-4 rounded-lg mb-6 border border-slate-200">
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">pH Tanah *</label>
+                                    <input type="number" id="input-ph" step="0.1" min="1" max="14" required placeholder="Contoh: 6.2" class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    <p class="text-xs text-slate-500 mt-1">Acuan Optimum: 6.0 - 7.0</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Kadar C-Organik (%) *</label>
+                                    <select id="input-corganik" required class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <option value="">Pilih Kadar C-Organik</option>
+                                        <option value="Rendah (< 2.0%)">Rendah (&lt; 2.0%)</option>
+                                        <option value="Sedang (2.0 - 3.0%)">Sedang (2.0 - 3.0%)</option>
+                                        <option value="Tinggi (> 3.0%)">Tinggi (&gt; 3.0%)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Status N Total *</label>
+                                    <select id="input-n" required class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <option value="">Pilih Status</option>
+                                        <option value="Rendah">Rendah</option>
+                                        <option value="Sedang">Sedang</option>
+                                        <option value="Tinggi">Tinggi</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Status P (Fosfor) *</label>
+                                    <select id="input-p" required class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <option value="">Pilih Status</option>
+                                        <option value="Rendah">Rendah</option>
+                                        <option value="Sedang">Sedang</option>
+                                        <option value="Tinggi">Tinggi</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Status K (Kalium) *</label>
+                                    <select id="input-k" required class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                                        <option value="">Pilih Status</option>
+                                        <option value="Rendah">Rendah</option>
+                                        <option value="Sedang">Sedang</option>
+                                        <option value="Tinggi">Tinggi</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">Catatan Tambahan Lapangan</label>
+                            <textarea id="input-catatan" rows="3" class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Kondisi cuaca, riwayat pemupukan, keluhan petani, dll..."></textarea>
+                        </div>
+
+                        <div class="mt-8 flex justify-end gap-3">
+                            <button type="button" onclick="resetForm()" class="px-5 py-2 border border-slate-300 rounded-md text-slate-700 bg-white hover:bg-slate-50 transition-colors">Batal / Reset</button>
+                            <button type="submit" id="btn-submit-form" class="px-5 py-2 bg-primary text-white rounded-md hover:bg-green-700 transition-colors shadow-sm flex items-center gap-2 font-medium">
+                                <i class="ph ph-floppy-disk"></i> Simpan Data Uji
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- TAB 3: Riwayat Pengujian -->
+            <div id="tab-riwayat" class="tab-content max-w-7xl mx-auto">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[calc(100vh-8rem)]">
+                    
+                    <!-- Table Header Controls -->
+                    <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between gap-4 items-center bg-slate-50">
+                        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto flex-1">
+                            <div class="relative w-full sm:w-72">
+                                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                                <input type="text" id="search-history" placeholder="Cari nama, petugas, kontak, lokasi..." onkeyup="filterHistory()" class="pl-10 w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary text-sm">
+                            </div>
+                            <select id="filter-kecamatan" onchange="filterHistory()" class="rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary text-sm bg-white">
+                                <option value="">Semua Kecamatan</option>
+                            </select>
+                            <select id="filter-petugas" onchange="filterHistory()" class="rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary text-sm bg-white">
+                                <option value="">Semua Petugas</option>
+                                <option value="Ahmad Subagja">Ahmad Subagja, S.P.</option>
+                                <option value="Budi Santoso">Budi Santoso, S.P.</option>
+                                <option value="Candra Wijaya">Candra Wijaya, S.P.</option>
+                            </select>
+                        </div>
+                        
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <button onclick="exportData('csv')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-slate-300 bg-white text-slate-700 rounded-md text-sm hover:bg-slate-50 transition-colors">
+                                <i class="ph ph-download-simple"></i> Ekspor CSV
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- History Table -->
+                    <div class="flex-1 overflow-auto">
+                        <table class="w-full text-left border-collapse min-w-[950px]">
+                            <thead class="sticky top-0 bg-white z-10 shadow-sm">
+                                <tr class="text-xs uppercase text-slate-500 border-b border-slate-200">
+                                    <th class="px-4 py-3 font-semibold">Tgl / ID</th>
+                                    <th class="px-4 py-3 font-semibold">Petani & Kontak</th>
+                                    <th class="px-4 py-3 font-semibold">Petugas Lapangan</th>
+                                    <th class="px-4 py-3 font-semibold">Lokasi (Prov/Kab/Kec/Desa)</th>
+                                    <th class="px-4 py-3 font-semibold">Komoditas</th>
+                                    <th class="px-4 py-3 font-semibold">pH</th>
+                                    <th class="px-4 py-3 font-semibold">Kadar C-Organik</th>
+                                    <th class="px-4 py-3 font-semibold">N / P / K</th>
+                                    <th class="px-4 py-3 font-semibold text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-table-body" class="text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                        
+                        <div id="empty-history-state" class="hidden flex flex-col items-center justify-center py-16 text-slate-500">
+                            <i class="ph ph-folder-open text-5xl text-slate-300 mb-3"></i>
+                            <p>Belum ada data riwayat pengujian.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 border-t border-slate-200 flex items-center justify-between bg-slate-50">
+                        <span class="text-sm text-slate-500" id="table-info">Menampilkan 0 data</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: Rekap & Grafik per Kecamatan -->
+            <div id="tab-kecamatan" class="tab-content max-w-7xl mx-auto space-y-6">
+                <!-- Filter Header Section -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                                <i class="ph ph-buildings text-primary"></i> Rekapitulasi & Analisis per Kecamatan
+                            </h2>
+                            <p class="text-sm text-slate-500 mt-1">Pilih kecamatan untuk menampilkan grafik khusus status unsur hara (N, P, K), pH tanah, dan mengunduh laporan PDF per kecamatan.</p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                            <select id="select-active-kecamatan" onchange="onKecamatanFilterChange()" class="w-full sm:w-64 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary text-sm font-semibold bg-slate-50">
+                                <!-- Options populated by JS -->
+                            </select>
+                            <button onclick="downloadKecamatanReportPDF()" class="px-4 py-2 bg-piBlue hover:bg-blue-800 text-white rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 shadow-sm">
+                                <i class="ph ph-file-pdf text-lg"></i> Download Laporan Kecamatan
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section per Kecamatan -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Dynamic Nutrient Status Diagram -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-base" id="chart-nutrient-title">Status Hara (N, P, K)</h3>
+                                <p class="text-xs text-slate-500">Persentase tingkat ketersediaan hara makro</p>
+                            </div>
+                            <span class="text-xs px-2.5 py-1 bg-green-100 text-green-800 font-bold rounded-full" id="badge-kec-count">0 Sampel</span>
+                        </div>
+                        <div class="h-64 relative w-full">
+                            <canvas id="kecamatanNutrientChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic pH Distribution Chart -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-base" id="chart-ph-title">Sebaran Kemasaman (pH) Tanah</h3>
+                                <p class="text-xs text-slate-500">Distribusi tingkat keasaman tanah lokasi uji</p>
+                            </div>
+                        </div>
+                        <div class="h-64 relative w-full">
+                            <canvas id="kecamatanPhChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kecamatan Cards & Table Detail -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+                    <h3 class="text-lg font-bold text-slate-800 mb-4">Daftar Titik Uji di Kecamatan: <span id="kecamatan-detail-title" class="text-primary">Semua Kecamatan</span></h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="text-xs uppercase text-slate-500 border-b border-slate-200 bg-slate-50">
+                                    <th class="px-3 py-2.5">ID & Tgl</th>
+                                    <th class="px-3 py-2.5">Desa</th>
+                                    <th class="px-3 py-2.5">Petani & No. Kontak</th>
+                                    <th class="px-3 py-2.5">Petugas Uji</th>
+                                    <th class="px-3 py-2.5">Komoditas</th>
+                                    <th class="px-3 py-2.5">pH</th>
+                                    <th class="px-3 py-2.5">Kadar C-Organik</th>
+                                    <th class="px-3 py-2.5">Status N/P/K</th>
+                                    <th class="px-3 py-2.5 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="kecamatan-detail-tbody" class="text-sm divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: Rekomendasi -->
+            <div id="tab-rekomendasi" class="tab-content max-w-7xl mx-auto">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 mb-6">
+                    <h2 class="text-lg font-semibold text-slate-800 mb-4">Peta Sebaran Pengujian (Spasial)</h2>
+                    <div class="w-full h-64 bg-slate-200 rounded-lg flex items-center justify-center relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-30" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%2316a34a\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+                        <div class="text-center z-10 bg-white/90 p-4 rounded-lg shadow-sm backdrop-blur-sm">
+                            <i class="ph ph-map-trifold text-4xl text-primary mb-2"></i>
+                            <p class="text-slate-700 font-medium">Integrasi Map Spasial GIS</p>
+                            <p class="text-xs text-slate-500">Koordinat terintegrasi dengan peta sebaran tanah Pupuk Indonesia</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+                    <h2 class="text-lg font-semibold text-slate-800 mb-4">Panduan Standar Dosis & Produk Pemupukan Resmi Pupuk Indonesia</h2>
+                    <p class="text-sm text-slate-600 mb-6">Rekomendasi pemupukan presisi berbasis status hara tanah dan kemasaman (pH) menggunakan produk-produk unggulan Pupuk Indonesia Group.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- N Status (Urea Nitrea) -->
+                        <div class="border border-slate-200 rounded-xl overflow-hidden flex flex-col bg-white shadow-sm hover:shadow-md transition-shadow">
+                            <div class="h-44 bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100">
+                                <img src="https://pupuk-kujang.co.id/_next/image?url=https%3A%2F%2Fadmin-web.pupuk-kujang.co.id%2Fproxy-file%3Fsource%3Dproduk%2Ficon-OIGGi1728617277.jpg&w=1200&q=75" alt="Urea Nitrea" class="h-full object-contain" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/200x200/005baa/ffffff?text=Urea+Nitrea'">
+                            </div>
+                            <div class="bg-blue-50 px-4 py-3 border-b border-slate-200">
+                                <h3 class="font-bold text-blue-900 flex items-center gap-2">Urea Nitrea (Sumber Nitrogen)</h3>
+                                <p class="text-xs text-blue-700 font-medium">PT Pupuk Kujang / Pupuk Indonesia</p>
+                            </div>
+                            <div class="p-4 space-y-3 text-sm flex-1">
+                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <span class="status-low px-2 py-1 rounded text-xs font-semibold">N Rendah</span>
+                                    <span class="font-semibold text-slate-800">250 - 300 kg/ha</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <span class="status-medium px-2 py-1 rounded text-xs font-semibold">N Sedang</span>
+                                    <span class="font-semibold text-slate-800">200 - 250 kg/ha</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="status-high px-2 py-1 rounded text-xs font-semibold">N Tinggi</span>
+                                    <span class="font-semibold text-slate-800">150 - 200 kg/ha</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- P Status (Pupuk SP-36) -->
+                        <div class="border border-slate-200 rounded-xl overflow-hidden flex flex-col bg-white shadow-sm hover:shadow-md transition-shadow">
+                            <div class="h-44 bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100">
+                                <img src="https://storage.googleapis.com/pkg-portal-bucket/images/product/SP-36-Subsidi.jpeg" alt="Pupuk SP-36" class="h-full object-contain" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/200x200/d97706/ffffff?text=Pupuk+SP-36'">
+                            </div>
+                            <div class="bg-amber-50 px-4 py-3 border-b border-slate-200">
+                                <h3 class="font-bold text-amber-900 flex items-center gap-2">Pupuk SP-36 (Sumber Fosfat)</h3>
+                                <p class="text-xs text-amber-700 font-medium">Pupuk Indonesia Group</p>
+                            </div>
+                            <div class="p-4 space-y-3 text-sm flex-1">
+                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <span class="status-low px-2 py-1 rounded text-xs font-semibold">P Rendah</span>
+                                    <span class="font-semibold text-slate-800">100 - 150 kg/ha</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <span class="status-medium px-2 py-1 rounded text-xs font-semibold">P Sedang</span>
+                                    <span class="font-semibold text-slate-800">50 - 100 kg/ha</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="status-high px-2 py-1 rounded text-xs font-semibold">P Tinggi</span>
+                                    <span class="font-semibold text-slate-800">25 - 50 kg/ha</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- K Status (Kalium Nitrokal) -->
+                        <div class="border border-slate-200 rounded-xl overflow-hidden flex flex-col bg-white shadow-sm hover:shadow-md transition-shadow">
+                            <div class="h-44 bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100">
+                                <img src="https://pupuk-kujang.co.id/_next/image?url=https%3A%2F%2Fadmin-web.pupuk-kujang.co.id%2Fproxy-file%3Fsource%3Dproduk%2Ficon-53L7O1728629684.jpg&w=1200&q=75" alt="Nitrokal" class="h-full object-contain" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/200x200/be123c/ffffff?text=Nitrokal'">
+                            </div>
+                            <div class="bg-rose-50 px-4 py-3 border-b border-slate-200">
+                                <h3 class="font-bold text-rose-900 flex items-center gap-2">Pupuk Kalium Nitrokal</h3>
+                                <p class="text-xs text-rose-700 font-medium">PT Pupuk Kujang / Pupuk Indonesia</p>
+                            </div>
+                            <div class="p-4 space-y-3 text-sm flex-1">
+                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <span class="status-low px-2 py-1 rounded text-xs font-semibold">K Rendah</span>
+                                    <span class="font-semibold text-slate-800">75 - 100 kg/ha</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <span class="status-medium px-2 py-1 rounded text-xs font-semibold">K Sedang</span>
+                                    <span class="font-semibold text-slate-800">50 - 75 kg/ha</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="status-high px-2 py-1 rounded text-xs font-semibold">K Tinggi</span>
+                                    <span class="font-semibold text-slate-800">&lt; 50 kg/ha</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- C-Organik Status (Petroganik) -->
+                        <div class="border border-slate-200 rounded-xl overflow-hidden flex flex-col bg-white shadow-sm hover:shadow-md transition-shadow">
+                            <div class="h-44 bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100">
+                                <img src="https://pupuk-kujang.co.id/_next/image?url=https%3A%2F%2Fadmin-web.pupuk-kujang.co.id%2Fproxy-file%3Fsource%3Dproduk%2Ficon-DB8tT1724376935.png&w=1200&q=75" alt="Petroganik" class="h-full object-contain" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/200x200/16a34a/ffffff?text=Petroganik'">
+                            </div>
+                            <div class="bg-green-50 px-4 py-3 border-b border-slate-200">
+                                <h3 class="font-bold text-green-900 flex items-center gap-2">Pupuk Organik Petroganik</h3>
+                                <p class="text-xs text-green-700 font-medium">Pupuk Indonesia Group</p>
+                            </div>
+                            <div class="p-4 space-y-3 text-sm flex-1">
+                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <span class="status-low px-2 py-1 rounded text-xs font-semibold">C-Organik (&lt; 2.0%)</span>
+                                    <span class="font-semibold text-slate-800">2 - 3 Ton/ha</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <span class="status-medium px-2 py-1 rounded text-xs font-semibold">C-Organik (2.0 - 3.0%)</span>
+                                    <span class="font-semibold text-slate-800">1 - 2 Ton/ha</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="status-high px-2 py-1 rounded text-xs font-semibold">C-Organik (&gt; 3.0%)</span>
+                                    <span class="font-semibold text-slate-800">500 kg/ha</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- pH Tanah (Kapur Pertanian Kebomas) -->
+                        <div class="border border-slate-200 rounded-xl overflow-hidden flex flex-col bg-white shadow-sm hover:shadow-md transition-shadow">
+                            <div class="h-44 bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100">
+                                <img src="https://storage.googleapis.com/pkg-portal-bucket/images/product/_productThumb/PG_Kaptan2023.png" alt="Kapur Pertanian Kebomas" class="h-full object-contain" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/200x200/475569/ffffff?text=Kaptan'">
+                            </div>
+                            <div class="bg-slate-100 px-4 py-3 border-b border-slate-200">
+                                <h3 class="font-bold text-slate-900 flex items-center gap-2">Kapur Pertanian Kebomas</h3>
+                                <p class="text-xs text-slate-600 font-medium">Pengondisi pH Tanah / Pembenah Tanah</p>
+                            </div>
+                            <div class="p-4 space-y-3 text-sm flex-1">
+                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <span class="status-low px-2 py-1 rounded text-xs font-semibold">Sangat Asam (&lt; 5.5)</span>
+                                    <span class="font-semibold text-slate-800">1 - 2 Ton/ha</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <span class="status-medium px-2 py-1 rounded text-xs font-semibold">Agak Asam (5.5 - 6.5)</span>
+                                    <span class="font-semibold text-slate-800">500 kg/ha</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="status-high px-2 py-1 rounded text-xs font-semibold">Netral (6.5 - 7.5)</span>
+                                    <span class="font-semibold text-slate-800">Tidak Perlu</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Notification Toast -->
+    <div id="notification" class="fixed bottom-4 right-4 bg-slate-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-3">
+        <i id="notif-icon" class="ph ph-info text-xl"></i>
+        <span id="notif-message">Pesan notifikasi</span>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 mx-4">
+            <div class="flex items-center gap-3 text-red-600 mb-3">
+                <i class="ph-fill ph-warning-circle text-3xl"></i>
+                <h3 class="text-lg font-bold text-slate-800">Konfirmasi Hapus</h3>
+            </div>
+            <p class="text-sm text-slate-600 mb-6" id="confirm-modal-text">Apakah Anda yakin ingin menghapus data ini?</p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeConfirmModal()" class="px-4 py-2 border border-slate-300 rounded-md text-slate-700 bg-white hover:bg-slate-50 text-sm">Batal</button>
+                <button id="btn-confirm-delete" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium">Ya, Hapus Data</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Individual Report Modal -->
+    <div id="reportModal" class="modal">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col mx-4" id="report-container">
+            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl" data-html2canvas-ignore="true">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                    <i class="ph ph-file-text text-primary"></i> Laporan Rekomendasi Uji Tanah
+                </h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-700">
+                    <i class="ph ph-x text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto flex-1" id="report-content">
+                <!-- Content generated dynamically via JS -->
+            </div>
+            
+            <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 rounded-b-xl" data-html2canvas-ignore="true">
+                <button onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-md text-slate-700 hover:bg-slate-100">Tutup</button>
+                <button onclick="downloadPDF()" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-green-700 shadow-sm flex items-center gap-2 font-medium">
+                    <i class="ph ph-download-simple"></i> Download PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Container for District PDF Export -->
+    <div id="district-pdf-export-container"></div>
+
+    <script>
+        // Global Application State
+        let appState = {
+            currentTab: 'dashboard',
+            dataUji: [],
+            editingId: null,
+            pendingDeleteId: null,
+            charts: {}
+        };
+
+        // Officers List (Removed commodity from display name as requested)
+        const OFFICERS_LIST = [
+            {
+                name: "Ahmad Subagja, S.P.",
+                nik: "91204821",
+                jabatan: "Staff Agronomis MUT",
+                komoditas: "Padi Sawah", // Internal use for generating mock data
+                fullLabel: "Ahmad Subagja, S.P. (Agronomis MUT)"
+            },
+            {
+                name: "Budi Santoso, S.P.",
+                nik: "91204822",
+                jabatan: "Staff Agronomis MUT",
+                komoditas: "Singkong",
+                fullLabel: "Budi Santoso, S.P. (Agronomis MUT)"
+            },
+            {
+                name: "Candra Wijaya, S.P.",
+                nik: "91204823",
+                jabatan: "Staff Agronomis MUT",
+                komoditas: "Jagung",
+                fullLabel: "Candra Wijaya, S.P. (Agronomis MUT)"
+            }
+        ];
+
+        const karawangKecamatanList = [
+            'Karawang Barat', 'Karawang Timur', 'Klari', 'Telukjambe Timur', 'Telukjambe Barat',
+            'Cikampek', 'Rengasdengklok', 'Pangkalan', 'Purwasari', 'Jatisari',
+            'Lemahabang', 'Tirtamulya', 'Banyusari', 'Cilebar', 'Tempuran',
+            'Tirtajaya', 'Batujaya', 'Pakisjaya', 'Cibuaya', 'Pedes',
+            'Krawang Wetan', 'Cisampeta', 'Tegalwaru', 'Ciampel', 'Kutawaluya',
+            'Jayakerta', 'Majalaya', 'Bojongmerta', 'Walahar'
+        ];
+
+        // Generate Sample Mock Data
+        const generateMockData = () => {
+            const listCOrganik = ['Rendah (< 2.0%)', 'Sedang (2.0 - 3.0%)', 'Tinggi (> 3.0%)'];
+            const listStatus = ['Rendah', 'Sedang', 'Tinggi'];
+            const listNames = ['Bpk. Sugeng', 'Ibu Karsih', 'Bpk. Supandi', 'Bpk. Dadi Mulyadi', 'Kelompok Tani Jaya', 'Bpk. Endang', 'Bpk. Rasim', 'Ibu Tati', 'Bpk. Ace Suhendar', 'Bpk. Rustam'];
+            const listDesa = ['Sukamakmur', 'Walahar', 'MargaKaya', 'Anggadita', 'Cibalongsari', 'Tanjungpura'];
+
+            let generated = [];
+            let counter = 1;
+
+            karawangKecamatanList.forEach((kec, kecIdx) => {
+                for (let i = 1; i <= 3; i++) {
+                    const idNum = counter.toString().padStart(3, '0');
+                    const randPetani = listNames[(counter + i) % listNames.length];
+                    const randOfficer = OFFICERS_LIST[(counter + kecIdx) % OFFICERS_LIST.length];
+                    const randKomoditas = randOfficer.komoditas; 
+                    
+                    const randPh = parseFloat((4.8 + ((counter * 7) % 28) / 10).toFixed(1));
+                    const randCOrg = listCOrganik[(counter + i) % listCOrganik.length];
+                    const randN = listStatus[(counter * 2) % listStatus.length];
+                    const randP = listStatus[(counter * 3) % listStatus.length];
+                    const randK = listStatus[(counter * 5) % listStatus.length];
+                    const phone = `0812${Math.floor(10000000 + Math.random() * 90000000)}`;
+                    
+                    const day = ((counter % 28) + 1).toString().padStart(2, '0');
+                    const tgl = `2026-09-${day}`;
+
+                    generated.push({
+                        id: `MUT-${idNum}`,
+                        tgl: tgl,
+                        petani: randPetani,
+                        petugas: randOfficer.fullLabel,
+                        kontak: phone,
+                        prov: 'Jawa Barat',
+                        kab: 'Karawang',
+                        kec: kec,
+                        desa: `Desa ${listDesa[i % listDesa.length]}`,
+                        komoditas: randKomoditas,
+                        ph: randPh,
+                        corganik: randCOrg,
+                        n: randN,
+                        p: randP,
+                        k: randK,
+                        lat: (-6.2500 - (kecIdx * 0.005)).toFixed(4),
+                        lng: (107.3000 + (kecIdx * 0.005)).toFixed(4),
+                        catatan: 'Sampel diambil melalui unit Mobil Uji Tanah (MUT).'
+                    });
+                    counter++;
+                }
+            });
+
+            return generated;
+        };
+
+        // --- Application Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('current-date').textContent = new Date().toLocaleDateString('id-ID', options);
+            document.getElementById('input-tanggal').valueAsDate = new Date();
+
+            const savedData = localStorage.getItem('mutDataFullV6');
+            if (savedData) {
+                appState.dataUji = JSON.parse(savedData);
+            } else {
+                appState.dataUji = generateMockData();
+                saveData();
+            }
+
+            initCharts();
+            updateDashboard();
+            renderHistoryTable();
+            populateKecamatanDropdowns();
+            onKecamatanFilterChange();
+        });
+
+        function saveData() {
+            localStorage.setItem('mutDataFullV6', JSON.stringify(appState.dataUji));
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full', 'absolute');
+                sidebar.classList.add('absolute', 'inset-y-0', 'left-0');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function switchTab(tabId) {
+            appState.currentTab = tabId;
+
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+
+            document.querySelectorAll('.nav-btn').forEach(el => {
+                el.classList.remove('bg-green-50', 'text-primary', 'font-medium');
+                el.classList.add('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
+            });
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if(activeNav) {
+                activeNav.classList.remove('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
+                activeNav.classList.add('bg-green-50', 'text-primary', 'font-medium');
+            }
+
+            const titles = {
+                'dashboard': 'Dashboard Utama',
+                'input-data': appState.editingId ? 'Edit Data Hasil Uji' : 'Input Data Hasil Uji',
+                'riwayat': 'Riwayat Pengujian',
+                'kecamatan': 'Rekapitulasi per Kecamatan',
+                'rekomendasi': 'Peta & Rekomendasi Pemupukan'
+            };
+            document.getElementById('page-title').textContent = titles[tabId];
+
+            if(tabId === 'dashboard') {
+                updateDashboard();
+            } else if(tabId === 'kecamatan') {
+                onKecamatanFilterChange();
+            }
+        }
+
+        // --- Form & Edit Operations ---
+        function resetForm() {
+            appState.editingId = null;
+            document.getElementById('ujiForm').reset();
+            document.getElementById('input-tanggal').valueAsDate = new Date();
+            document.getElementById('edit-badge').classList.add('hidden');
+            document.getElementById('form-header-title').innerHTML = `<i class="ph ph-note-pencil text-xl"></i> Form Pelaporan Hasil Uji Tanah`;
+            document.getElementById('btn-submit-form').innerHTML = `<i class="ph ph-floppy-disk"></i> Simpan Data Uji`;
+        }
+
+        function editData(id) {
+            const item = appState.dataUji.find(d => d.id === id);
+            if (!item) return;
+
+            appState.editingId = id;
+
+            document.getElementById('input-tanggal').value = item.tgl;
+            document.getElementById('input-petugas').value = item.petugas;
+            document.getElementById('input-petani').value = item.petani;
+            document.getElementById('input-kontak').value = item.kontak || '';
+            document.getElementById('input-provinsi').value = item.prov;
+            document.getElementById('input-kabupaten').value = item.kab;
+            document.getElementById('input-kecamatan').value = item.kec;
+            document.getElementById('input-desa').value = item.desa;
+            document.getElementById('input-komoditas').value = item.komoditas;
+            document.getElementById('input-lat').value = item.lat || '';
+            document.getElementById('input-lng').value = item.lng || '';
+            document.getElementById('input-ph').value = item.ph;
+            document.getElementById('input-corganik').value = item.corganik;
+            document.getElementById('input-n').value = item.n;
+            document.getElementById('input-p').value = item.p;
+            document.getElementById('input-k').value = item.k;
+            document.getElementById('input-catatan').value = item.catatan || '';
+
+            document.getElementById('edit-badge').classList.remove('hidden');
+            document.getElementById('form-header-title').innerHTML = `<i class="ph ph-pencil-line text-xl"></i> Edit Data Uji (${item.id})`;
+            document.getElementById('btn-submit-form').innerHTML = `<i class="ph ph-check-circle"></i> Perbarui Data`;
+
+            switchTab('input-data');
+            showNotification(`Mengedit data ${item.id}`, 'info');
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const isEdit = appState.editingId !== null;
+            
+            const formData = {
+                id: isEdit ? appState.editingId : `MUT-${(appState.dataUji.length + 1).toString().padStart(3, '0')}`,
+                tgl: document.getElementById('input-tanggal').value,
+                petugas: document.getElementById('input-petugas').value,
+                petani: document.getElementById('input-petani').value,
+                kontak: document.getElementById('input-kontak').value,
+                prov: document.getElementById('input-provinsi').value,
+                kab: document.getElementById('input-kabupaten').value,
+                kec: document.getElementById('input-kecamatan').value,
+                desa: document.getElementById('input-desa').value,
+                komoditas: document.getElementById('input-komoditas').value,
+                lat: document.getElementById('input-lat').value || '-6.2500',
+                lng: document.getElementById('input-lng').value || '107.3000',
+                ph: parseFloat(document.getElementById('input-ph').value),
+                corganik: document.getElementById('input-corganik').value,
+                n: document.getElementById('input-n').value,
+                p: document.getElementById('input-p').value,
+                k: document.getElementById('input-k').value,
+                catatan: document.getElementById('input-catatan').value
+            };
+
+            if (isEdit) {
+                const index = appState.dataUji.findIndex(d => d.id === appState.editingId);
+                if (index !== -1) appState.dataUji[index] = formData;
+                showNotification('Data berhasil diperbarui!', 'success');
+            } else {
+                appState.dataUji.unshift(formData);
+                showNotification('Data uji baru berhasil disimpan!', 'success');
+            }
+
+            saveData();
+            resetForm();
+            updateDashboard();
+            renderHistoryTable();
+            populateKecamatanDropdowns();
+            onKecamatanFilterChange();
+            
+            setTimeout(() => switchTab('riwayat'), 800);
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    document.getElementById('input-lat').value = position.coords.latitude.toFixed(6);
+                    document.getElementById('input-lng').value = position.coords.longitude.toFixed(6);
+                    showNotification('Lokasi berhasil diambil', 'success');
+                }, () => {
+                    showNotification('Gagal mengambil lokasi', 'error');
+                });
+            }
+        }
+
+        function updateDashboard() {
+            const data = appState.dataUji;
+            
+            // Basic Stats
+            document.getElementById('stat-total').textContent = data.length;
+            
+            const uniqueDesa = new Set(data.map(d => `${d.kec}-${d.desa}`));
+            document.getElementById('stat-desa').textContent = uniqueDesa.size;
+
+            const phKritis = data.filter(d => d.ph < 5.5).length;
+            document.getElementById('stat-kritis').textContent = phKritis;
+
+            const cOrgBaik = data.filter(d => d.corganik.includes('> 3.0%') || d.corganik.includes('Sedang')).length;
+            const percentage = data.length > 0 ? Math.round((cOrgBaik / data.length) * 100) : 0;
+            document.getElementById('stat-corganik').textContent = `${percentage}%`;
+
+            // Recent Table (Top 5)
+            const tbody = document.getElementById('recent-table-body');
+            const emptyState = document.getElementById('empty-dashboard-state');
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                tbody.innerHTML = data.slice(0, 5).map(item => `
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                        <td class="py-3 pr-2 text-slate-500">${item.tgl}</td>
+                        <td class="py-3 pr-2">
+                            <p class="font-medium text-slate-800">${item.petani}</p>
+                            <p class="text-xs text-slate-500">${item.kontak}</p>
+                        </td>
+                        <td class="py-3 pr-2">
+                            <p class="text-slate-800">${item.kec}</p>
+                            <p class="text-xs text-slate-500">${item.desa}</p>
+                        </td>
+                        <td class="py-3 pr-2 text-xs truncate max-w-[150px]" title="${item.petugas}">${item.petugas.split(' (')[0]}</td>
+                        <td class="py-3 pr-2 font-medium ${item.ph < 5.5 ? 'text-red-600' : 'text-green-600'}">${item.ph}</td>
+                        <td class="py-3 pr-2 text-xs font-semibold text-slate-700">${item.corganik}</td>
+                        <td class="py-3 pr-2">
+                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">N: ${item.n[0]}</span>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">P: ${item.p[0]}</span>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">K: ${item.k[0]}</span>
+                        </td>
+                        <td class="py-3">
+                            <button onclick="viewReport('${item.id}')" class="text-primary hover:text-green-700 bg-green-50 p-1.5 rounded" title="Lihat Rekomendasi">
+                                <i class="ph ph-file-text text-lg"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            updateDashboardCharts();
+        }
+
+        function initCharts() {
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } }
+            };
+
+            // Dashboard Charts
+            const ctxPh = document.getElementById('phChart').getContext('2d');
+            appState.charts.ph = new Chart(ctxPh, {
+                type: 'bar',
+                data: { labels: [], datasets: [] },
+                options: { ...commonOptions, scales: { y: { beginAtZero: true } } }
+            });
+
+            const ctxNpk = document.getElementById('npkChart').getContext('2d');
+            appState.charts.npk = new Chart(ctxNpk, {
+                type: 'doughnut',
+                data: { labels: [], datasets: [] },
+                options: commonOptions
+            });
+
+            // Kecamatan Charts
+            const ctxKecNutrient = document.getElementById('kecamatanNutrientChart').getContext('2d');
+            appState.charts.kecNutrient = new Chart(ctxKecNutrient, {
+                type: 'bar',
+                data: { labels: [], datasets: [] },
+                options: { ...commonOptions, scales: { y: { beginAtZero: true, max: 100 } } }
+            });
+
+            const ctxKecPh = document.getElementById('kecamatanPhChart').getContext('2d');
+            appState.charts.kecPh = new Chart(ctxKecPh, {
+                type: 'pie',
+                data: { labels: [], datasets: [] },
+                options: commonOptions
+            });
+        }
+
+        function updateDashboardCharts() {
+            const data = appState.dataUji;
+            if(!data.length) return;
+
+            // pH Chart Logic
+            const phGroups = { '< 5.5 (Asam)': 0, '5.5 - 6.5 (Agak Asam)': 0, '6.5 - 7.5 (Netral)': 0, '> 7.5 (Basa)': 0 };
+            data.forEach(d => {
+                if (d.ph < 5.5) phGroups['< 5.5 (Asam)']++;
+                else if (d.ph <= 6.5) phGroups['5.5 - 6.5 (Agak Asam)']++;
+                else if (d.ph <= 7.5) phGroups['6.5 - 7.5 (Netral)']++;
+                else phGroups['> 7.5 (Basa)']++;
+            });
+
+            appState.charts.ph.data = {
+                labels: Object.keys(phGroups),
+                datasets: [{
+                    label: 'Jumlah Lokasi',
+                    data: Object.values(phGroups),
+                    backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#3b82f6'],
+                    borderRadius: 4
+                }]
+            };
+            appState.charts.ph.update();
+
+            // NPK Dominan (Count of 'Rendah' values to show deficiency)
+            const defCount = { N: 0, P: 0, K: 0 };
+            data.forEach(d => {
+                if(d.n === 'Rendah') defCount.N++;
+                if(d.p === 'Rendah') defCount.P++;
+                if(d.k === 'Rendah') defCount.K++;
+            });
+
+            appState.charts.npk.data = {
+                labels: ['N Rendah', 'P Rendah', 'K Rendah'],
+                datasets: [{
+                    data: Object.values(defCount),
+                    backgroundColor: ['#3b82f6', '#f59e0b', '#f43f5e']
+                }]
+            };
+            appState.charts.npk.update();
+        }
+
+        function renderHistoryTable(data = appState.dataUji) {
+            const tbody = document.getElementById('history-table-body');
+            const emptyState = document.getElementById('empty-history-state');
+            const info = document.getElementById('table-info');
+            
+            info.textContent = `Menampilkan ${data.length} data`;
+
+            if (data.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            tbody.innerHTML = data.map(item => `
+                <tr class="hover:bg-slate-50 transition-colors group">
+                    <td class="px-4 py-3">
+                        <p class="font-medium text-slate-800">${item.tgl}</p>
+                        <p class="text-xs text-slate-500 font-mono">${item.id}</p>
+                    </td>
+                    <td class="px-4 py-3">
+                        <p class="font-medium text-slate-800">${item.petani}</p>
+                        <p class="text-xs text-slate-500 flex items-center gap-1"><i class="ph ph-phone"></i> ${item.kontak}</p>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-slate-700">
+                        ${item.petugas.split(' (')[0]}
+                    </td>
+                    <td class="px-4 py-3">
+                        <p class="text-slate-800 text-sm">${item.desa}, Kec. ${item.kec}</p>
+                        <p class="text-xs text-slate-500">${item.kab}</p>
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        <span class="bg-slate-100 text-slate-700 px-2 py-1 rounded font-medium">${item.komoditas}</span>
+                    </td>
+                    <td class="px-4 py-3 font-bold ${item.ph < 5.5 ? 'text-red-600' : 'text-green-600'}">${item.ph}</td>
+                    <td class="px-4 py-3 text-xs text-slate-700 font-medium">${item.corganik}</td>
+                    <td class="px-4 py-3 text-xs">
+                        <div class="flex flex-col gap-1">
+                            <span class="${getStatusColor(item.n)} px-1.5 py-0.5 rounded text-center">N: ${item.n}</span>
+                            <span class="${getStatusColor(item.p)} px-1.5 py-0.5 rounded text-center">P: ${item.p}</span>
+                            <span class="${getStatusColor(item.k)} px-1.5 py-0.5 rounded text-center">K: ${item.k}</span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onclick="viewReport('${item.id}')" class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded" title="Lihat Rekomendasi"><i class="ph ph-file-text text-lg"></i></button>
+                            <button onclick="editData('${item.id}')" class="p-1.5 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded" title="Edit Data"><i class="ph ph-pencil-simple text-lg"></i></button>
+                            <button onclick="confirmDelete('${item.id}')" class="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded" title="Hapus Data"><i class="ph ph-trash text-lg"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getStatusColor(status) {
+            if(status === 'Rendah') return 'bg-red-50 text-red-700';
+            if(status === 'Sedang') return 'bg-yellow-50 text-yellow-700';
+            return 'bg-green-50 text-green-700';
+        }
+
+        function filterHistory() {
+            const search = document.getElementById('search-history').value.toLowerCase();
+            const kec = document.getElementById('filter-kecamatan').value;
+            const petugas = document.getElementById('filter-petugas').value;
+
+            const filtered = appState.dataUji.filter(d => {
+                const matchSearch = Object.values(d).join(' ').toLowerCase().includes(search);
+                const matchKec = kec === '' || d.kec === kec;
+                const matchPetugas = petugas === '' || d.petugas.includes(petugas);
+                return matchSearch && matchKec && matchPetugas;
+            });
+
+            renderHistoryTable(filtered);
+        }
+
+        function populateKecamatanDropdowns() {
+            const kecs = [...new Set(appState.dataUji.map(d => d.kec))].sort();
+            
+            const filterKec = document.getElementById('filter-kecamatan');
+            const activeKec = document.getElementById('select-active-kecamatan');
+            
+            const buildOptions = (list, defaultTxt) => `<option value="">${defaultTxt}</option>` + list.map(k => `<option value="${k}">${k}</option>`).join('');
+            
+            filterKec.innerHTML = buildOptions(kecs, 'Semua Kecamatan');
+            activeKec.innerHTML = buildOptions(kecs, 'Pilih Kecamatan / Semua');
+        }
+
+        function onKecamatanFilterChange() {
+            const selectedKec = document.getElementById('select-active-kecamatan').value;
+            const data = selectedKec === "" ? appState.dataUji : appState.dataUji.filter(d => d.kec === selectedKec);
+            
+            document.getElementById('kecamatan-detail-title').textContent = selectedKec || "Semua Kecamatan";
+            document.getElementById('badge-kec-count').textContent = `${data.length} Sampel`;
+
+            // Update Table
+            const tbody = document.getElementById('kecamatan-detail-tbody');
+            if(data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-slate-500">Tidak ada data untuk area ini.</td></tr>`;
+            } else {
+                tbody.innerHTML = data.map(item => `
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-3 py-2 text-xs"><span class="font-bold block">${item.id}</span>${item.tgl}</td>
+                        <td class="px-3 py-2 text-sm">${item.desa}</td>
+                        <td class="px-3 py-2 text-xs"><span class="block text-sm font-medium">${item.petani}</span>${item.kontak}</td>
+                        <td class="px-3 py-2 text-xs truncate max-w-[120px]" title="${item.petugas}">${item.petugas.split(' (')[0]}</td>
+                        <td class="px-3 py-2 text-xs">${item.komoditas}</td>
+                        <td class="px-3 py-2 text-sm font-bold ${item.ph < 5.5 ? 'text-red-600' : 'text-green-600'}">${item.ph}</td>
+                        <td class="px-3 py-2 text-xs text-slate-700">${item.corganik}</td>
+                        <td class="px-3 py-2 text-xs">N:${item.n[0]} P:${item.p[0]} K:${item.k[0]}</td>
+                        <td class="px-3 py-2 text-center">
+                            <button onclick="viewReport('${item.id}')" class="text-primary hover:underline text-xs">Lihat</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            if(data.length === 0) return;
+
+            // Chart 1: Nutrient Status (Stacked Bar % representation)
+            const countStatus = (nutrient, level) => data.filter(d => d[nutrient] === level).length;
+            const total = data.length;
+
+            appState.charts.kecNutrient.data = {
+                labels: ['Nitrogen (N)', 'Fosfor (P)', 'Kalium (K)'],
+                datasets: [
+                    {
+                        label: 'Rendah (%)',
+                        data: [(countStatus('n','Rendah')/total)*100, (countStatus('p','Rendah')/total)*100, (countStatus('k','Rendah')/total)*100],
+                        backgroundColor: '#ef4444'
+                    },
+                    {
+                        label: 'Sedang (%)',
+                        data: [(countStatus('n','Sedang')/total)*100, (countStatus('p','Sedang')/total)*100, (countStatus('k','Sedang')/total)*100],
+                        backgroundColor: '#f59e0b'
+                    },
+                    {
+                        label: 'Tinggi (%)',
+                        data: [(countStatus('n','Tinggi')/total)*100, (countStatus('p','Tinggi')/total)*100, (countStatus('k','Tinggi')/total)*100],
+                        backgroundColor: '#10b981'
+                    }
+                ]
+            };
+            appState.charts.kecNutrient.options.scales.x = { stacked: true };
+            appState.charts.kecNutrient.options.scales.y = { stacked: true, max: 100 };
+            appState.charts.kecNutrient.update();
+
+            // Chart 2: pH Distribution Pie
+            const phGroups = { '<5.5': 0, '5.5-6.5': 0, '>6.5': 0 };
+            data.forEach(d => {
+                if (d.ph < 5.5) phGroups['<5.5']++;
+                else if (d.ph <= 6.5) phGroups['5.5-6.5']++;
+                else phGroups['>6.5']++;
+            });
+
+            appState.charts.kecPh.data = {
+                labels: ['Asam (<5.5)', 'Optimal (5.5-6.5)', 'Netral/Basa (>6.5)'],
+                datasets: [{
+                    data: Object.values(phGroups),
+                    backgroundColor: ['#ef4444', '#10b981', '#3b82f6']
+                }]
+            };
+            appState.charts.kecPh.update();
+        }
+
+        function confirmDelete(id) {
+            appState.pendingDeleteId = id;
+            document.getElementById('confirm-modal-text').textContent = `Apakah Anda yakin ingin menghapus data laporan ${id}? Tindakan ini tidak dapat dibatalkan.`;
+            document.getElementById('confirmModal').classList.add('show');
+        }
+
+        function closeConfirmModal() {
+            appState.pendingDeleteId = null;
+            document.getElementById('confirmModal').classList.remove('show');
+        }
+
+        document.getElementById('btn-confirm-delete').addEventListener('click', () => {
+            if(appState.pendingDeleteId) {
+                appState.dataUji = appState.dataUji.filter(d => d.id !== appState.pendingDeleteId);
+                saveData();
+                closeConfirmModal();
+                updateDashboard();
+                renderHistoryTable();
+                populateKecamatanDropdowns();
+                showNotification('Data berhasil dihapus', 'success');
+            }
+        });
+
+        function showNotification(message, type = 'info') {
+            const notif = document.getElementById('notification');
+            const icon = document.getElementById('notif-icon');
+            const text = document.getElementById('notif-message');
+
+            notif.classList.remove('bg-slate-800', 'bg-green-600', 'bg-red-600');
+            
+            if(type === 'success') {
+                notif.classList.add('bg-green-600');
+                icon.className = 'ph-fill ph-check-circle text-xl';
+            } else if (type === 'error') {
+                notif.classList.add('bg-red-600');
+                icon.className = 'ph-fill ph-warning-circle text-xl';
+            } else {
+                notif.classList.add('bg-slate-800');
+                icon.className = 'ph ph-info text-xl';
+            }
+
+            text.textContent = message;
+            
+            notif.classList.remove('translate-y-20', 'opacity-0');
+            notif.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                notif.classList.remove('translate-y-0', 'opacity-100');
+                notif.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function closeModal() {
+            document.getElementById('reportModal').classList.remove('show');
+        }
+
+        function viewReport(id) {
+            const item = appState.dataUji.find(d => d.id === id);
+            if(!item) return;
+
+            const getRec = (nutrient, val) => {
+                if(nutrient === 'N') return val==='Rendah' ? '250 - 300 kg/ha <b>(Urea Nitrea)</b>' : val==='Sedang' ? '200 - 250 kg/ha <b>(Urea Nitrea)</b>' : '150 - 200 kg/ha <b>(Urea Nitrea)</b>';
+                if(nutrient === 'P') return val==='Rendah' ? '100 - 150 kg/ha <b>(Pupuk SP-36)</b>' : val==='Sedang' ? '50 - 100 kg/ha <b>(Pupuk SP-36)</b>' : '25 - 50 kg/ha <b>(Pupuk SP-36)</b>';
+                if(nutrient === 'K') return val==='Rendah' ? '75 - 100 kg/ha <b>(Nitrokal)</b>' : val==='Sedang' ? '50 - 75 kg/ha <b>(Nitrokal)</b>' : '< 50 kg/ha <b>(Nitrokal)</b>';
+                if(nutrient === 'C') return val.includes('Rendah') ? '2 - 3 Ton/ha <b>(Pupuk Organik Petroganik)</b>' : val.includes('Sedang') ? '1 - 2 Ton/ha <b>(Pupuk Organik Petroganik)</b>' : '500 kg/ha <b>(Pupuk Organik Petroganik)</b>';
+            };
+
+            const content = `
+                <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
+                    <div class="flex items-center gap-4">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Logo_Pupuk_Indonesia_%28Persero%29.png" alt="Pupuk Indonesia Logo" class="h-10 w-auto object-contain" crossorigin="anonymous" onerror="this.src='https://placehold.co/120x40/005baa/ffffff?text=Pupuk+Indonesia'">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-800 leading-tight">Laporan Rekomendasi Pemupukan Presisi</h2>
+                            <p class="text-sm text-slate-500">Sistem Pelaporan Mobil Uji Tanah (MUT) - Pupuk Indonesia</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-6 text-sm mb-6">
+                    <div>
+                        <h4 class="font-bold text-slate-800 mb-2 border-b pb-1">Informasi Pemilik Lahan</h4>
+                        <table class="w-full text-slate-700">
+                            <tr><td class="py-1 w-1/3">Nama Petani</td><td class="font-medium">: ${item.petani}</td></tr>
+                            <tr><td class="py-1">Kontak</td><td>: ${item.kontak}</td></tr>
+                            <tr><td class="py-1">Komoditas</td><td class="font-bold text-primary">: ${item.komoditas}</td></tr>
+                            <tr><td class="py-1">Desa/Kecamatan</td><td>: ${item.desa} / ${item.kec}</td></tr>
+                        </table>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-800 mb-2 border-b pb-1">Detail Pengujian</h4>
+                        <table class="w-full text-slate-700">
+                            <tr><td class="py-1 w-1/3">ID Uji</td><td class="font-mono">: ${item.id}</td></tr>
+                            <tr><td class="py-1">Tanggal</td><td>: ${item.tgl}</td></tr>
+                            <tr><td class="py-1">Petugas MUT</td><td>: ${item.petugas.split(' (')[0]}</td></tr>
+                            <tr><td class="py-1">GPS (Lat, Lng)</td><td class="text-xs">: ${item.lat}, ${item.lng}</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <h4 class="font-bold text-slate-800 mb-3 bg-slate-100 p-2 rounded">Hasil Analisis Kimia Tanah</h4>
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
+                        <div class="border rounded p-2.5 bg-slate-50"><p class="text-xs text-slate-500 mb-1">pH Tanah</p><p class="font-bold text-lg ${item.ph < 5.5 ? 'text-red-600' : 'text-green-600'}">${item.ph}</p></div>
+                        <div class="border rounded p-2.5 bg-slate-50"><p class="text-xs text-slate-500 mb-1">Kadar C-Organik</p><p class="font-bold text-xs mt-1 text-slate-800">${item.corganik}</p></div>
+                        <div class="border rounded p-2.5 bg-slate-50"><p class="text-xs text-slate-500 mb-1">Status N</p><p class="font-bold text-sm mt-1 ${getStatusColor(item.n).split(' ')[1]}">${item.n}</p></div>
+                        <div class="border rounded p-2.5 bg-slate-50"><p class="text-xs text-slate-500 mb-1">Status P</p><p class="font-bold text-sm mt-1 ${getStatusColor(item.p).split(' ')[1]}">${item.p}</p></div>
+                        <div class="border rounded p-2.5 bg-slate-50"><p class="text-xs text-slate-500 mb-1">Status K</p><p class="font-bold text-sm mt-1 ${getStatusColor(item.k).split(' ')[1]}">${item.k}</p></div>
+                    </div>
+                </div>
+
+                <!-- NPK Recommendation explicitly placed at the bottom -->
+                <div class="mt-8 border-t-2 border-green-500 pt-4">
+                    <h4 class="font-bold text-slate-800 mb-3 bg-green-50 text-green-800 p-2 rounded flex items-center gap-2">
+                        <i class="ph-fill ph-plant text-lg"></i> Rekomendasi Pemupukan NPK & Produk Pupuk Indonesia
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div class="flex items-center gap-3 border p-2 rounded-lg bg-white">
+                            <img src="https://pupuk-kujang.co.id/_next/image?url=https%3A%2F%2Fadmin-web.pupuk-kujang.co.id%2Fproxy-file%3Fsource%3Dproduk%2Ficon-DB8tT1724376935.png&w=1200&q=75" class="h-12 w-12 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/120x120/16a34a/ffffff?text=Petroganik'" alt="Petroganik">
+                            <div>
+                                <p class="font-bold text-slate-800">Pupuk Organik Petroganik</p>
+                                <p class="text-slate-600">${getRec('C', item.corganik)}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 border p-2 rounded-lg bg-white">
+                            <img src="https://pupuk-kujang.co.id/_next/image?url=https%3A%2F%2Fadmin-web.pupuk-kujang.co.id%2Fproxy-file%3Fsource%3Dproduk%2Ficon-OIGGi1728617277.jpg&w=1200&q=75" class="h-12 w-12 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/120x120/005baa/ffffff?text=Urea+Nitrea'" alt="Urea Nitrea">
+                            <div>
+                                <p class="font-bold text-slate-800">Urea Nitrea</p>
+                                <p class="text-slate-600">${getRec('N', item.n)}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 border p-2 rounded-lg bg-white">
+                            <img src="https://storage.googleapis.com/pkg-portal-bucket/images/product/SP-36-Subsidi.jpeg" class="h-12 w-12 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/120x120/d97706/ffffff?text=SP-36'" alt="SP-36">
+                            <div>
+                                <p class="font-bold text-slate-800">Pupuk SP-36 (Fosfat)</p>
+                                <p class="text-slate-600">${getRec('P', item.p)}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 border p-2 rounded-lg bg-white">
+                            <img src="https://pupuk-kujang.co.id/_next/image?url=https%3A%2F%2Fadmin-web.pupuk-kujang.co.id%2Fproxy-file%3Fsource%3Dproduk%2Ficon-53L7O1728629684.jpg&w=1200&q=75" class="h-12 w-12 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/120x120/be123c/ffffff?text=Nitrokal'" alt="Nitrokal">
+                            <div>
+                                <p class="font-bold text-slate-800">Nitrokal (Kalium)</p>
+                                <p class="text-slate-600">${getRec('K', item.k)}</p>
+                            </div>
+                        </div>
+                    </div>
+                    ${item.ph < 5.5 ? `
+                    <div class="mt-3 flex items-center gap-3 border border-red-200 bg-red-50 p-2 rounded-lg text-xs">
+                        <img src="https://storage.googleapis.com/pkg-portal-bucket/images/product/_productThumb/PG_Kaptan2023.png" class="h-12 w-12 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/120x120/475569/ffffff?text=Kaptan'" alt="Kapur Pertanian Kebomas">
+                        <div>
+                            <p class="font-bold text-red-900">Kapur Pertanian Kebomas (Penetrallan pH Tanah)</p>
+                            <p class="text-red-700">pH tanah sangat asam (${item.ph}). Disarankan pengapuran 1 - 2 Ton/Ha sebelum aplikasi pemupukan utama.</p>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            document.getElementById('report-content').innerHTML = content;
+            document.getElementById('reportModal').classList.add('show');
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('report-container');
+            const opt = {
+                margin:       0.5,
+                filename:     'Laporan_Uji_Tanah_MUT.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true }, // Added useCORS to fetch images correctly
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function downloadKecamatanReportPDF() {
+            const activeKecSelect = document.getElementById('select-active-kecamatan');
+            const selectedKec = activeKecSelect.value || "Semua Kecamatan";
+            const data = selectedKec === "Semua Kecamatan" ? appState.dataUji : appState.dataUji.filter(d => d.kec === selectedKec);
+
+            if(data.length === 0) {
+                showNotification('Tidak ada data untuk diunduh pada area ini', 'error');
+                return;
+            }
+
+            showNotification('Menyiapkan laporan PDF...', 'info');
+
+            const container = document.getElementById('district-pdf-export-container');
+            
+            // Get chart images from canvas
+            const chartNutrientImg = document.getElementById('kecamatanNutrientChart').toDataURL('image/png');
+            const chartPhImg = document.getElementById('kecamatanPhChart').toDataURL('image/png');
+
+            // Build Table Rows HTML
+            const tableRows = data.map((item, index) => `
+                <tr style="background-color: ${index % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom: 1px solid #e2e8f0;">
+                    <td style="padding: 6px 8px; font-size: 10px;">${item.id}</td>
+                    <td style="padding: 6px 8px; font-size: 10px;">${item.tgl}</td>
+                    <td style="padding: 6px 8px; font-size: 10px;">${item.desa}</td>
+                    <td style="padding: 6px 8px; font-size: 10px;">${item.petani}</td>
+                    <td style="padding: 6px 8px; font-size: 10px;">${item.komoditas}</td>
+                    <td style="padding: 6px 8px; font-size: 10px; font-weight: bold; color: ${item.ph < 5.5 ? '#dc2626' : '#16a34a'};">${item.ph}</td>
+                    <td style="padding: 6px 8px; font-size: 10px;">N:${item.n[0]} P:${item.p[0]} K:${item.k[0]}</td>
+                </tr>
+            `).join('');
+
+            // Build full HTML content for the PDF
+            container.innerHTML = `
+                <div style="padding: 30px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b;">
+                    <div style="display: flex; align-items: center; border-bottom: 3px solid #16a34a; padding-bottom: 15px; margin-bottom: 25px;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Logo_Pupuk_Indonesia_%28Persero%29.png" style="height: 50px; margin-right: 20px;" crossorigin="anonymous">
+                        <div>
+                            <h2 style="margin: 0; color: #16a34a; font-size: 24px;">Laporan Rekapitulasi Uji Tanah MUT</h2>
+                            <p style="margin: 5px 0 0 0; font-size: 14px; color: #64748b;">Area: <strong style="color: #0f172a;">${selectedKec}</strong> | Total Sampel: <strong>${data.length}</strong> Titik Uji</p>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 20px; margin-bottom: 30px;">
+                        <div style="flex: 1; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px;">
+                            <h4 style="margin-top: 0; margin-bottom: 15px; text-align: center; color: #334155;">Status Hara (N, P, K)</h4>
+                            <img src="${chartNutrientImg}" style="width: 100%; height: auto; max-height: 250px; object-fit: contain;">
+                        </div>
+                        <div style="flex: 1; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px;">
+                            <h4 style="margin-top: 0; margin-bottom: 15px; text-align: center; color: #334155;">Sebaran Kemasaman (pH)</h4>
+                            <img src="${chartPhImg}" style="width: 100%; height: auto; max-height: 250px; object-fit: contain;">
+                        </div>
+                    </div>
+
+                    <h4 style="margin-bottom: 15px; color: #334155; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Rincian Data Titik Uji</h4>
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; border: 1px solid #e2e8f0;">
+                        <thead>
+                            <tr style="background-color: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
+                                <th style="padding: 10px 8px; font-size: 11px; color: #475569;">ID Uji</th>
+                                <th style="padding: 10px 8px; font-size: 11px; color: #475569;">Tanggal</th>
+                                <th style="padding: 10px 8px; font-size: 11px; color: #475569;">Desa</th>
+                                <th style="padding: 10px 8px; font-size: 11px; color: #475569;">Petani</th>
+                                <th style="padding: 10px 8px; font-size: 11px; color: #475569;">Komoditas</th>
+                                <th style="padding: 10px 8px; font-size: 11px; color: #475569;">pH</th>
+                                <th style="padding: 10px 8px; font-size: 11px; color: #475569;">Status N/P/K</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                    
+                    <div style="margin-top: 30px; font-size: 10px; color: #94a3b8; text-align: right;">
+                        Dicetak dari Sistem Pelaporan MUT Pupuk Indonesia pada ${new Date().toLocaleDateString('id-ID')}
+                    </div>
+                </div>
+            `;
+
+            const opt = {
+                margin:       [0.5, 0.5, 0.5, 0.5],
+                filename:     `Laporan_MUT_Kecamatan_${selectedKec.replace(/\s+/g, '_')}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, windowWidth: 1024 }, // Ensure proper width capture
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(container).save().then(() => {
+                container.innerHTML = '';
+                showNotification('Laporan berhasil diunduh', 'success');
+            }).catch(err => {
+                console.error(err);
+                showNotification('Gagal mengunduh laporan', 'error');
+            });
+        }
+
+        function exportData(type) {
+            if(type === 'csv') {
+                let csvContent = "data:text/csv;charset=utf-8,";
+                const headers = ["ID", "Tanggal", "Petugas", "Petani", "Kontak", "Desa", "Kecamatan", "Komoditas", "pH", "C-Organik", "N", "P", "K", "Catatan"];
+                csvContent += headers.join(",") + "\r\n";
+
+                appState.dataUji.forEach(row => {
+                    const rowData = [
+                        row.id, row.tgl, `"${row.petugas}"`, `"${row.petani}"`, row.kontak, row.desa, row.kec, 
+                        row.komoditas, row.ph, `"${row.corganik}"`, row.n, row.p, row.k, `"${row.catatan || ''}"`
+                    ];
+                    csvContent += rowData.join(",") + "\r\n";
+                });
+
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "Data_MUT_Export.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+    </script>
+</body>
+</html>
