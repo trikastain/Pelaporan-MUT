@@ -10,7 +10,7 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <!-- Load Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Load html2pdf for exporting reports -->
+    <!-- Load html2pdf for exporting reports in standard A4 size -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <script>
@@ -21,7 +21,7 @@
                         primary: '#16a34a', // green-600
                         secondary: '#4ade80', // green-400
                         dark: '#1f2937', // gray-800
-                        light: '#f3f4f6', // gray-100
+                        light: '#f8fafc', // slate-50
                         accent: '#eab308', // yellow-500
                         piBlue: '#005baa', // Pupuk Indonesia Blue
                     },
@@ -32,12 +32,13 @@
             }
         }
     </script>
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
+            background-color: #f1f5f9;
         }
 
         ::-webkit-scrollbar {
@@ -45,11 +46,11 @@
             height: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: #f1f1f1; 
+            background: #f1f5f9; 
         }
         ::-webkit-scrollbar-thumb {
             background: #cbd5e1; 
-            border-radius: 4px;
+            border-radius: 6px;
         }
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8; 
@@ -63,7 +64,7 @@
             animation: fadeIn 0.3s ease-in-out;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
+            from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -76,8 +77,8 @@
             width: 100%;
             height: 100%;
             overflow: auto;
-            background-color: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
+            background-color: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(6px);
         }
         .modal.show {
             display: flex;
@@ -85,198 +86,268 @@
             justify-content: center;
         }
 
-        .status-low { @apply bg-red-100 text-red-800 border-red-300; }
-        .status-medium { @apply bg-yellow-100 text-yellow-800 border-yellow-300; }
-        .status-high { @apply bg-green-100 text-green-800 border-green-300; }
-        
-        #district-pdf-export-container {
-            display: none;
-            background: white;
-            width: 800px;
-            padding: 20px;
+        /* Decorative Shape Highlights & Badges */
+        .shape-badge {
+            clip-path: polygon(0% 0%, 100% 0%, 92% 100%, 0% 100%);
         }
+        .shape-ribbon {
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 50% 100%, 0 85%);
+        }
+
+        /* Print Calibration for strict A4 document rendering */
+        .a4-page {
+            width: 190mm;
+            min-height: 270mm;
+            margin: 0 auto;
+            background: #ffffff;
+            box-sizing: border-box;
+        }
+
+        .status-low { @apply bg-red-100 text-red-800 border border-red-300; }
+        .status-medium { @apply bg-amber-100 text-amber-800 border border-amber-300; }
+        .status-high { @apply bg-emerald-100 text-emerald-800 border border-emerald-300; }
     </style>
 </head>
-<body class="text-slate-800 flex h-screen overflow-hidden">
+<body class="text-slate-800 flex h-screen overflow-hidden antialiased">
 
-    <!-- Sidebar -->
-    <aside class="w-64 bg-white border-r border-slate-200 flex flex-col transition-all duration-300 z-20" id="sidebar">
-        <div class="h-16 flex items-center px-6 border-b border-slate-200 justify-between">
-            <div class="flex items-center gap-3 text-primary">
-                <!-- Logo Official Pupuk Indonesia -->
-                <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Logo_Pupuk_Indonesia_%28Persero%29.png" alt="Pupuk Indonesia Logo" class="h-9 w-auto object-contain" crossorigin="anonymous" onerror="this.src='https://placehold.co/120x40/005baa/ffffff?text=Pupuk+Indonesia'">
-                <div class="flex flex-col">
-                    <span class="font-bold text-lg leading-none tracking-tight text-slate-800">MUT Apps</span>
-                    <span class="text-[10px] text-slate-500 tracking-wider uppercase font-semibold">Pupuk Indonesia</span>
+    <!-- SIDEBAR NAV WITH MANDATORY PUPUK INDONESIA LOGO TOP LEFT -->
+    <aside class="w-64 bg-white border-r border-slate-200 flex flex-col transition-all duration-300 z-20 shadow-md" id="sidebar">
+        <!-- LOGO PUPUK INDONESIA DI KIRI ATAS -->
+        <div class="h-20 flex items-center px-5 border-b border-slate-200 justify-between bg-slate-50/50">
+            <div class="flex items-center gap-3">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Logo_Pupuk_Indonesia_%28Persero%29.png" alt="Pupuk Indonesia Logo" class="h-10 w-auto object-contain" crossorigin="anonymous" onerror="this.src='https://placehold.co/140x40/005baa/ffffff?text=Pupuk+Indonesia'">
+                <div class="flex flex-col border-l border-slate-300 pl-2.5">
+                    <span class="font-extrabold text-base leading-tight text-piBlue tracking-tight">MUT Apps</span>
+                    <span class="text-[9px] text-slate-500 tracking-wider uppercase font-bold">Pupuk Indonesia</span>
                 </div>
             </div>
-            <button id="close-sidebar" class="lg:hidden text-slate-500 hover:text-slate-800" onclick="toggleSidebar()">
+            <button id="close-sidebar" class="lg:hidden text-slate-500 hover:text-slate-800 p-1" onclick="toggleSidebar()">
                 <i class="ph ph-x text-xl"></i>
             </button>
         </div>
 
-        <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-            <a href="#" onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg bg-green-50 text-primary font-medium transition-colors">
-                <i class="ph ph-squares-four text-xl"></i>
-                Dashboard
+        <nav class="flex-1 overflow-y-auto py-5 px-3 space-y-1.5">
+            <a href="#" onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl bg-green-50 text-primary font-semibold transition-all shadow-xs">
+                <div class="w-7 h-7 rounded-lg bg-green-100 flex items-center justify-center text-primary">
+                    <i class="ph ph-squares-four text-lg"></i>
+                </div>
+                <span>Dashboard</span>
             </a>
-            <a href="#" onclick="switchTab('input-data')" id="nav-input-data" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
-                <i class="ph ph-note-pencil text-xl"></i>
-                Input Data Uji
+            <a href="#" onclick="switchTab('input-data')" id="nav-input-data" class="nav-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all">
+                <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                    <i class="ph ph-note-pencil text-lg"></i>
+                </div>
+                <span>Input Data Uji</span>
             </a>
-            <a href="#" onclick="switchTab('riwayat')" id="nav-riwayat" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
-                <i class="ph ph-list-dashes text-xl"></i>
-                Riwayat Uji
+            <a href="#" onclick="switchTab('riwayat')" id="nav-riwayat" class="nav-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all">
+                <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                    <i class="ph ph-list-dashes text-lg"></i>
+                </div>
+                <span>Riwayat Uji</span>
             </a>
-            <a href="#" onclick="switchTab('kecamatan')" id="nav-kecamatan" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
-                <i class="ph ph-buildings text-xl"></i>
-                Rekap Kecamatan
+            <a href="#" onclick="switchTab('kecamatan')" id="nav-kecamatan" class="nav-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all">
+                <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                    <i class="ph ph-buildings text-lg"></i>
+                </div>
+                <span>Rekap Kecamatan</span>
             </a>
-            <a href="#" onclick="switchTab('rekomendasi')" id="nav-rekomendasi" class="nav-btn flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
-                <i class="ph ph-plant text-xl"></i>
-                Peta & Rekomendasi
+            <a href="#" onclick="switchTab('rekomendasi')" id="nav-rekomendasi" class="nav-btn flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all">
+                <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500">
+                    <i class="ph ph-plant text-lg"></i>
+                </div>
+                <span>Peta & Rekomendasi</span>
             </a>
         </nav>
 
-        <!-- Officer Info Badge in Sidebar -->
-        <div class="p-4 border-t border-slate-200 bg-slate-50">
-            <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Tim Petugas MUT</p>
-            <div class="space-y-3 text-xs">
-                <!-- Officer 1 -->
-                <div class="flex items-start gap-2 text-slate-700">
-                    <i class="ph-fill ph-user-circle text-green-600 text-xl mt-0.5"></i>
-                    <div>
-                        <p class="font-bold text-slate-800 leading-tight">Ahmad Subagja, S.P.</p>
+        <!-- Petugas Panel with Decorative Shapes -->
+        <div class="p-4 border-t border-slate-200 bg-slate-50 relative overflow-hidden">
+            <!-- Decorative background circle shape -->
+            <div class="absolute -bottom-6 -right-6 w-24 h-24 bg-green-200/40 rounded-full blur-xl pointer-events-none"></div>
+            
+            <div class="flex items-center justify-between mb-2">
+                <p class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Tim Agronomis MUT</p>
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            </div>
+
+            <div class="space-y-2.5 text-xs relative z-10">
+                <div class="flex items-center gap-2.5 p-2 rounded-lg bg-white border border-slate-200/80 shadow-2xs">
+                    <div class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                        AS
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="font-bold text-slate-800 leading-tight truncate">Ahmad Subagja, S.P.</p>
                         <p class="text-[10px] text-slate-500 font-mono">NIK: 91204821</p>
-                        <span class="inline-block text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-medium mt-1">Agronomis MUT</span>
                     </div>
                 </div>
-                <!-- Officer 2 -->
-                <div class="flex items-start gap-2 text-slate-700">
-                    <i class="ph-fill ph-user-circle text-amber-600 text-xl mt-0.5"></i>
-                    <div>
-                        <p class="font-bold text-slate-800 leading-tight">Budi Santoso, S.P.</p>
+                <div class="flex items-center gap-2.5 p-2 rounded-lg bg-white border border-slate-200/80 shadow-2xs">
+                    <div class="w-7 h-7 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                        BS
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="font-bold text-slate-800 leading-tight truncate">Budi Santoso, S.P.</p>
                         <p class="text-[10px] text-slate-500 font-mono">NIK: 91204822</p>
-                        <span class="inline-block text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-medium mt-1">Agronomis MUT</span>
                     </div>
                 </div>
-                <!-- Officer 3 -->
-                <div class="flex items-start gap-2 text-slate-700">
-                    <i class="ph-fill ph-user-circle text-blue-600 text-xl mt-0.5"></i>
-                    <div>
-                        <p class="font-bold text-slate-800 leading-tight">Candra Wijaya, S.P.</p>
+                <div class="flex items-center gap-2.5 p-2 rounded-lg bg-white border border-slate-200/80 shadow-2xs">
+                    <div class="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                        CW
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="font-bold text-slate-800 leading-tight truncate">Candra Wijaya, S.P.</p>
                         <p class="text-[10px] text-slate-500 font-mono">NIK: 91204823</p>
-                        <span class="inline-block text-[10px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-medium mt-1">Agronomis MUT</span>
                     </div>
                 </div>
             </div>
         </div>
     </aside>
 
-    <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-slate-50 relative">
-        
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-slate-100 relative">
         <div id="mobile-overlay" class="fixed inset-0 bg-slate-900/50 z-10 hidden lg:hidden" onclick="toggleSidebar()"></div>
 
-        <!-- Top Header -->
-        <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-8 z-10">
-            <button onclick="toggleSidebar()" class="lg:hidden text-slate-600 hover:text-slate-900 focus:outline-none">
-                <i class="ph ph-list text-2xl"></i>
-            </button>
-            <h1 class="text-xl font-semibold text-slate-800" id="page-title">Dashboard Utama</h1>
-            
-            <div class="flex items-center gap-4">
-                <button class="text-slate-500 hover:text-primary transition-colors relative" onclick="showNotification('Sinkronisasi data berhasil', 'success')" title="Sinkronkan Data">
-                    <i class="ph ph-arrows-clockwise text-xl"></i>
+        <!-- TOP BAR HEADER -->
+        <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-8 z-10 shadow-2xs">
+            <div class="flex items-center gap-3">
+                <button onclick="toggleSidebar()" class="lg:hidden text-slate-600 hover:text-slate-900 focus:outline-none p-1.5 rounded-lg border border-slate-200">
+                    <i class="ph ph-list text-2xl"></i>
                 </button>
-                <div class="text-sm text-slate-500 hidden sm:block" id="current-date"></div>
+                <!-- PUPUK INDONESIA LOGO MOBILE (TOP LEFT) -->
+                <div class="flex items-center gap-2 lg:hidden">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Logo_Pupuk_Indonesia_%28Persero%29.png" alt="Pupuk Indonesia Logo" class="h-8 w-auto object-contain" crossorigin="anonymous" onerror="this.src='https://placehold.co/110x32/005baa/ffffff?text=Pupuk+Indonesia'">
+                </div>
+                <div>
+                    <h1 class="text-lg lg:text-xl font-bold text-slate-800 leading-tight" id="page-title">Dashboard Utama</h1>
+                    <p class="text-xs text-slate-500 hidden sm:block">Aplikasi Pelaporan & Rekomendasi Pemupukan Presisi</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full border border-slate-200 text-xs text-slate-600 font-medium">
+                    <i class="ph ph-calendar text-primary text-base"></i>
+                    <span id="current-date"></span>
+                </div>
+                
+                <button class="flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition-all border border-slate-200" onclick="showNotification('Sinkronisasi data berhasil', 'success')" title="Sinkronkan Data">
+                    <i class="ph ph-arrows-clockwise text-base text-primary"></i>
+                    <span class="hidden md:inline">Sinkronisasi</span>
+                </button>
             </div>
         </header>
 
-        <!-- Scrollable Content Area -->
         <div class="flex-1 overflow-y-auto p-4 lg:p-8">
             
             <!-- TAB 1: Dashboard -->
-            <div id="tab-dashboard" class="tab-content active max-w-7xl mx-auto">
-                <!-- Quick Stats -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex items-center">
-                        <div class="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 mr-4">
-                            <i class="ph ph-flask text-2xl"></i>
+            <div id="tab-dashboard" class="tab-content active max-w-7xl mx-auto space-y-6">
+                <!-- STATS CARDS WITH DECORATIVE ACCENT SHAPES -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                    <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-5 relative overflow-hidden flex items-center justify-between">
+                        <!-- Decorative shape accent -->
+                        <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-blue-500/10 rounded-full blur-sm"></div>
+                        <div class="relative z-10">
+                            <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Total Pengujian</p>
+                            <h3 class="text-3xl font-black text-slate-800" id="stat-total">0</h3>
+                            <span class="inline-block text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded-full mt-2">Sampel Tanah</span>
                         </div>
-                        <div>
-                            <p class="text-sm text-slate-500 font-medium">Total Uji</p>
-                            <h3 class="text-2xl font-bold text-slate-800" id="stat-total">0</h3>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex items-center">
-                        <div class="w-14 h-14 rounded-full bg-green-50 flex items-center justify-center text-green-500 mr-4">
-                            <i class="ph ph-map-pin text-2xl"></i>
-                        </div>
-                        <div>
-                            <p class="text-sm text-slate-500 font-medium">Desa Terkunjungi</p>
-                            <h3 class="text-2xl font-bold text-slate-800" id="stat-desa">0</h3>
+                        <div class="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 text-2xl shadow-2xs relative z-10">
+                            <i class="ph ph-flask"></i>
                         </div>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex items-center">
-                        <div class="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center text-amber-500 mr-4">
-                            <i class="ph ph-warning-circle text-2xl"></i>
+
+                    <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-5 relative overflow-hidden flex items-center justify-between">
+                        <!-- Decorative shape accent -->
+                        <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-emerald-500/10 rounded-full blur-sm"></div>
+                        <div class="relative z-10">
+                            <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">Desa Terjangkau</p>
+                            <h3 class="text-3xl font-black text-slate-800" id="stat-desa">0</h3>
+                            <span class="inline-block text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full mt-2">Lokasi Terdata</span>
                         </div>
-                        <div>
-                            <p class="text-sm text-slate-500 font-medium">pH Kritis (&lt; 5.5)</p>
-                            <h3 class="text-2xl font-bold text-slate-800" id="stat-kritis">0</h3>
+                        <div class="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 text-2xl shadow-2xs relative z-10">
+                            <i class="ph ph-map-pin"></i>
                         </div>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 flex items-center">
-                        <div class="w-14 h-14 rounded-full bg-purple-50 flex items-center justify-center text-purple-500 mr-4">
-                            <i class="ph ph-trend-up text-2xl"></i>
+
+                    <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-5 relative overflow-hidden flex items-center justify-between">
+                        <!-- Decorative shape accent -->
+                        <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-amber-500/10 rounded-full blur-sm"></div>
+                        <div class="relative z-10">
+                            <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">pH Kritis (&lt; 5.5)</p>
+                            <h3 class="text-3xl font-black text-amber-600" id="stat-kritis">0</h3>
+                            <span class="inline-block text-[10px] bg-amber-100 text-amber-800 font-bold px-2 py-0.5 rounded-full mt-2">Perlu Pengapuran</span>
                         </div>
-                        <div>
-                            <p class="text-sm text-slate-500 font-medium">C-Organik Baik (&gt;2%)</p>
-                            <h3 class="text-2xl font-bold text-slate-800" id="stat-corganik">0%</h3>
+                        <div class="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 text-2xl shadow-2xs relative z-10">
+                            <i class="ph ph-warning-circle"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-5 relative overflow-hidden flex items-center justify-between">
+                        <!-- Decorative shape accent -->
+                        <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-purple-500/10 rounded-full blur-sm"></div>
+                        <div class="relative z-10">
+                            <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider mb-1">C-Organik Baik</p>
+                            <h3 class="text-3xl font-black text-purple-700" id="stat-corganik">0%</h3>
+                            <span class="inline-block text-[10px] bg-purple-100 text-purple-800 font-bold px-2 py-0.5 rounded-full mt-2">Kategori Optimal</span>
+                        </div>
+                        <div class="w-14 h-14 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 text-2xl shadow-2xs relative z-10">
+                            <i class="ph ph-trend-up"></i>
                         </div>
                     </div>
                 </div>
 
-                <!-- Charts Section -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-                        <h2 class="text-lg font-semibold text-slate-800 mb-4">Distribusi pH Tanah</h2>
+                <!-- CHARTS ROW -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-6">
+                        <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+                            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-primary"></span> Sebaran Kemasaman (pH) Tanah
+                            </h2>
+                            <span class="text-xs text-slate-400 font-medium">Visualisasi Bar</span>
+                        </div>
                         <div class="h-64 relative w-full">
                             <canvas id="phChart"></canvas>
                         </div>
                     </div>
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-                        <h2 class="text-lg font-semibold text-slate-800 mb-4">Status Hara (N, P, K) Dominan</h2>
+
+                    <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-6">
+                        <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-100">
+                            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-piBlue"></span> Status Hara (N, P, K) Dominan
+                            </h2>
+                            <span class="text-xs text-slate-400 font-medium">Visualisasi Donut</span>
+                        </div>
                         <div class="h-64 relative w-full">
                             <canvas id="npkChart"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <!-- Recent Activities -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-semibold text-slate-800">Uji Tanah Terbaru</h2>
-                        <button onclick="switchTab('riwayat')" class="text-primary hover:text-green-700 text-sm font-medium">Lihat Semua</button>
+                <!-- RECENT TESTS TABLE CARD -->
+                <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 p-6">
+                    <div class="flex justify-between items-center mb-5 pb-3 border-b border-slate-100">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-800">Uji Tanah Terbaru</h2>
+                            <p class="text-xs text-slate-500">Hasil sampling lapangan mutakhir oleh unit MUT</p>
+                        </div>
+                        <button onclick="switchTab('riwayat')" class="text-primary hover:text-green-700 text-xs font-bold bg-green-50 px-3 py-1.5 rounded-lg border border-green-200 transition-all flex items-center gap-1">
+                            Lihat Semua <i class="ph ph-arrow-right"></i>
+                        </button>
                     </div>
+                    
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="border-b border-slate-200 text-sm text-slate-500">
-                                    <th class="pb-3 font-medium">Tanggal</th>
-                                    <th class="pb-3 font-medium">Petani & Kontak</th>
-                                    <th class="pb-3 font-medium">Lokasi (Kec/Desa)</th>
-                                    <th class="pb-3 font-medium">Petugas Uji</th>
-                                    <th class="pb-3 font-medium">pH</th>
-                                    <th class="pb-3 font-medium">Kadar C-Organik</th>
-                                    <th class="pb-3 font-medium">Status NPK</th>
-                                    <th class="pb-3 font-medium">Aksi</th>
+                                <tr class="text-xs uppercase font-extrabold text-slate-400 border-b border-slate-200 bg-slate-50/50">
+                                    <th class="py-3 px-3">Tanggal</th>
+                                    <th class="py-3 px-3">Petani & Kontak</th>
+                                    <th class="py-3 px-3">Lokasi (Kec/Desa)</th>
+                                    <th class="py-3 px-3">Petugas Uji</th>
+                                    <th class="py-3 px-3">pH</th>
+                                    <th class="py-3 px-3">C-Organik</th>
+                                    <th class="py-3 px-3">Status NPK</th>
+                                    <th class="py-3 px-3 text-center">Aksi A4</th>
                                 </tr>
                             </thead>
-                            <tbody id="recent-table-body" class="text-sm"></tbody>
+                            <tbody id="recent-table-body" class="text-sm divide-y divide-slate-100"></tbody>
                         </table>
-                        <div id="empty-dashboard-state" class="hidden text-center py-8 text-slate-500">
+                        <div id="empty-dashboard-state" class="hidden text-center py-8 text-slate-400 text-sm">
                             Belum ada data uji tanah.
                         </div>
                     </div>
@@ -285,148 +356,173 @@
 
             <!-- TAB 2: Input Data Form -->
             <div id="tab-input-data" class="tab-content max-w-4xl mx-auto">
-                <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                    <div class="bg-primary px-6 py-4 border-b border-green-700 flex justify-between items-center">
-                        <div>
-                            <h2 class="text-lg font-semibold text-white flex items-center gap-2" id="form-header-title">
-                                <i class="ph ph-note-pencil text-xl"></i> Form Pelaporan Hasil Uji Tanah
-                            </h2>
-                            <p class="text-green-100 text-sm mt-0.5">Masukkan hasil pengujian dari Perangkat Mobil Uji Tanah (MUT).</p>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    
+                    <!-- Header with Gradient Shape Bar -->
+                    <div class="bg-slate-900 text-white px-6 py-5 relative overflow-hidden">
+                        <div class="absolute right-0 top-0 bottom-0 w-48 bg-gradient-to-l from-primary/30 to-transparent pointer-events-none"></div>
+                        
+                        <div class="flex justify-between items-center relative z-10">
+                            <div>
+                                <h2 class="text-lg font-bold flex items-center gap-2" id="form-header-title">
+                                    <i class="ph ph-note-pencil text-xl text-primary"></i> Form Pelaporan Hasil Uji Tanah
+                                </h2>
+                                <p class="text-slate-300 text-xs mt-1">Masukkan hasil parameter pengujian lapangan dari Mobil Uji Tanah (MUT).</p>
+                            </div>
+                            <span id="edit-badge" class="hidden bg-amber-400 text-slate-950 font-black text-[10px] px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                                Mode Edit
+                            </span>
                         </div>
-                        <span id="edit-badge" class="hidden bg-yellow-400 text-yellow-950 font-bold text-xs px-3 py-1 rounded-full uppercase tracking-wider">Mode Edit Data</span>
                     </div>
                     
-                    <form id="ujiForm" class="p-6 md:p-8" onsubmit="handleFormSubmit(event)">
+                    <form id="ujiForm" class="p-6 md:p-8 space-y-8" onsubmit="handleFormSubmit(event)">
                         
-                        <!-- Section 1: Data Lokasi & Petani -->
-                        <h3 class="text-md font-bold text-slate-700 mb-4 pb-2 border-b border-slate-200 flex items-center gap-2">
-                            <i class="ph ph-user-list text-primary"></i> 1. Identitas Petani, Petugas & Lokasi Lahan
-                        </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Tanggal Uji *</label>
-                                <input type="date" id="input-tanggal" required class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                            </div>
-
-                            <!-- Petugas Uji Selector -->
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Petugas Uji Lapangan (MUT) *</label>
-                                <select id="input-petugas" required class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent font-medium bg-slate-50 text-xs sm:text-sm">
-                                    <option value="">Pilih Petugas MUT</option>
-                                    <option value="Ahmad Subagja, S.P. (Agronomis MUT)">Ahmad Subagja, S.P. (Agronomis MUT)</option>
-                                    <option value="Budi Santoso, S.P. (Agronomis MUT)">Budi Santoso, S.P. (Agronomis MUT)</option>
-                                    <option value="Candra Wijaya, S.P. (Agronomis MUT)">Candra Wijaya, S.P. (Agronomis MUT)</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Nama Petani / Kelompok Tani *</label>
-                                <input type="text" id="input-petani" required placeholder="Contoh: Bpk. Sugeng / Poktan Tani Jaya" class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Kontak Petani (No. HP/WA) *</label>
-                                <input type="tel" id="input-kontak" required placeholder="Contoh: 081234567890" class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Provinsi *</label>
-                                <input type="text" id="input-provinsi" required placeholder="Contoh: Jawa Barat" class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Kabupaten/Kota *</label>
-                                <input type="text" id="input-kabupaten" required placeholder="Contoh: Karawang" class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Kecamatan *</label>
-                                <input type="text" id="input-kecamatan" required placeholder="Contoh: Telukjambe Timur" class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Desa/Kelurahan *</label>
-                                <input type="text" id="input-desa" required placeholder="Contoh: Sukamakmur" class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Komoditas Utama *</label>
-                                <select id="input-komoditas" required class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                                    <option value="">Pilih Komoditas</option>
-                                    <option value="Padi Sawah">Padi Sawah</option>
-                                    <option value="Singkong">Singkong</option>
-                                    <option value="Jagung">Jagung</option>
-                                    <option value="Kedelai">Kedelai</option>
-                                    <option value="Bawang Merah">Bawang Merah</option>
-                                    <option value="Cabai">Cabai</option>
-                                </select>
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-slate-700 mb-1">Koordinat GPS (Opsional)</label>
-                                <div class="flex gap-2">
-                                    <input type="text" id="input-lat" placeholder="Latitude (e.g., -6.2088)" class="flex-1 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                                    <input type="text" id="input-lng" placeholder="Longitude (e.g., 106.8456)" class="flex-1 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                                    <button type="button" onclick="getLocation()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-md border border-slate-300 transition-colors flex items-center gap-1 text-sm" title="Ambil lokasi saat ini">
-                                        <i class="ph ph-crosshair text-lg"></i> GPS
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Section 2: Hasil Analisis Tanah -->
-                        <h3 class="text-md font-bold text-slate-700 mb-4 pb-2 border-b border-slate-200 flex items-center gap-2">
-                            <i class="ph ph-flask text-primary"></i> 2. Hasil Analisis Kimia Tanah
-                        </h3>
-                        
-                        <div class="bg-slate-50 p-4 rounded-lg mb-6 border border-slate-200">
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-1">pH Tanah *</label>
-                                    <input type="number" id="input-ph" step="0.1" min="1" max="14" required placeholder="Contoh: 6.2" class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                                    <p class="text-xs text-slate-500 mt-1">Acuan Optimum: 6.0 - 7.0</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-1">Kadar C-Organik (%) *</label>
-                                    <select id="input-corganik" required class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                                        <option value="">Pilih Kadar C-Organik</option>
-                                        <option value="Rendah (< 2.0%)">Rendah (&lt; 2.0%)</option>
-                                        <option value="Sedang (2.0 - 3.0%)">Sedang (2.0 - 3.0%)</option>
-                                        <option value="Tinggi (> 3.0%)">Tinggi (&gt; 3.0%)</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-1">Status N Total *</label>
-                                    <select id="input-n" required class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                                        <option value="">Pilih Status</option>
-                                        <option value="Rendah">Rendah</option>
-                                        <option value="Sedang">Sedang</option>
-                                        <option value="Tinggi">Tinggi</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-1">Status P (Fosfor) *</label>
-                                    <select id="input-p" required class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                                        <option value="">Pilih Status</option>
-                                        <option value="Rendah">Rendah</option>
-                                        <option value="Sedang">Sedang</option>
-                                        <option value="Tinggi">Tinggi</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-slate-700 mb-1">Status K (Kalium) *</label>
-                                    <select id="input-k" required class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-                                        <option value="">Pilih Status</option>
-                                        <option value="Rendah">Rendah</option>
-                                        <option value="Sedang">Sedang</option>
-                                        <option value="Tinggi">Tinggi</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-
+                        <!-- SECTION 1 -->
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1">Catatan Tambahan Lapangan</label>
-                            <textarea id="input-catatan" rows="3" class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Kondisi cuaca, riwayat pemupukan, keluhan petani, dll..."></textarea>
+                            <div class="flex items-center gap-3 mb-5 pb-2 border-b border-slate-200">
+                                <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm shadow-2xs">
+                                    1
+                                </div>
+                                <h3 class="text-base font-bold text-slate-800">Identitas Petani, Petugas & Lokasi Lahan</h3>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Tanggal Uji *</label>
+                                    <input type="date" id="input-tanggal" required class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-slate-50/50">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Petugas Uji Lapangan (MUT) *</label>
+                                    <select id="input-petugas" required class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-slate-50/50">
+                                        <option value="">Pilih Petugas MUT</option>
+                                        <option value="Ahmad Subagja, S.P. (Agronomis MUT)">Ahmad Subagja, S.P. (Agronomis MUT)</option>
+                                        <option value="Budi Santoso, S.P. (Agronomis MUT)">Budi Santoso, S.P. (Agronomis MUT)</option>
+                                        <option value="Candra Wijaya, S.P. (Agronomis MUT)">Candra Wijaya, S.P. (Agronomis MUT)</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Nama Petani / Kelompok Tani *</label>
+                                    <input type="text" id="input-petani" required placeholder="Contoh: Bpk. Sugeng / Poktan Tani Jaya" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-slate-50/50">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Kontak Petani (No. HP/WA) *</label>
+                                    <input type="tel" id="input-kontak" required placeholder="Contoh: 081234567890" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-slate-50/50">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Provinsi *</label>
+                                    <input type="text" id="input-provinsi" required placeholder="Contoh: Jawa Barat" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-slate-50/50">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Kabupaten/Kota *</label>
+                                    <input type="text" id="input-kabupaten" required placeholder="Contoh: Karawang" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-slate-50/50">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Kecamatan *</label>
+                                    <input type="text" id="input-kecamatan" required placeholder="Contoh: Telukjambe Timur" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-slate-50/50">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Desa/Kelurahan *</label>
+                                    <input type="text" id="input-desa" required placeholder="Contoh: Sukamakmur" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-slate-50/50">
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Komoditas Utama *</label>
+                                    <select id="input-komoditas" required class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-slate-50/50">
+                                        <option value="">Pilih Komoditas</option>
+                                        <option value="Padi Sawah">Padi Sawah</option>
+                                        <option value="Singkong">Singkong</option>
+                                        <option value="Jagung">Jagung</option>
+                                        <option value="Kedelai">Kedelai</option>
+                                        <option value="Bawang Merah">Bawang Merah</option>
+                                        <option value="Cabai">Cabai</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Koordinat GPS (Latitude, Longitude)</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" id="input-lat" placeholder="Lat (-6.2088)" class="w-1/2 rounded-xl border border-slate-300 px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary bg-slate-50/50">
+                                        <input type="text" id="input-lng" placeholder="Lng (106.8456)" class="w-1/2 rounded-xl border border-slate-300 px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary bg-slate-50/50">
+                                        <button type="button" onclick="getLocation()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-2 rounded-xl transition-colors flex items-center justify-center font-bold text-xs" title="Ambil Lokasi GPS">
+                                            <i class="ph ph-crosshair text-base"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mt-8 flex justify-end gap-3">
-                            <button type="button" onclick="resetForm()" class="px-5 py-2 border border-slate-300 rounded-md text-slate-700 bg-white hover:bg-slate-50 transition-colors">Batal / Reset</button>
-                            <button type="submit" id="btn-submit-form" class="px-5 py-2 bg-primary text-white rounded-md hover:bg-green-700 transition-colors shadow-sm flex items-center gap-2 font-medium">
-                                <i class="ph ph-floppy-disk"></i> Simpan Data Uji
+                        <!-- SECTION 2 -->
+                        <div>
+                            <div class="flex items-center gap-3 mb-5 pb-2 border-b border-slate-200">
+                                <div class="w-8 h-8 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-sm shadow-2xs">
+                                    2
+                                </div>
+                                <h3 class="text-base font-bold text-slate-800">Hasil Analisis Kimia Tanah</h3>
+                            </div>
+                            
+                            <div class="bg-slate-50/80 p-5 rounded-2xl border border-slate-200/80 space-y-5">
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-700 mb-1.5">pH Tanah *</label>
+                                        <input type="number" id="input-ph" step="0.1" min="1" max="14" required placeholder="Contoh: 6.2" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white">
+                                        <p class="text-[11px] text-slate-400 mt-1">Acuan Optimum: 6.0 - 7.0</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Kadar C-Organik (%) *</label>
+                                        <select id="input-corganik" required class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white">
+                                            <option value="">Pilih Kadar C-Organik</option>
+                                            <option value="Rendah (< 2.0%)">Rendah (&lt; 2.0%)</option>
+                                            <option value="Sedang (2.0 - 3.0%)">Sedang (2.0 - 3.0%)</option>
+                                            <option value="Tinggi (> 3.0%)">Tinggi (&gt; 3.0%)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Status N Total *</label>
+                                        <select id="input-n" required class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white">
+                                            <option value="">Pilih Status</option>
+                                            <option value="Rendah">Rendah</option>
+                                            <option value="Sedang">Sedang</option>
+                                            <option value="Tinggi">Tinggi</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Status P (Fosfor) *</label>
+                                        <select id="input-p" required class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white">
+                                            <option value="">Pilih Status</option>
+                                            <option value="Rendah">Rendah</option>
+                                            <option value="Sedang">Sedang</option>
+                                            <option value="Tinggi">Tinggi</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Status K (Kalium) *</label>
+                                        <select id="input-k" required class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white">
+                                            <option value="">Pilih Status</option>
+                                            <option value="Rendah">Rendah</option>
+                                            <option value="Sedang">Sedang</option>
+                                            <option value="Tinggi">Tinggi</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Catatan Field Lapangan</label>
+                                    <textarea id="input-catatan" rows="3" class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-white" placeholder="Kondisi cuaca, riwayat pemupukan, keluhan petani, dll..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 flex justify-end gap-3">
+                            <button type="button" onclick="resetForm()" class="px-5 py-2.5 border border-slate-300 rounded-xl text-slate-700 bg-white hover:bg-slate-50 transition-colors font-semibold text-xs">Reset Form</button>
+                            <button type="submit" id="btn-submit-form" class="px-6 py-2.5 bg-primary hover:bg-green-700 text-white rounded-xl transition-all shadow-md flex items-center gap-2 font-bold text-xs">
+                                <i class="ph ph-floppy-disk text-base"></i> Simpan Data Uji
                             </button>
                         </div>
                     </form>
@@ -435,19 +531,18 @@
 
             <!-- TAB 3: Riwayat Pengujian -->
             <div id="tab-riwayat" class="tab-content max-w-7xl mx-auto">
-                <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[calc(100vh-8rem)]">
+                <div class="bg-white rounded-2xl shadow-xs border border-slate-200 overflow-hidden flex flex-col h-[calc(100vh-9rem)]">
                     
-                    <!-- Table Header Controls -->
-                    <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between gap-4 items-center bg-slate-50">
+                    <div class="p-4 border-b border-slate-200 flex flex-col sm:flex-row justify-between gap-4 items-center bg-slate-50/50">
                         <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto flex-1">
                             <div class="relative w-full sm:w-72">
-                                <i class="ph ph-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                                <input type="text" id="search-history" placeholder="Cari nama, petugas, kontak, lokasi..." onkeyup="filterHistory()" class="pl-10 w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary text-sm">
+                                <i class="ph ph-magnifying-glass absolute left-3.5 top-1/2 transform -translate-y-1/2 text-slate-400 text-base"></i>
+                                <input type="text" id="search-history" placeholder="Cari nama, lokasi, ID..." onkeyup="filterHistory()" class="pl-10 w-full rounded-xl border border-slate-300 px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary bg-white">
                             </div>
-                            <select id="filter-kecamatan" onchange="filterHistory()" class="rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary text-sm bg-white">
+                            <select id="filter-kecamatan" onchange="filterHistory()" class="rounded-xl border border-slate-300 px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary bg-white">
                                 <option value="">Semua Kecamatan</option>
                             </select>
-                            <select id="filter-petugas" onchange="filterHistory()" class="rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary text-sm bg-white">
+                            <select id="filter-petugas" onchange="filterHistory()" class="rounded-xl border border-slate-300 px-3.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary bg-white">
                                 <option value="">Semua Petugas</option>
                                 <option value="Ahmad Subagja">Ahmad Subagja, S.P.</option>
                                 <option value="Budi Santoso">Budi Santoso, S.P.</option>
@@ -456,87 +551,83 @@
                         </div>
                         
                         <div class="flex gap-2 w-full sm:w-auto">
-                            <button onclick="exportData('csv')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-slate-300 bg-white text-slate-700 rounded-md text-sm hover:bg-slate-50 transition-colors">
-                                <i class="ph ph-download-simple"></i> Ekspor CSV
+                            <button onclick="exportData('csv')" class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-slate-300 bg-white text-slate-700 rounded-xl text-xs font-semibold hover:bg-slate-50 transition-colors">
+                                <i class="ph ph-download-simple text-base"></i> Ekspor CSV
                             </button>
                         </div>
                     </div>
 
-                    <!-- History Table -->
                     <div class="flex-1 overflow-auto">
                         <table class="w-full text-left border-collapse min-w-[950px]">
-                            <thead class="sticky top-0 bg-white z-10 shadow-sm">
-                                <tr class="text-xs uppercase text-slate-500 border-b border-slate-200">
-                                    <th class="px-4 py-3 font-semibold">Tgl / ID</th>
-                                    <th class="px-4 py-3 font-semibold">Petani & Kontak</th>
-                                    <th class="px-4 py-3 font-semibold">Petugas Lapangan</th>
-                                    <th class="px-4 py-3 font-semibold">Lokasi (Prov/Kab/Kec/Desa)</th>
-                                    <th class="px-4 py-3 font-semibold">Komoditas</th>
-                                    <th class="px-4 py-3 font-semibold">pH</th>
-                                    <th class="px-4 py-3 font-semibold">Kadar C-Organik</th>
-                                    <th class="px-4 py-3 font-semibold">N / P / K</th>
-                                    <th class="px-4 py-3 font-semibold text-center">Aksi</th>
+                            <thead class="sticky top-0 bg-slate-50 z-10 border-b border-slate-200">
+                                <tr class="text-[11px] uppercase tracking-wider font-extrabold text-slate-400">
+                                    <th class="px-4 py-3">Tgl / ID</th>
+                                    <th class="px-4 py-3">Petani & Kontak</th>
+                                    <th class="px-4 py-3">Petugas Lapangan</th>
+                                    <th class="px-4 py-3">Lokasi (Kab/Kec/Desa)</th>
+                                    <th class="px-4 py-3">Komoditas</th>
+                                    <th class="px-4 py-3">pH</th>
+                                    <th class="px-4 py-3">C-Organik</th>
+                                    <th class="px-4 py-3">N / P / K</th>
+                                    <th class="px-4 py-3 text-center">Cetak A4 / Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="history-table-body" class="text-sm divide-y divide-slate-100"></tbody>
                         </table>
                         
-                        <div id="empty-history-state" class="hidden flex flex-col items-center justify-center py-16 text-slate-500">
-                            <i class="ph ph-folder-open text-5xl text-slate-300 mb-3"></i>
-                            <p>Belum ada data riwayat pengujian.</p>
+                        <div id="empty-history-state" class="hidden flex flex-col items-center justify-center py-16 text-slate-400">
+                            <i class="ph ph-folder-open text-5xl text-slate-300 mb-2"></i>
+                            <p class="text-sm">Belum ada data riwayat pengujian.</p>
                         </div>
                     </div>
                     
-                    <div class="p-4 border-t border-slate-200 flex items-center justify-between bg-slate-50">
-                        <span class="text-sm text-slate-500" id="table-info">Menampilkan 0 data</span>
+                    <div class="p-3 border-t border-slate-200 flex items-center justify-between bg-slate-50 text-xs text-slate-500 font-medium">
+                        <span id="table-info">Menampilkan 0 data</span>
+                        <span class="text-[11px] bg-slate-200/80 px-2.5 py-0.5 rounded-full font-semibold">Dokumen PDF Terkalibrasi A4</span>
                     </div>
                 </div>
             </div>
 
             <!-- TAB 4: Rekap & Grafik per Kecamatan -->
             <div id="tab-kecamatan" class="tab-content max-w-7xl mx-auto space-y-6">
-                <!-- Filter Header Section -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+                <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
                             <h2 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                                <i class="ph ph-buildings text-primary"></i> Rekapitulasi & Analisis per Kecamatan
+                                <i class="ph ph-buildings text-primary text-2xl"></i> Rekapitulasi & Analisis Kecamatan
                             </h2>
-                            <p class="text-sm text-slate-500 mt-1">Pilih kecamatan untuk menampilkan grafik khusus status unsur hara (N, P, K), pH tanah, dan mengunduh laporan PDF per kecamatan.</p>
+                            <p class="text-xs text-slate-500 mt-1">Sintesis data agregat hara & pH tanah per kecamatan untuk laporan PDF ukuran A4.</p>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-                            <select id="select-active-kecamatan" onchange="onKecamatanFilterChange()" class="w-full sm:w-64 rounded-md border border-slate-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary text-sm font-semibold bg-slate-50">
-                                <!-- Options populated by JS -->
+                            <select id="select-active-kecamatan" onchange="onKecamatanFilterChange()" class="w-full sm:w-64 rounded-xl border border-slate-300 px-3.5 py-2.5 text-xs font-bold bg-slate-50 focus:outline-none focus:ring-2 focus:ring-primary">
+                                <!-- Populated dynamically -->
                             </select>
-                            <button onclick="downloadKecamatanReportPDF()" class="px-4 py-2 bg-piBlue hover:bg-blue-800 text-white rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2 shadow-sm">
-                                <i class="ph ph-file-pdf text-lg"></i> Download Laporan Kecamatan
+                            <button onclick="downloadKecamatanReportPDF()" class="px-4 py-2.5 bg-piBlue hover:bg-blue-800 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm">
+                                <i class="ph ph-file-pdf text-base"></i> Download Laporan Kecamatan (A4)
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Charts Section per Kecamatan -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Dynamic Nutrient Status Diagram -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-                        <div class="flex justify-between items-center mb-4">
+                    <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6">
+                        <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
                             <div>
-                                <h3 class="font-bold text-slate-800 text-base" id="chart-nutrient-title">Status Hara (N, P, K)</h3>
-                                <p class="text-xs text-slate-500">Persentase tingkat ketersediaan hara makro</p>
+                                <h3 class="font-bold text-slate-800 text-sm" id="chart-nutrient-title">Status Hara (N, P, K)</h3>
+                                <p class="text-[11px] text-slate-400">Distribusi persentase tingkat ketersediaan hara</p>
                             </div>
-                            <span class="text-xs px-2.5 py-1 bg-green-100 text-green-800 font-bold rounded-full" id="badge-kec-count">0 Sampel</span>
+                            <span class="text-[11px] px-3 py-1 bg-emerald-100 text-emerald-800 font-extrabold rounded-full" id="badge-kec-count">0 Sampel</span>
                         </div>
                         <div class="h-64 relative w-full">
                             <canvas id="kecamatanNutrientChart"></canvas>
                         </div>
                     </div>
 
-                    <!-- Dynamic pH Distribution Chart -->
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-                        <div class="flex justify-between items-center mb-4">
+                    <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6">
+                        <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-100">
                             <div>
-                                <h3 class="font-bold text-slate-800 text-base" id="chart-ph-title">Sebaran Kemasaman (pH) Tanah</h3>
-                                <p class="text-xs text-slate-500">Distribusi tingkat keasaman tanah lokasi uji</p>
+                                <h3 class="font-bold text-slate-800 text-sm" id="chart-ph-title">Sebaran Kemasaman (pH) Tanah</h3>
+                                <p class="text-[11px] text-slate-400">Distribusi keasaman tanah lokasi sampling</p>
                             </div>
                         </div>
                         <div class="h-64 relative w-full">
@@ -545,22 +636,21 @@
                     </div>
                 </div>
 
-                <!-- Kecamatan Cards & Table Detail -->
-                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-                    <h3 class="text-lg font-bold text-slate-800 mb-4">Daftar Titik Uji di Kecamatan: <span id="kecamatan-detail-title" class="text-primary">Semua Kecamatan</span></h3>
+                <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6">
+                    <h3 class="text-base font-bold text-slate-800 mb-4">Daftar Titik Uji di Kecamatan: <span id="kecamatan-detail-title" class="text-primary">Semua Kecamatan</span></h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="text-xs uppercase text-slate-500 border-b border-slate-200 bg-slate-50">
+                                <tr class="text-[11px] uppercase font-extrabold text-slate-400 border-b border-slate-200 bg-slate-50/50">
                                     <th class="px-3 py-2.5">ID & Tgl</th>
                                     <th class="px-3 py-2.5">Desa</th>
                                     <th class="px-3 py-2.5">Petani & No. Kontak</th>
                                     <th class="px-3 py-2.5">Petugas Uji</th>
                                     <th class="px-3 py-2.5">Komoditas</th>
                                     <th class="px-3 py-2.5">pH</th>
-                                    <th class="px-3 py-2.5">Kadar C-Organik</th>
+                                    <th class="px-3 py-2.5">C-Organik</th>
                                     <th class="px-3 py-2.5">Status N/P/K</th>
-                                    <th class="px-3 py-2.5 text-center">Aksi</th>
+                                    <th class="px-3 py-2.5 text-center">Cetak</th>
                                 </tr>
                             </thead>
                             <tbody id="kecamatan-detail-tbody" class="text-sm divide-y divide-slate-100"></tbody>
@@ -569,171 +659,183 @@
                 </div>
             </div>
 
-            <!-- TAB 5: Rekomendasi -->
-            <div id="tab-rekomendasi" class="tab-content max-w-7xl mx-auto">
-                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 mb-6">
-                    <h2 class="text-lg font-semibold text-slate-800 mb-4">Peta Sebaran Pengujian (Spasial)</h2>
-                    <div class="w-full h-64 bg-slate-200 rounded-lg flex items-center justify-center relative overflow-hidden">
-                        <div class="absolute inset-0 opacity-30" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%2316a34a\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
-                        <div class="text-center z-10 bg-white/90 p-4 rounded-lg shadow-sm backdrop-blur-sm">
-                            <i class="ph ph-map-trifold text-4xl text-primary mb-2"></i>
-                            <p class="text-slate-700 font-medium">Integrasi Map Spasial GIS</p>
-                            <p class="text-xs text-slate-500">Koordinat terintegrasi dengan peta sebaran tanah Pupuk Indonesia</p>
+            <!-- TAB 5: Rekomendasi & Produk Pupuk Indonesia -->
+            <div id="tab-rekomendasi" class="tab-content max-w-7xl mx-auto space-y-6">
+                <!-- GIS Map Card -->
+                <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6">
+                    <h2 class="text-base font-bold text-slate-800 mb-3 flex items-center gap-2">
+                        <i class="ph ph-map-trifold text-primary text-xl"></i> Peta Sebaran Pengujian Spasial (GIS)
+                    </h2>
+                    <div class="w-full h-56 bg-slate-100 rounded-xl flex items-center justify-center relative overflow-hidden border border-slate-200">
+                        <div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(#16a34a 1px, transparent 1px); background-size: 16px 16px;"></div>
+                        <div class="text-center z-10 bg-white/95 p-5 rounded-2xl shadow-sm border border-slate-200 max-w-sm backdrop-blur-md">
+                            <i class="ph ph-globe-hemisphere-east text-4xl text-primary mb-2"></i>
+                            <p class="text-slate-800 font-bold text-sm">Integrasi Pemetaan Spasial GIS</p>
+                            <p class="text-xs text-slate-500 mt-1">Titik sampling terhubung dengan sistem geo-referensi lahan Pupuk Indonesia.</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6">
-                    <h2 class="text-lg font-semibold text-slate-800 mb-4">Panduan Standar Dosis & Produk Pemupukan Resmi Pupuk Indonesia</h2>
-                    <p class="text-sm text-slate-600 mb-6">Rekomendasi pemupukan presisi berbasis status hara tanah dan kemasaman (pH) menggunakan produk-produk unggulan Pupuk Indonesia Group.</p>
+                <!-- Product Catalog & Guidance -->
+                <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6">
+                    <div class="mb-6 pb-4 border-b border-slate-100">
+                        <h2 class="text-lg font-bold text-slate-800">Panduan Dosis & Katalog Produk Pemupukan Pupuk Indonesia</h2>
+                        <p class="text-xs text-slate-500 mt-1">Dosis anjuran pemupukan berdasar uji ketersediaan hara tanah menggunakan produk unggulan Pupuk Indonesia Group.</p>
+                    </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <!-- N Status (Urea Nitrea) -->
-                        <div class="border border-slate-200 rounded-xl overflow-hidden flex flex-col bg-white shadow-sm hover:shadow-md transition-shadow">
-                            <div class="h-48 bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100">
-                                <img src="https://trikastain.github.io/Pelaporan-MUT/nitrea.jpeg" alt="Urea Nitrea" class="h-full object-contain" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/200x200/005baa/ffffff?text=Urea+Nitrea'">
+                        <!-- Product Card 1 -->
+                        <div class="border border-slate-200 rounded-2xl overflow-hidden flex flex-col bg-white shadow-2xs hover:shadow-md transition-all">
+                            <div class="h-44 bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100 relative">
+                                <span class="absolute top-3 left-3 bg-blue-100 text-blue-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Sumber Nitrogen</span>
+                                <img src="https://trikastain.github.io/Pelaporan-MUT/nitrea.jpeg" alt="Urea Nitrea" class="h-full object-contain" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/180x180/005baa/ffffff?text=Urea+Nitrea'">
                             </div>
-                            <div class="bg-blue-50 px-4 py-3 border-b border-slate-200">
-                                <h3 class="font-bold text-blue-900 flex items-center gap-2">Urea Nitrea (Sumber Nitrogen)</h3>
-                                <p class="text-xs text-blue-700 font-medium">PT Pupuk Kujang / Pupuk Indonesia</p>
+                            <div class="bg-blue-50/80 px-4 py-2.5 border-b border-blue-100">
+                                <h3 class="font-bold text-blue-950 text-sm">Urea Nitrea</h3>
+                                <p class="text-[11px] text-blue-700 font-medium">PT Pupuk Kujang / Pupuk Indonesia</p>
                             </div>
-                            <div class="p-4 space-y-3 text-sm flex-1">
-                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                    <span class="status-low px-2 py-1 rounded text-xs font-semibold">N Rendah</span>
-                                    <span class="font-semibold text-slate-800">250 - 300 kg/ha</span>
+                            <div class="p-4 space-y-2.5 text-xs flex-1">
+                                <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                                    <span class="status-low px-2 py-0.5 rounded-md text-[10px] font-bold">N Rendah</span>
+                                    <span class="font-bold text-slate-800">250 - 300 kg/ha</span>
                                 </div>
-                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                    <span class="status-medium px-2 py-1 rounded text-xs font-semibold">N Sedang</span>
-                                    <span class="font-semibold text-slate-800">200 - 250 kg/ha</span>
+                                <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                                    <span class="status-medium px-2 py-0.5 rounded-md text-[10px] font-bold">N Sedang</span>
+                                    <span class="font-bold text-slate-800">200 - 250 kg/ha</span>
                                 </div>
                                 <div class="flex justify-between items-center">
-                                    <span class="status-high px-2 py-1 rounded text-xs font-semibold">N Tinggi</span>
-                                    <span class="font-semibold text-slate-800">150 - 200 kg/ha</span>
+                                    <span class="status-high px-2 py-0.5 rounded-md text-[10px] font-bold">N Tinggi</span>
+                                    <span class="font-bold text-slate-800">150 - 200 kg/ha</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- P Status (Pupuk SP-36) -->
-                        <div class="border border-slate-200 rounded-xl overflow-hidden flex flex-col bg-white shadow-sm hover:shadow-md transition-shadow">
-                            <div class="h-48 bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100">
-                                <img src="https://trikastain.github.io/Pelaporan-MUT/SP-36-Subsidi.jpeg" alt="Pupuk SP-36" class="h-full object-contain" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/200x200/d97706/ffffff?text=Pupuk+SP-36'">
+                        <!-- Product Card 2 -->
+                        <div class="border border-slate-200 rounded-2xl overflow-hidden flex flex-col bg-white shadow-2xs hover:shadow-md transition-all">
+                            <div class="h-44 bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100 relative">
+                                <span class="absolute top-3 left-3 bg-amber-100 text-amber-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Sumber Fosfat</span>
+                                <img src="https://trikastain.github.io/Pelaporan-MUT/SP-36-Subsidi.jpeg" alt="Pupuk SP-36" class="h-full object-contain" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/180x180/d97706/ffffff?text=Pupuk+SP-36'">
                             </div>
-                            <div class="bg-amber-50 px-4 py-3 border-b border-slate-200">
-                                <h3 class="font-bold text-amber-900 flex items-center gap-2">Pupuk SP-36 (Sumber Fosfat)</h3>
-                                <p class="text-xs text-amber-700 font-medium">Pupuk Indonesia Group</p>
+                            <div class="bg-amber-50/80 px-4 py-2.5 border-b border-amber-100">
+                                <h3 class="font-bold text-amber-950 text-sm">Pupuk SP-36</h3>
+                                <p class="text-[11px] text-amber-700 font-medium">Pupuk Indonesia Group</p>
                             </div>
-                            <div class="p-4 space-y-3 text-sm flex-1">
-                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                    <span class="status-low px-2 py-1 rounded text-xs font-semibold">P Rendah</span>
-                                    <span class="font-semibold text-slate-800">100 - 150 kg/ha</span>
+                            <div class="p-4 space-y-2.5 text-xs flex-1">
+                                <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                                    <span class="status-low px-2 py-0.5 rounded-md text-[10px] font-bold">P Rendah</span>
+                                    <span class="font-bold text-slate-800">100 - 150 kg/ha</span>
                                 </div>
-                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                    <span class="status-medium px-2 py-1 rounded text-xs font-semibold">P Sedang</span>
-                                    <span class="font-semibold text-slate-800">50 - 100 kg/ha</span>
+                                <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                                    <span class="status-medium px-2 py-0.5 rounded-md text-[10px] font-bold">P Sedang</span>
+                                    <span class="font-bold text-slate-800">50 - 100 kg/ha</span>
                                 </div>
                                 <div class="flex justify-between items-center">
-                                    <span class="status-high px-2 py-1 rounded text-xs font-semibold">P Tinggi</span>
-                                    <span class="font-semibold text-slate-800">25 - 50 kg/ha</span>
+                                    <span class="status-high px-2 py-0.5 rounded-md text-[10px] font-bold">P Tinggi</span>
+                                    <span class="font-bold text-slate-800">25 - 50 kg/ha</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- K Status (Kalium Nitrokal) -->
-                        <div class="border border-slate-200 rounded-xl overflow-hidden flex flex-col bg-white shadow-sm hover:shadow-md transition-shadow">
-                            <div class="h-48 bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100">
-                                <img src="https://trikastain.github.io/Pelaporan-MUT/nitrokal.jpeg" alt="Nitrokal" class="h-full object-contain" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/200x200/be123c/ffffff?text=Nitrokal'">
+                        <!-- Product Card 3 -->
+                        <div class="border border-slate-200 rounded-2xl overflow-hidden flex flex-col bg-white shadow-2xs hover:shadow-md transition-all">
+                            <div class="h-44 bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100 relative">
+                                <span class="absolute top-3 left-3 bg-rose-100 text-rose-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Sumber Kalium</span>
+                                <img src="https://trikastain.github.io/Pelaporan-MUT/nitrokal.jpeg" alt="Nitrokal" class="h-full object-contain" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/180x180/be123c/ffffff?text=Nitrokal'">
                             </div>
-                            <div class="bg-rose-50 px-4 py-3 border-b border-slate-200">
-                                <h3 class="font-bold text-rose-900 flex items-center gap-2">Pupuk Kalium Nitrokal</h3>
-                                <p class="text-xs text-rose-700 font-medium">PT Pupuk Kujang / Pupuk Indonesia</p>
+                            <div class="bg-rose-50/80 px-4 py-2.5 border-b border-rose-100">
+                                <h3 class="font-bold text-rose-950 text-sm">Nitrokal (Kalium)</h3>
+                                <p class="text-[11px] text-rose-700 font-medium">PT Pupuk Kujang / Pupuk Indonesia</p>
                             </div>
-                            <div class="p-4 space-y-3 text-sm flex-1">
-                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                    <span class="status-low px-2 py-1 rounded text-xs font-semibold">K Rendah</span>
-                                    <span class="font-semibold text-slate-800">75 - 100 kg/ha</span>
+                            <div class="p-4 space-y-2.5 text-xs flex-1">
+                                <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                                    <span class="status-low px-2 py-0.5 rounded-md text-[10px] font-bold">K Rendah</span>
+                                    <span class="font-bold text-slate-800">75 - 100 kg/ha</span>
                                 </div>
-                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                    <span class="status-medium px-2 py-1 rounded text-xs font-semibold">K Sedang</span>
-                                    <span class="font-semibold text-slate-800">50 - 75 kg/ha</span>
+                                <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                                    <span class="status-medium px-2 py-0.5 rounded-md text-[10px] font-bold">K Sedang</span>
+                                    <span class="font-bold text-slate-800">50 - 75 kg/ha</span>
                                 </div>
                                 <div class="flex justify-between items-center">
-                                    <span class="status-high px-2 py-1 rounded text-xs font-semibold">K Tinggi</span>
-                                    <span class="font-semibold text-slate-800">&lt; 50 kg/ha</span>
+                                    <span class="status-high px-2 py-0.5 rounded-md text-[10px] font-bold">K Tinggi</span>
+                                    <span class="font-bold text-slate-800">&lt; 50 kg/ha</span>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- NPK Phonska Card -->
-                        <div class="border border-slate-200 rounded-xl overflow-hidden flex flex-col bg-white shadow-sm hover:shadow-md transition-shadow">
-                            <div class="h-48 bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100">
-                                <img src="https://trikastain.github.io/Pelaporan-MUT/phonska.png" alt="Pupuk Phonska NPK" class="h-full object-contain" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/200x200/0284c7/ffffff?text=Phonska'">
+                        <!-- Product Card 4 -->
+                        <div class="border border-slate-200 rounded-2xl overflow-hidden flex flex-col bg-white shadow-2xs hover:shadow-md transition-all">
+                            <div class="h-44 bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100 relative">
+                                <span class="absolute top-3 left-3 bg-sky-100 text-sky-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">NPK Majemuk</span>
+                                <img src="https://trikastain.github.io/Pelaporan-MUT/phonska.png" alt="Pupuk Phonska NPK" class="h-full object-contain" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/180x180/0284c7/ffffff?text=Phonska'">
                             </div>
-                            <div class="bg-sky-50 px-4 py-3 border-b border-slate-200">
-                                <h3 class="font-bold text-sky-900 flex items-center gap-2">Pupuk Phonska (NPK Majemuk)</h3>
-                                <p class="text-xs text-sky-700 font-medium">Pupuk Indonesia Group</p>
+                            <div class="bg-sky-50/80 px-4 py-2.5 border-b border-sky-100">
+                                <h3 class="font-bold text-sky-950 text-sm">Pupuk Phonska NPK</h3>
+                                <p class="text-[11px] text-sky-700 font-medium">Pupuk Indonesia Group</p>
                             </div>
-                            <div class="p-4 space-y-3 text-sm flex-1">
-                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                    <span class="status-low px-2 py-1 rounded text-xs font-semibold">Rekomendasi Utama</span>
-                                    <span class="font-semibold text-slate-800">300 - 350 kg/ha</span>
+                            <div class="p-4 space-y-2.5 text-xs flex-1">
+                                <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                                    <span class="status-low px-2 py-0.5 rounded-md text-[10px] font-bold">Rekomendasi Utama</span>
+                                    <span class="font-bold text-slate-800">300 - 350 kg/ha</span>
                                 </div>
-                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                    <span class="status-medium px-2 py-1 rounded text-xs font-semibold">Tanaman Pangan</span>
-                                    <span class="font-semibold text-slate-800">250 - 300 kg/ha</span>
+                                <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                                    <span class="status-medium px-2 py-0.5 rounded-md text-[10px] font-bold">Tanaman Pangan</span>
+                                    <span class="font-bold text-slate-800">250 - 300 kg/ha</span>
                                 </div>
                                 <div class="flex justify-between items-center">
-                                    <span class="status-high px-2 py-1 rounded text-xs font-semibold">Hortikultura</span>
-                                    <span class="font-semibold text-slate-800">350 - 500 kg/ha</span>
+                                    <span class="status-high px-2 py-0.5 rounded-md text-[10px] font-bold">Hortikultura</span>
+                                    <span class="font-bold text-slate-800">350 - 500 kg/ha</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- C-Organik Status (Petroganik) -->
-                        <div class="border border-slate-200 rounded-xl overflow-hidden flex flex-col bg-white shadow-sm hover:shadow-md transition-shadow">
-                            <div class="h-48 bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100">
-                                <img src="https://trikastain.github.io/Pelaporan-MUT/petroganik.png" alt="Petroganik" class="h-full object-contain" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/200x200/16a34a/ffffff?text=Petroganik'">
+                        <!-- Product Card 5 -->
+                        <div class="border border-slate-200 rounded-2xl overflow-hidden flex flex-col bg-white shadow-2xs hover:shadow-md transition-all">
+                            <div class="h-44 bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100 relative">
+                                <span class="absolute top-3 left-3 bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Pupuk Organik</span>
+                                <img src="https://trikastain.github.io/Pelaporan-MUT/petroganik.png" alt="Petroganik" class="h-full object-contain" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/180x180/16a34a/ffffff?text=Petroganik'">
                             </div>
-                            <div class="bg-green-50 px-4 py-3 border-b border-slate-200">
-                                <h3 class="font-bold text-green-900 flex items-center gap-2">Pupuk Organik Petroganik</h3>
-                                <p class="text-xs text-green-700 font-medium">Pupuk Indonesia Group</p>
+                            <div class="bg-emerald-50/80 px-4 py-2.5 border-b border-emerald-100">
+                                <h3 class="font-bold text-emerald-950 text-sm">Petroganik</h3>
+                                <p class="text-[11px] text-emerald-700 font-medium">Pupuk Indonesia Group</p>
                             </div>
-                            <div class="p-4 space-y-3 text-sm flex-1">
-                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                    <span class="status-low px-2 py-1 rounded text-xs font-semibold">C-Organik (&lt; 2.0%)</span>
-                                    <span class="font-semibold text-slate-800">2 - 3 Ton/ha</span>
+                            <div class="p-4 space-y-2.5 text-xs flex-1">
+                                <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                                    <span class="status-low px-2 py-0.5 rounded-md text-[10px] font-bold">C-Org (&lt; 2.0%)</span>
+                                    <span class="font-bold text-slate-800">2 - 3 Ton/ha</span>
                                 </div>
-                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                    <span class="status-medium px-2 py-1 rounded text-xs font-semibold">C-Organik (2.0 - 3.0%)</span>
-                                    <span class="font-semibold text-slate-800">1 - 2 Ton/ha</span>
+                                <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                                    <span class="status-medium px-2 py-0.5 rounded-md text-[10px] font-bold">C-Org (2.0-3.0%)</span>
+                                    <span class="font-bold text-slate-800">1 - 2 Ton/ha</span>
                                 </div>
                                 <div class="flex justify-between items-center">
-                                    <span class="status-high px-2 py-1 rounded text-xs font-semibold">C-Organik (&gt; 3.0%)</span>
-                                    <span class="font-semibold text-slate-800">500 kg/ha</span>
+                                    <span class="status-high px-2 py-0.5 rounded-md text-[10px] font-bold">C-Org (&gt; 3.0%)</span>
+                                    <span class="font-bold text-slate-800">500 kg/ha</span>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- pH Tanah (Kapur Pertanian Kebomas) -->
-                        <div class="border border-slate-200 rounded-xl overflow-hidden flex flex-col bg-white shadow-sm hover:shadow-md transition-shadow">
-                            <div class="h-48 bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100">
-                                <img src="https://trikastain.github.io/Pelaporan-MUT/kebomaskaptan.png" alt="Kapur Pertanian Kebomas" class="h-full object-contain" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/200x200/475569/ffffff?text=Kaptan'">
+                        <!-- Product Card 6 -->
+                        <div class="border border-slate-200 rounded-2xl overflow-hidden flex flex-col bg-white shadow-2xs hover:shadow-md transition-all">
+                            <div class="h-44 bg-slate-50 flex items-center justify-center p-4 border-b border-slate-100 relative">
+                                <span class="absolute top-3 left-3 bg-slate-200 text-slate-800 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Pembenah Tanah</span>
+                                <img src="https://trikastain.github.io/Pelaporan-MUT/kebomaskaptan.png" alt="Kapur Pertanian Kebomas" class="h-full object-contain" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/180x180/475569/ffffff?text=Kaptan'">
                             </div>
-                            <div class="bg-slate-100 px-4 py-3 border-b border-slate-200">
-                                <h3 class="font-bold text-slate-900 flex items-center gap-2">Kapur Pertanian Kebomas</h3>
-                                <p class="text-xs text-slate-600 font-medium">Pengondisi pH Tanah / Pembenah Tanah</p>
+                            <div class="bg-slate-100 px-4 py-2.5 border-b border-slate-200">
+                                <h3 class="font-bold text-slate-900 text-sm">Kapur Pertanian Kebomas</h3>
+                                <p class="text-[11px] text-slate-600 font-medium">Penetrallan pH Tanah Asam</p>
                             </div>
-                            <div class="p-4 space-y-3 text-sm flex-1">
-                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                    <span class="status-low px-2 py-1 rounded text-xs font-semibold">Sangat Asam (&lt; 5.5)</span>
-                                    <span class="font-semibold text-slate-800">1 - 2 Ton/ha</span>
+                            <div class="p-4 space-y-2.5 text-xs flex-1">
+                                <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                                    <span class="status-low px-2 py-0.5 rounded-md text-[10px] font-bold">pH Asam (&lt; 5.5)</span>
+                                    <span class="font-bold text-slate-800">1 - 2 Ton/ha</span>
                                 </div>
-                                <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-                                    <span class="status-medium px-2 py-1 rounded text-xs font-semibold">Agak Asam (5.5 - 6.5)</span>
-                                    <span class="font-semibold text-slate-800">500 kg/ha</span>
+                                <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                                    <span class="status-medium px-2 py-0.5 rounded-md text-[10px] font-bold">Agak Asam (5.5-6.5)</span>
+                                    <span class="font-bold text-slate-800">500 kg/ha</span>
                                 </div>
                                 <div class="flex justify-between items-center">
-                                    <span class="status-high px-2 py-1 rounded text-xs font-semibold">Netral (6.5 - 7.5)</span>
-                                    <span class="font-semibold text-slate-800">Tidak Perlu</span>
+                                    <span class="status-high px-2 py-0.5 rounded-md text-[10px] font-bold">Optimal (&gt; 6.5)</span>
+                                    <span class="font-bold text-slate-800">Tidak Perlu</span>
                                 </div>
                             </div>
                         </div>
@@ -745,54 +847,61 @@
         </div>
     </main>
 
-    <!-- Notification Toast -->
-    <div id="notification" class="fixed bottom-4 right-4 bg-slate-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-3">
+    <!-- NOTIFICATION TOAST -->
+    <div id="notification" class="fixed bottom-5 right-5 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl transform translate-y-24 opacity-0 transition-all duration-300 z-50 flex items-center gap-3 border border-slate-700">
         <i id="notif-icon" class="ph ph-info text-xl"></i>
-        <span id="notif-message">Pesan notifikasi</span>
+        <span id="notif-message" class="text-xs font-medium">Pesan Notifikasi</span>
     </div>
 
-    <!-- Delete Confirmation Modal -->
+    <!-- DELETE CONFIRMATION MODAL -->
     <div id="confirmModal" class="modal">
-        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 mx-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 mx-4 border border-slate-200">
             <div class="flex items-center gap-3 text-red-600 mb-3">
                 <i class="ph-fill ph-warning-circle text-3xl"></i>
-                <h3 class="text-lg font-bold text-slate-800">Konfirmasi Hapus</h3>
+                <h3 class="text-base font-bold text-slate-800">Konfirmasi Hapus Data</h3>
             </div>
-            <p class="text-sm text-slate-600 mb-6" id="confirm-modal-text">Apakah Anda yakin ingin menghapus data ini?</p>
-            <div class="flex justify-end gap-3">
-                <button onclick="closeConfirmModal()" class="px-4 py-2 border border-slate-300 rounded-md text-slate-700 bg-white hover:bg-slate-50 text-sm">Batal</button>
-                <button id="btn-confirm-delete" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium">Ya, Hapus Data</button>
+            <p class="text-xs text-slate-600 mb-6 leading-relaxed" id="confirm-modal-text">Apakah Anda yakin ingin menghapus data ini?</p>
+            <div class="flex justify-end gap-2.5">
+                <button onclick="closeConfirmModal()" class="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 bg-white hover:bg-slate-50 text-xs font-semibold">Batal</button>
+                <button id="btn-confirm-delete" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm">Ya, Hapus Data</button>
             </div>
         </div>
     </div>
 
-    <!-- Detail Individual Report Modal -->
+    <!-- DETAIL INDIVIDUAL REPORT MODAL (CALIBRATED FOR A4 PRINTING) -->
     <div id="reportModal" class="modal">
-        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col mx-4" id="report-container">
-            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50 rounded-t-xl" data-html2canvas-ignore="true">
-                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                    <i class="ph ph-file-text text-primary"></i> Laporan Rekomendasi Uji Tanah
-                </h3>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-700">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[92vh] flex flex-col mx-4 overflow-hidden border border-slate-200">
+            <!-- Modal Header (Ignored during PDF render) -->
+            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50" data-html2canvas-ignore="true">
+                <div class="flex items-center gap-2">
+                    <!-- Logo Pupuk Indonesia di Kiri Atas Modal Header -->
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Logo_Pupuk_Indonesia_%28Persero%29.png" alt="Pupuk Indonesia Logo" class="h-6 w-auto object-contain" crossorigin="anonymous" onerror="this.src='https://placehold.co/90x24/005baa/ffffff?text=Pupuk+Indonesia'">
+                    <span class="text-xs font-bold text-slate-700 border-l border-slate-300 pl-2">Pratinjau Dokumen Laporan A4</span>
+                </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-700 p-1">
                     <i class="ph ph-x text-xl"></i>
                 </button>
             </div>
             
-            <div class="p-6 overflow-y-auto flex-1" id="report-content">
-                <!-- Content generated dynamically via JS -->
+            <!-- Scrollable Content -->
+            <div class="p-4 sm:p-6 overflow-y-auto flex-1 bg-slate-100" id="report-content">
+                <!-- Content dynamically populated via JavaScript -->
             </div>
             
-            <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 rounded-b-xl" data-html2canvas-ignore="true">
-                <button onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-md text-slate-700 hover:bg-slate-100">Tutup</button>
-                <button onclick="downloadPDF()" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-green-700 shadow-sm flex items-center gap-2 font-medium">
-                    <i class="ph ph-download-simple"></i> Download PDF
-                </button>
+            <!-- Modal Footer (Ignored during PDF render) -->
+            <div class="px-6 py-3.5 border-t border-slate-200 bg-slate-50 flex justify-between items-center rounded-b-2xl" data-html2canvas-ignore="true">
+                <span class="text-[11px] text-slate-500 font-medium flex items-center gap-1">
+                    <i class="ph ph-check-circle text-primary text-sm"></i> Ukuran Kertas Terkalibrasi Standar A4
+                </span>
+                <div class="flex gap-2">
+                    <button onclick="closeModal()" class="px-4 py-2 border border-slate-300 rounded-xl text-slate-700 hover:bg-slate-100 text-xs font-semibold">Tutup</button>
+                    <button onclick="downloadPDF()" class="px-4 py-2 bg-primary text-white rounded-xl hover:bg-green-700 shadow-sm flex items-center gap-2 font-bold text-xs transition-all">
+                        <i class="ph ph-download-simple text-base"></i> Download PDF (Ukuran A4)
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-
-    <!-- Hidden Container for District PDF Export -->
-    <div id="district-pdf-export-container"></div>
 
     <script>
         let appState = {
@@ -800,6 +909,7 @@
             dataUji: [],
             editingId: null,
             pendingDeleteId: null,
+            currentReportItem: null,
             charts: {}
         };
 
@@ -807,22 +917,16 @@
             {
                 name: "Ahmad Subagja, S.P.",
                 nik: "91204821",
-                jabatan: "Staff Agronomis MUT",
-                komoditas: "Padi Sawah",
                 fullLabel: "Ahmad Subagja, S.P. (Agronomis MUT)"
             },
             {
                 name: "Budi Santoso, S.P.",
                 nik: "91204822",
-                jabatan: "Staff Agronomis MUT",
-                komoditas: "Singkong",
                 fullLabel: "Budi Santoso, S.P. (Agronomis MUT)"
             },
             {
                 name: "Candra Wijaya, S.P.",
                 nik: "91204823",
-                jabatan: "Staff Agronomis MUT",
-                komoditas: "Jagung",
                 fullLabel: "Candra Wijaya, S.P. (Agronomis MUT)"
             }
         ];
@@ -832,8 +936,7 @@
             'Cikampek', 'Rengasdengklok', 'Pangkalan', 'Purwasari', 'Jatisari',
             'Lemahabang', 'Tirtamulya', 'Banyusari', 'Cilebar', 'Tempuran',
             'Tirtajaya', 'Batujaya', 'Pakisjaya', 'Cibuaya', 'Pedes',
-            'Krawang Wetan', 'Cisampeta', 'Tegalwaru', 'Ciampel', 'Kutawaluya',
-            'Jayakerta', 'Majalaya', 'Bojongmerta', 'Walahar'
+            'Krawang Wetan', 'Ciampel', 'Kutawaluya', 'Jayakerta', 'Majalaya'
         ];
 
         const generateMockData = () => {
@@ -841,6 +944,7 @@
             const listStatus = ['Rendah', 'Sedang', 'Tinggi'];
             const listNames = ['Bpk. Sugeng', 'Ibu Karsih', 'Bpk. Supandi', 'Bpk. Dadi Mulyadi', 'Kelompok Tani Jaya', 'Bpk. Endang', 'Bpk. Rasim', 'Ibu Tati', 'Bpk. Ace Suhendar', 'Bpk. Rustam'];
             const listDesa = ['Sukamakmur', 'Walahar', 'MargaKaya', 'Anggadita', 'Cibalongsari', 'Tanjungpura'];
+            const listKomoditas = ['Padi Sawah', 'Jagung', 'Singkong', 'Kedelai', 'Bawang Merah', 'Cabai'];
 
             let generated = [];
             let counter = 1;
@@ -850,7 +954,7 @@
                     const idNum = counter.toString().padStart(3, '0');
                     const randPetani = listNames[(counter + i) % listNames.length];
                     const randOfficer = OFFICERS_LIST[(counter + kecIdx) % OFFICERS_LIST.length];
-                    const randKomoditas = randOfficer.komoditas; 
+                    const randKomoditas = listKomoditas[(counter + i) % listKomoditas.length];
                     
                     const randPh = parseFloat((4.8 + ((counter * 7) % 28) / 10).toFixed(1));
                     const randCOrg = listCOrganik[(counter + i) % listCOrganik.length];
@@ -894,7 +998,7 @@
             document.getElementById('current-date').textContent = new Date().toLocaleDateString('id-ID', options);
             document.getElementById('input-tanggal').valueAsDate = new Date();
 
-            const savedData = localStorage.getItem('mutDataFullV6');
+            const savedData = localStorage.getItem('mutDataFullV7');
             if (savedData) {
                 appState.dataUji = JSON.parse(savedData);
             } else {
@@ -910,7 +1014,7 @@
         });
 
         function saveData() {
-            localStorage.setItem('mutDataFullV6', JSON.stringify(appState.dataUji));
+            localStorage.setItem('mutDataFullV7', JSON.stringify(appState.dataUji));
         }
 
         function toggleSidebar() {
@@ -934,21 +1038,32 @@
             document.getElementById(`tab-${tabId}`).classList.add('active');
 
             document.querySelectorAll('.nav-btn').forEach(el => {
-                el.classList.remove('bg-green-50', 'text-primary', 'font-medium');
-                el.classList.add('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
+                el.classList.remove('bg-green-50', 'text-primary', 'font-semibold', 'shadow-xs');
+                el.classList.add('text-slate-600', 'hover:bg-slate-100');
+                const iconBox = el.querySelector('div');
+                if(iconBox) {
+                    iconBox.classList.remove('bg-green-100', 'text-primary');
+                    iconBox.classList.add('bg-slate-100', 'text-slate-500');
+                }
             });
+            
             const activeNav = document.getElementById(`nav-${tabId}`);
             if(activeNav) {
-                activeNav.classList.remove('text-slate-600', 'hover:bg-slate-50', 'hover:text-slate-900');
-                activeNav.classList.add('bg-green-50', 'text-primary', 'font-medium');
+                activeNav.classList.remove('text-slate-600', 'hover:bg-slate-100');
+                activeNav.classList.add('bg-green-50', 'text-primary', 'font-semibold', 'shadow-xs');
+                const iconBox = activeNav.querySelector('div');
+                if(iconBox) {
+                    iconBox.classList.remove('bg-slate-100', 'text-slate-500');
+                    iconBox.classList.add('bg-green-100', 'text-primary');
+                }
             }
 
             const titles = {
                 'dashboard': 'Dashboard Utama',
-                'input-data': appState.editingId ? 'Edit Data Hasil Uji' : 'Input Data Hasil Uji',
-                'riwayat': 'Riwayat Pengujian',
+                'input-data': appState.editingId ? 'Edit Data Hasil Uji' : 'Input Data Hasil Uji Tanah',
+                'riwayat': 'Riwayat Pengujian Lahan',
                 'kecamatan': 'Rekapitulasi per Kecamatan',
-                'rekomendasi': 'Peta & Rekomendasi Pemupukan'
+                'rekomendasi': 'Peta & Katalog Rekomendasi'
             };
             document.getElementById('page-title').textContent = titles[tabId];
 
@@ -964,8 +1079,8 @@
             document.getElementById('ujiForm').reset();
             document.getElementById('input-tanggal').valueAsDate = new Date();
             document.getElementById('edit-badge').classList.add('hidden');
-            document.getElementById('form-header-title').innerHTML = `<i class="ph ph-note-pencil text-xl"></i> Form Pelaporan Hasil Uji Tanah`;
-            document.getElementById('btn-submit-form').innerHTML = `<i class="ph ph-floppy-disk"></i> Simpan Data Uji`;
+            document.getElementById('form-header-title').innerHTML = `<i class="ph ph-note-pencil text-xl text-primary"></i> Form Pelaporan Hasil Uji Tanah`;
+            document.getElementById('btn-submit-form').innerHTML = `<i class="ph ph-floppy-disk text-base"></i> Simpan Data Uji`;
         }
 
         function editData(id) {
@@ -993,8 +1108,8 @@
             document.getElementById('input-catatan').value = item.catatan || '';
 
             document.getElementById('edit-badge').classList.remove('hidden');
-            document.getElementById('form-header-title').innerHTML = `<i class="ph ph-pencil-line text-xl"></i> Edit Data Uji (${item.id})`;
-            document.getElementById('btn-submit-form').innerHTML = `<i class="ph ph-check-circle"></i> Perbarui Data`;
+            document.getElementById('form-header-title').innerHTML = `<i class="ph ph-pencil-line text-xl text-amber-400"></i> Edit Data Uji (${item.id})`;
+            document.getElementById('btn-submit-form').innerHTML = `<i class="ph ph-check-circle text-base"></i> Perbarui Data`;
 
             switchTab('input-data');
             showNotification(`Mengedit data ${item.id}`, 'info');
@@ -1050,9 +1165,9 @@
                 navigator.geolocation.getCurrentPosition((position) => {
                     document.getElementById('input-lat').value = position.coords.latitude.toFixed(6);
                     document.getElementById('input-lng').value = position.coords.longitude.toFixed(6);
-                    showNotification('Lokasi berhasil diambil', 'success');
+                    showNotification('Lokasi koordinat berhasil diambil', 'success');
                 }, () => {
-                    showNotification('Gagal mengambil lokasi', 'error');
+                    showNotification('Gagal mengambil posisi GPS', 'error');
                 });
             }
         }
@@ -1081,27 +1196,29 @@
             } else {
                 emptyState.classList.add('hidden');
                 tbody.innerHTML = data.slice(0, 5).map(item => `
-                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                        <td class="py-3 pr-2 text-slate-500">${item.tgl}</td>
-                        <td class="py-3 pr-2">
-                            <p class="font-medium text-slate-800">${item.petani}</p>
-                            <p class="text-xs text-slate-500">${item.kontak}</p>
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-3 text-slate-500 font-mono text-xs">${item.tgl}</td>
+                        <td class="py-3 px-3">
+                            <p class="font-bold text-slate-800 leading-tight">${item.petani}</p>
+                            <p class="text-[11px] text-slate-400 font-mono">${item.kontak}</p>
                         </td>
-                        <td class="py-3 pr-2">
-                            <p class="text-slate-800">${item.kec}</p>
-                            <p class="text-xs text-slate-500">${item.desa}</p>
+                        <td class="py-3 px-3">
+                            <p class="text-slate-800 font-medium">${item.kec}</p>
+                            <p class="text-[11px] text-slate-400">${item.desa}</p>
                         </td>
-                        <td class="py-3 pr-2 text-xs truncate max-w-[150px]" title="${item.petugas}">${item.petugas.split(' (')[0]}</td>
-                        <td class="py-3 pr-2 font-medium ${item.ph < 5.5 ? 'text-red-600' : 'text-green-600'}">${item.ph}</td>
-                        <td class="py-3 pr-2 text-xs font-semibold text-slate-700">${item.corganik}</td>
-                        <td class="py-3 pr-2">
-                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">N: ${item.n[0]}</span>
-                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">P: ${item.p[0]}</span>
-                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">K: ${item.k[0]}</span>
+                        <td class="py-3 px-3 text-xs text-slate-600 truncate max-w-[140px]" title="${item.petugas}">${item.petugas.split(' (')[0]}</td>
+                        <td class="py-3 px-3 font-extrabold ${item.ph < 5.5 ? 'text-red-600' : 'text-emerald-600'}">${item.ph}</td>
+                        <td class="py-3 px-3 text-xs font-semibold text-slate-700">${item.corganik}</td>
+                        <td class="py-3 px-3">
+                            <div class="flex gap-1">
+                                <span class="text-[10px] px-1.5 py-0.5 rounded font-bold bg-slate-100 text-slate-700">N:${item.n[0]}</span>
+                                <span class="text-[10px] px-1.5 py-0.5 rounded font-bold bg-slate-100 text-slate-700">P:${item.p[0]}</span>
+                                <span class="text-[10px] px-1.5 py-0.5 rounded font-bold bg-slate-100 text-slate-700">K:${item.k[0]}</span>
+                            </div>
                         </td>
-                        <td class="py-3">
-                            <button onclick="viewReport('${item.id}')" class="text-primary hover:text-green-700 bg-green-50 p-1.5 rounded" title="Lihat Rekomendasi">
-                                <i class="ph ph-file-text text-lg"></i>
+                        <td class="py-3 px-3 text-center">
+                            <button onclick="viewReport('${item.id}')" class="text-piBlue hover:text-blue-800 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200 font-bold text-xs inline-flex items-center gap-1 shadow-2xs" title="Buka Laporan A4">
+                                <i class="ph ph-file-text text-sm"></i> A4 PDF
                             </button>
                         </td>
                     </tr>
@@ -1136,14 +1253,14 @@
             appState.charts.kecNutrient = new Chart(ctxKecNutrient, {
                 type: 'bar',
                 data: { labels: [], datasets: [] },
-                options: { ...commonOptions, animation: false, scales: { y: { beginAtZero: true, max: 100 } } }
+                options: { ...commonOptions, scales: { y: { beginAtZero: true, max: 100 } } }
             });
 
             const ctxKecPh = document.getElementById('kecamatanPhChart').getContext('2d');
             appState.charts.kecPh = new Chart(ctxKecPh, {
                 type: 'pie',
                 data: { labels: [], datasets: [] },
-                options: { ...commonOptions, animation: false }
+                options: commonOptions
             });
         }
 
@@ -1162,10 +1279,10 @@
             appState.charts.ph.data = {
                 labels: Object.keys(phGroups),
                 datasets: [{
-                    label: 'Jumlah Lokasi',
+                    label: 'Jumlah Sampel',
                     data: Object.values(phGroups),
                     backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#3b82f6'],
-                    borderRadius: 4
+                    borderRadius: 6
                 }]
             };
             appState.charts.ph.update();
@@ -1181,7 +1298,7 @@
                 labels: ['N Rendah', 'P Rendah', 'K Rendah'],
                 datasets: [{
                     data: Object.values(defCount),
-                    backgroundColor: ['#3b82f6', '#f59e0b', '#f43f5e']
+                    backgroundColor: ['#005baa', '#f59e0b', '#ef4444']
                 }]
             };
             appState.charts.npk.update();
@@ -1192,7 +1309,7 @@
             const emptyState = document.getElementById('empty-history-state');
             const info = document.getElementById('table-info');
             
-            info.textContent = `Menampilkan ${data.length} data`;
+            info.textContent = `Menampilkan ${data.length} data pengujian`;
 
             if (data.length === 0) {
                 tbody.innerHTML = '';
@@ -1204,37 +1321,39 @@
             tbody.innerHTML = data.map(item => `
                 <tr class="hover:bg-slate-50 transition-colors group">
                     <td class="px-4 py-3">
-                        <p class="font-medium text-slate-800">${item.tgl}</p>
-                        <p class="text-xs text-slate-500 font-mono">${item.id}</p>
+                        <p class="font-bold text-slate-800 leading-tight">${item.tgl}</p>
+                        <p class="text-[11px] text-slate-400 font-mono">${item.id}</p>
                     </td>
                     <td class="px-4 py-3">
-                        <p class="font-medium text-slate-800">${item.petani}</p>
-                        <p class="text-xs text-slate-500 flex items-center gap-1"><i class="ph ph-phone"></i> ${item.kontak}</p>
+                        <p class="font-bold text-slate-800">${item.petani}</p>
+                        <p class="text-[11px] text-slate-400 flex items-center gap-1 font-mono"><i class="ph ph-phone"></i> ${item.kontak}</p>
                     </td>
-                    <td class="px-4 py-3 text-sm text-slate-700">
+                    <td class="px-4 py-3 text-xs text-slate-700">
                         ${item.petugas.split(' (')[0]}
                     </td>
                     <td class="px-4 py-3">
-                        <p class="text-slate-800 text-sm">${item.desa}, Kec. ${item.kec}</p>
-                        <p class="text-xs text-slate-500">${item.kab}</p>
+                        <p class="text-slate-800 font-medium text-xs">${item.desa}, Kec. ${item.kec}</p>
+                        <p class="text-[11px] text-slate-400">${item.kab}</p>
                     </td>
-                    <td class="px-4 py-3 text-sm">
-                        <span class="bg-slate-100 text-slate-700 px-2 py-1 rounded font-medium">${item.komoditas}</span>
+                    <td class="px-4 py-3 text-xs">
+                        <span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md font-bold">${item.komoditas}</span>
                     </td>
-                    <td class="px-4 py-3 font-bold ${item.ph < 5.5 ? 'text-red-600' : 'text-green-600'}">${item.ph}</td>
-                    <td class="px-4 py-3 text-xs text-slate-700 font-medium">${item.corganik}</td>
+                    <td class="px-4 py-3 font-extrabold ${item.ph < 5.5 ? 'text-red-600' : 'text-emerald-600'}">${item.ph}</td>
+                    <td class="px-4 py-3 text-xs font-semibold text-slate-700">${item.corganik}</td>
                     <td class="px-4 py-3 text-xs">
                         <div class="flex flex-col gap-1">
-                            <span class="${getStatusColor(item.n)} px-1.5 py-0.5 rounded text-center">N: ${item.n}</span>
-                            <span class="${getStatusColor(item.p)} px-1.5 py-0.5 rounded text-center">P: ${item.p}</span>
-                            <span class="${getStatusColor(item.k)} px-1.5 py-0.5 rounded text-center">K: ${item.k}</span>
+                            <span class="${getStatusColor(item.n)} px-1.5 py-0.5 rounded text-center text-[10px] font-bold">N: ${item.n}</span>
+                            <span class="${getStatusColor(item.p)} px-1.5 py-0.5 rounded text-center text-[10px] font-bold">P: ${item.p}</span>
+                            <span class="${getStatusColor(item.k)} px-1.5 py-0.5 rounded text-center text-[10px] font-bold">K: ${item.k}</span>
                         </div>
                     </td>
                     <td class="px-4 py-3">
-                        <div class="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onclick="viewReport('${item.id}')" class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded" title="Lihat Rekomendasi"><i class="ph ph-file-text text-lg"></i></button>
-                            <button onclick="editData('${item.id}')" class="p-1.5 bg-amber-50 text-amber-600 hover:bg-amber-100 rounded" title="Edit Data"><i class="ph ph-pencil-simple text-lg"></i></button>
-                            <button onclick="confirmDelete('${item.id}')" class="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded" title="Hapus Data"><i class="ph ph-trash text-lg"></i></button>
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button onclick="viewReport('${item.id}')" class="px-2.5 py-1.5 bg-blue-50 text-piBlue hover:bg-blue-100 rounded-lg border border-blue-200 text-xs font-bold transition-all flex items-center gap-1" title="Lihat Rekomendasi A4">
+                                <i class="ph ph-file-text text-sm"></i> Cetak A4
+                            </button>
+                            <button onclick="editData('${item.id}')" class="p-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-lg border border-amber-200" title="Edit Data"><i class="ph ph-pencil-simple text-sm"></i></button>
+                            <button onclick="confirmDelete('${item.id}')" class="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg border border-red-200" title="Hapus Data"><i class="ph ph-trash text-sm"></i></button>
                         </div>
                     </td>
                 </tr>
@@ -1242,9 +1361,9 @@
         }
 
         function getStatusColor(status) {
-            if(status === 'Rendah') return 'bg-red-50 text-red-700';
-            if(status === 'Sedang') return 'bg-yellow-50 text-yellow-700';
-            return 'bg-green-50 text-green-700';
+            if(status === 'Rendah') return 'bg-red-50 text-red-700 border border-red-200';
+            if(status === 'Sedang') return 'bg-amber-50 text-amber-700 border border-amber-200';
+            return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
         }
 
         function filterHistory() {
@@ -1283,20 +1402,20 @@
 
             const tbody = document.getElementById('kecamatan-detail-tbody');
             if(data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-4 text-slate-500">Tidak ada data untuk area ini.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center py-6 text-slate-400 text-xs">Tidak ada data untuk wilayah kecamatan ini.</td></tr>`;
             } else {
                 tbody.innerHTML = data.map(item => `
                     <tr class="hover:bg-slate-50">
-                        <td class="px-3 py-2 text-xs"><span class="font-bold block">${item.id}</span>${item.tgl}</td>
-                        <td class="px-3 py-2 text-sm">${item.desa}</td>
-                        <td class="px-3 py-2 text-xs"><span class="block text-sm font-medium">${item.petani}</span>${item.kontak}</td>
-                        <td class="px-3 py-2 text-xs truncate max-w-[120px]" title="${item.petugas}">${item.petugas.split(' (')[0]}</td>
-                        <td class="px-3 py-2 text-xs">${item.komoditas}</td>
-                        <td class="px-3 py-2 text-sm font-bold ${item.ph < 5.5 ? 'text-red-600' : 'text-green-600'}">${item.ph}</td>
-                        <td class="px-3 py-2 text-xs text-slate-700">${item.corganik}</td>
-                        <td class="px-3 py-2 text-xs">N:${item.n[0]} P:${item.p[0]} K:${item.k[0]}</td>
-                        <td class="px-3 py-2 text-center">
-                            <button onclick="viewReport('${item.id}')" class="text-primary hover:underline text-xs">Lihat</button>
+                        <td class="px-3 py-2.5 text-xs"><span class="font-bold block text-slate-800">${item.id}</span><span class="text-[10px] text-slate-400">${item.tgl}</span></td>
+                        <td class="px-3 py-2.5 text-xs font-semibold text-slate-800">${item.desa}</td>
+                        <td class="px-3 py-2.5 text-xs"><span class="block font-bold text-slate-800">${item.petani}</span><span class="text-[10px] text-slate-400 font-mono">${item.kontak}</span></td>
+                        <td class="px-3 py-2.5 text-xs text-slate-600 truncate max-w-[120px]" title="${item.petugas}">${item.petugas.split(' (')[0]}</td>
+                        <td class="px-3 py-2.5 text-xs"><span class="bg-slate-100 font-bold text-slate-700 px-2 py-0.5 rounded">${item.komoditas}</span></td>
+                        <td class="px-3 py-2.5 text-xs font-extrabold ${item.ph < 5.5 ? 'text-red-600' : 'text-emerald-600'}">${item.ph}</td>
+                        <td class="px-3 py-2.5 text-xs text-slate-700 font-medium">${item.corganik}</td>
+                        <td class="px-3 py-2.5 text-xs font-bold">N:${item.n[0]} P:${item.p[0]} K:${item.k[0]}</td>
+                        <td class="px-3 py-2.5 text-center">
+                            <button onclick="viewReport('${item.id}')" class="text-piBlue hover:underline text-xs font-bold">Lihat A4</button>
                         </td>
                     </tr>
                 `).join('');
@@ -1376,57 +1495,40 @@
             const icon = document.getElementById('notif-icon');
             const text = document.getElementById('notif-message');
 
-            notif.classList.remove('bg-slate-800', 'bg-green-600', 'bg-red-600');
+            notif.classList.remove('bg-slate-900', 'bg-emerald-600', 'bg-red-600');
             
             if(type === 'success') {
-                notif.classList.add('bg-green-600');
+                notif.classList.add('bg-emerald-600');
                 icon.className = 'ph-fill ph-check-circle text-xl';
             } else if (type === 'error') {
                 notif.classList.add('bg-red-600');
                 icon.className = 'ph-fill ph-warning-circle text-xl';
             } else {
-                notif.classList.add('bg-slate-800');
+                notif.classList.add('bg-slate-900');
                 icon.className = 'ph ph-info text-xl';
             }
 
             text.textContent = message;
             
-            notif.classList.remove('translate-y-20', 'opacity-0');
+            notif.classList.remove('translate-y-24', 'opacity-0');
             notif.classList.add('translate-y-0', 'opacity-100');
 
             setTimeout(() => {
                 notif.classList.remove('translate-y-0', 'opacity-100');
-                notif.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
+                notif.classList.add('translate-y-24', 'opacity-0');
+            }, 3200);
         }
 
         function closeModal() {
             document.getElementById('reportModal').classList.remove('show');
         }
 
-        function getNPKSuggestion(item) {
-            let dose = "300 - 350 kg/ha";
-            let brand = "Pupuk Phonska 15-15-15 / Phonska Plus";
-            
-            if (item.komoditas === "Padi Sawah") {
-                if (item.n === 'Rendah' || item.p === 'Rendah' || item.k === 'Rendah') {
-                    dose = "300 - 350 kg/ha";
-                } else {
-                    dose = "250 - 300 kg/ha";
-                }
-            } else if (item.komoditas === "Cabai" || item.komoditas === "Bawang Merah") {
-                dose = "350 - 500 kg/ha";
-                brand = "Pupuk Phonska Plus / NPK Spesifik Hortikultura";
-            } else if (item.komoditas === "Jagung" || item.komoditas === "Singkong") {
-                dose = "300 - 400 kg/ha";
-            }
-
-            return { dose, brand };
-        }
-
+        /* POPULATE INDIVIDUAL REPORT MODAL (STRICTLY CALIBRATED FOR A4 PRINT FORMAT) */
         function viewReport(id) {
             const item = appState.dataUji.find(d => d.id === id);
             if(!item) return;
+
+            appState.currentReportItem = item;
 
             const getRec = (nutrient, val) => {
                 if(nutrient === 'N') return val==='Rendah' ? '250 - 300 kg/ha <b>(Urea Nitrea)</b>' : val==='Sedang' ? '200 - 250 kg/ha <b>(Urea Nitrea)</b>' : '150 - 200 kg/ha <b>(Urea Nitrea)</b>';
@@ -1435,110 +1537,175 @@
                 if(nutrient === 'C') return val.includes('Rendah') ? '2 - 3 Ton/ha <b>(Pupuk Organik Petroganik)</b>' : val.includes('Sedang') ? '1 - 2 Ton/ha <b>(Pupuk Organik Petroganik)</b>' : '500 kg/ha <b>(Pupuk Organik Petroganik)</b>';
             };
 
-            const npkInfo = getNPKSuggestion(item);
+            let npkDosis = '300 - 350 kg/ha';
+            if (['Padi Sawah', 'Jagung', 'Kedelai', 'Singkong'].includes(item.komoditas)) {
+                npkDosis = '250 - 300 kg/ha';
+            } else if (['Bawang Merah', 'Cabai'].includes(item.komoditas)) {
+                npkDosis = '350 - 500 kg/ha';
+            }
 
+            // HTML layout specifically structured for standard A4 paper dimensions (width 190mm)
             const content = `
-                <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
-                    <div class="flex items-center gap-4">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Logo_Pupuk_Indonesia_%28Persero%29.png" alt="Pupuk Indonesia Logo" class="h-10 w-auto object-contain" crossorigin="anonymous" onerror="this.src='https://placehold.co/120x40/005baa/ffffff?text=Pupuk+Indonesia'">
+                <div id="report-print-area" class="a4-page p-6 sm:p-8 rounded-xl shadow-sm text-slate-800 font-sans border border-slate-200 relative overflow-hidden">
+                    
+                    <!-- Decorative Background Gradient Bar Top -->
+                    <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-piBlue via-primary to-amber-400"></div>
+
+                    <!-- HEADER DENGAN LOGO PUPUK INDONESIA DI KIRI ATAS MANDATORI -->
+                    <div class="flex justify-between items-center border-b-2 border-primary pb-4 mb-5 relative pt-1">
+                        <div class="flex items-center gap-3">
+                            <!-- Logo Pupuk Indonesia di Kiri Atas -->
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Logo_Pupuk_Indonesia_%28Persero%29.png" alt="Pupuk Indonesia Logo" class="h-11 w-auto object-contain" crossorigin="anonymous" onerror="this.src='https://placehold.co/150x45/005baa/ffffff?text=Pupuk+Indonesia'">
+                            <div class="border-l-2 border-slate-300 pl-3">
+                                <h1 class="text-sm font-extrabold text-piBlue uppercase tracking-wider leading-none">PT PUPUK INDONESIA (PERSERO)</h1>
+                                <p class="text-[11px] font-bold text-primary mt-1">Sistem Mobil Uji Tanah (MUT)</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="inline-block bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider border border-emerald-300">
+                                DOKUMEN RESMI A4
+                            </span>
+                            <p class="text-[11px] text-slate-500 font-mono mt-1">ID Uji: <strong class="text-slate-800">${item.id}</strong></p>
+                        </div>
+                    </div>
+
+                    <!-- JUDUL DOKUMEN LAPORAN -->
+                    <div class="text-center bg-slate-50 py-2.5 rounded-xl border border-slate-200 mb-5">
+                        <h2 class="text-base font-extrabold text-slate-900 uppercase tracking-wide">LAPORAN HASIL UJI TANAH & REKOMENDASI PEMUPUKAN</h2>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Program Layanan Pemupukan Presisi Berbasis Uji Lapangan MUT</p>
+                    </div>
+                    
+                    <!-- INFORMATION GRID CARDS -->
+                    <div class="grid grid-cols-2 gap-4 text-xs mb-5">
+                        <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-200">
+                            <h4 class="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-1 flex items-center gap-1.5">
+                                <i class="ph ph-user text-primary text-sm"></i> Informasi Pemilik Lahan
+                            </h4>
+                            <table class="w-full text-slate-700 space-y-1">
+                                <tr><td class="py-0.5 text-slate-500 w-1/3">Nama Petani</td><td class="font-bold">: ${item.petani}</td></tr>
+                                <tr><td class="py-0.5 text-slate-500">No. Kontak</td><td>: ${item.kontak}</td></tr>
+                                <tr><td class="py-0.5 text-slate-500">Komoditas</td><td class="font-bold text-primary">: ${item.komoditas}</td></tr>
+                                <tr><td class="py-0.5 text-slate-500">Lokasi</td><td>: ${item.desa}, Kec. ${item.kec}</td></tr>
+                            </table>
+                        </div>
+
+                        <div class="bg-slate-50/80 p-3.5 rounded-xl border border-slate-200">
+                            <h4 class="font-bold text-slate-800 mb-2 border-b border-slate-200 pb-1 flex items-center gap-1.5">
+                                <i class="ph ph-clipboard-text text-piBlue text-sm"></i> Detail Pengujian MUT
+                            </h4>
+                            <table class="w-full text-slate-700 space-y-1">
+                                <tr><td class="py-0.5 text-slate-500 w-1/3">Tanggal Uji</td><td class="font-medium">: ${item.tgl}</td></tr>
+                                <tr><td class="py-0.5 text-slate-500">Petugas MUT</td><td>: ${item.petugas.split(' (')[0]}</td></tr>
+                                <tr><td class="py-0.5 text-slate-500">Kabupaten/Prov</td><td>: ${item.kab}, ${item.prov}</td></tr>
+                                <tr><td class="py-0.5 text-slate-500">Koordinat GPS</td><td class="font-mono text-[10px]">: ${item.lat}, ${item.lng}</td></tr>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ANALISIS KIMIA TANAH BOXES -->
+                    <div class="mb-5">
+                        <h4 class="font-bold text-slate-800 mb-2.5 text-xs uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="ph ph-flask text-primary"></i> Hasil Analisis Parameter Kimia Tanah
+                        </h4>
+                        <div class="grid grid-cols-5 gap-2.5 text-center">
+                            <div class="border border-slate-200 rounded-xl p-2.5 bg-white shadow-2xs">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">pH Tanah</p>
+                                <p class="font-black text-base mt-1 ${item.ph < 5.5 ? 'text-red-600' : 'text-emerald-600'}">${item.ph}</p>
+                            </div>
+                            <div class="border border-slate-200 rounded-xl p-2.5 bg-white shadow-2xs">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">C-Organik</p>
+                                <p class="font-bold text-[11px] mt-1 text-slate-800 truncate">${item.corganik}</p>
+                            </div>
+                            <div class="border border-slate-200 rounded-xl p-2.5 bg-white shadow-2xs">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">Status N</p>
+                                <p class="font-bold text-xs mt-1 ${item.n === 'Rendah' ? 'text-red-600' : item.n === 'Sedang' ? 'text-amber-600' : 'text-emerald-600'}">${item.n}</p>
+                            </div>
+                            <div class="border border-slate-200 rounded-xl p-2.5 bg-white shadow-2xs">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">Status P</p>
+                                <p class="font-bold text-xs mt-1 ${item.p === 'Rendah' ? 'text-red-600' : item.p === 'Sedang' ? 'text-amber-600' : 'text-emerald-600'}">${item.p}</p>
+                            </div>
+                            <div class="border border-slate-200 rounded-xl p-2.5 bg-white shadow-2xs">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">Status K</p>
+                                <p class="font-bold text-xs mt-1 ${item.k === 'Rendah' ? 'text-red-600' : item.k === 'Sedang' ? 'text-amber-600' : 'text-emerald-600'}">${item.k}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- REKOMENDASI PRODUK PUPUK INDONESIA -->
+                    <div class="border-t-2 border-primary pt-3.5">
+                        <h4 class="font-bold text-emerald-950 text-xs mb-3 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 flex items-center justify-between">
+                            <span class="flex items-center gap-1.5">
+                                <i class="ph ph-plant text-primary text-base"></i> Paket Dosis Pemupukan Produk Pupuk Indonesia
+                            </span>
+                            <span class="text-[10px] text-emerald-700 font-semibold">Formulasi Dosis Per Hektar (Ha)</span>
+                        </h4>
+
+                        <div class="grid grid-cols-2 gap-2.5 text-xs">
+                            <div class="flex items-center gap-3 border border-slate-200 p-2 rounded-xl bg-white shadow-2xs">
+                                <img src="https://trikastain.github.io/Pelaporan-MUT/petroganik.png" class="h-10 w-10 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/100x100/16a34a/ffffff?text=Petroganik'" alt="Petroganik">
+                                <div>
+                                    <p class="font-bold text-slate-800">Petroganik (Organik)</p>
+                                    <p class="text-[11px] text-slate-600">${getRec('C', item.corganik)}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 border border-slate-200 p-2 rounded-xl bg-white shadow-2xs">
+                                <img src="https://trikastain.github.io/Pelaporan-MUT/nitrea.jpeg" class="h-10 w-10 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/100x100/005baa/ffffff?text=Urea+Nitrea'" alt="Urea Nitrea">
+                                <div>
+                                    <p class="font-bold text-slate-800">Urea Nitrea (Nitrogen)</p>
+                                    <p class="text-[11px] text-slate-600">${getRec('N', item.n)}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 border border-slate-200 p-2 rounded-xl bg-white shadow-2xs">
+                                <img src="https://trikastain.github.io/Pelaporan-MUT/SP-36-Subsidi.jpeg" class="h-10 w-10 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/100x100/d97706/ffffff?text=SP-36'" alt="SP-36">
+                                <div>
+                                    <p class="font-bold text-slate-800">Pupuk SP-36 (Fosfat)</p>
+                                    <p class="text-[11px] text-slate-600">${getRec('P', item.p)}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 border border-slate-200 p-2 rounded-xl bg-white shadow-2xs">
+                                <img src="https://trikastain.github.io/Pelaporan-MUT/nitrokal.jpeg" class="h-10 w-10 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/100x100/be123c/ffffff?text=Nitrokal'" alt="Nitrokal">
+                                <div>
+                                    <p class="font-bold text-slate-800">Nitrokal (Kalium)</p>
+                                    <p class="text-[11px] text-slate-600">${getRec('K', item.k)}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 border border-slate-200 p-2 rounded-xl bg-white shadow-2xs col-span-2">
+                                <img src="https://trikastain.github.io/Pelaporan-MUT/phonska.png" class="h-10 w-10 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/100x100/0284c7/ffffff?text=Phonska'" alt="Pupuk Phonska">
+                                <div>
+                                    <p class="font-bold text-slate-800">Pupuk Phonska (NPK Majemuk)</p>
+                                    <p class="text-[11px] text-slate-600">${npkDosis} <b>(Rekomendasi Utama Komoditas ${item.komoditas})</b></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        ${item.ph < 5.5 ? `
+                        <div class="mt-2.5 flex items-center gap-3 border border-red-200 bg-red-50 p-2.5 rounded-xl text-xs">
+                            <img src="https://trikastain.github.io/Pelaporan-MUT/kebomaskaptan.png" class="h-10 w-10 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/100x100/475569/ffffff?text=Kaptan'" alt="Kapur Pertanian Kebomas">
+                            <div>
+                                <p class="font-bold text-red-900">Kapur Pertanian Kebomas (Penetrallan pH Tanah)</p>
+                                <p class="text-[11px] text-red-700">Kondisi pH sangat asam (${item.ph}). Diwajibkan pengapuran 1 - 2 Ton/Ha sebelum aplikasi pemupukan utama.</p>
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- FOOTER OFFICIAL STAMP SHAPE -->
+                    <div class="mt-6 pt-4 border-t border-slate-200 flex justify-between items-end text-[10px] text-slate-400">
                         <div>
-                            <h2 class="text-xl font-bold text-slate-800 leading-tight">Laporan Rekomendasi Pemupukan Presisi</h2>
-                            <p class="text-sm text-slate-500">Sistem Pelaporan Mobil Uji Tanah (MUT) - Pupuk Indonesia</p>
+                            <p class="font-semibold text-slate-600">Petugas Agronomis Uji Lapangan:</p>
+                            <p class="font-bold text-slate-800 mt-1">${item.petugas.split(' (')[0]}</p>
+                            <p class="text-[9px]">Diterbitkan otomatis oleh Sistem Pelaporan Mobil Uji Tanah (MUT)</p>
                         </div>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-6 text-sm mb-6">
-                    <div>
-                        <h4 class="font-bold text-slate-800 mb-2 border-b pb-1">Informasi Pemilik Lahan</h4>
-                        <table class="w-full text-slate-700">
-                            <tr><td class="py-1 w-1/3">Nama Petani</td><td class="font-medium">: ${item.petani}</td></tr>
-                            <tr><td class="py-1">Kontak</td><td>: ${item.kontak}</td></tr>
-                            <tr><td class="py-1">Komoditas</td><td class="font-bold text-primary">: ${item.komoditas}</td></tr>
-                            <tr><td class="py-1">Desa/Kecamatan</td><td>: ${item.desa} / ${item.kec}</td></tr>
-                        </table>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-slate-800 mb-2 border-b pb-1">Detail Pengujian</h4>
-                        <table class="w-full text-slate-700">
-                            <tr><td class="py-1 w-1/3">ID Uji</td><td class="font-mono">: ${item.id}</td></tr>
-                            <tr><td class="py-1">Tanggal</td><td>: ${item.tgl}</td></tr>
-                            <tr><td class="py-1">Petugas MUT</td><td>: ${item.petugas.split(' (')[0]}</td></tr>
-                            <tr><td class="py-1">GPS (Lat, Lng)</td><td class="text-xs">: ${item.lat}, ${item.lng}</td></tr>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="mb-6">
-                    <h4 class="font-bold text-slate-800 mb-3 bg-slate-100 p-2 rounded">Hasil Analisis Kimia Tanah</h4>
-                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
-                        <div class="border rounded p-2.5 bg-slate-50"><p class="text-xs text-slate-500 mb-1">pH Tanah</p><p class="font-bold text-lg ${item.ph < 5.5 ? 'text-red-600' : 'text-green-600'}">${item.ph}</p></div>
-                        <div class="border rounded p-2.5 bg-slate-50"><p class="text-xs text-slate-500 mb-1">Kadar C-Organik</p><p class="font-bold text-xs mt-1 text-slate-800">${item.corganik}</p></div>
-                        <div class="border rounded p-2.5 bg-slate-50"><p class="text-xs text-slate-500 mb-1">Status N</p><p class="font-bold text-sm mt-1 ${getStatusColor(item.n).split(' ')[1]}">${item.n}</p></div>
-                        <div class="border rounded p-2.5 bg-slate-50"><p class="text-xs text-slate-500 mb-1">Status P</p><p class="font-bold text-sm mt-1 ${getStatusColor(item.p).split(' ')[1]}">${item.p}</p></div>
-                        <div class="border rounded p-2.5 bg-slate-50"><p class="text-xs text-slate-500 mb-1">Status K</p><p class="font-bold text-sm mt-1 ${getStatusColor(item.k).split(' ')[1]}">${item.k}</p></div>
-                    </div>
-                </div>
-
-                <div class="mt-8 border-t-2 border-green-500 pt-4">
-                    <h4 class="font-bold text-slate-800 mb-3 bg-green-50 text-green-800 p-2 rounded flex items-center gap-2">
-                        <i class="ph-fill ph-plant text-lg"></i> Rekomendasi Pemupukan Tunggal & Pembenah Tanah
-                    </h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs mb-4">
-                        <div class="flex items-center gap-3 border p-2 rounded-lg bg-white">
-                            <img src="https://trikastain.github.io/Pelaporan-MUT/petroganik.png" class="h-12 w-12 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/120x120/16a34a/ffffff?text=Petroganik'" alt="Petroganik">
-                            <div>
-                                <p class="font-bold text-slate-800">Pupuk Organik Petroganik</p>
-                                <p class="text-slate-600">${getRec('C', item.corganik)}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 border p-2 rounded-lg bg-white">
-                            <img src="https://trikastain.github.io/Pelaporan-MUT/nitrea.jpeg" class="h-12 w-12 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/120x120/005baa/ffffff?text=Urea+Nitrea'" alt="Urea Nitrea">
-                            <div>
-                                <p class="font-bold text-slate-800">Urea Nitrea</p>
-                                <p class="text-slate-600">${getRec('N', item.n)}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 border p-2 rounded-lg bg-white">
-                            <img src="https://trikastain.github.io/Pelaporan-MUT/SP-36-Subsidi.jpeg" class="h-12 w-12 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/120x120/d97706/ffffff?text=SP-36'" alt="SP-36">
-                            <div>
-                                <p class="font-bold text-slate-800">Pupuk SP-36 (Fosfat)</p>
-                                <p class="text-slate-600">${getRec('P', item.p)}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-3 border p-2 rounded-lg bg-white">
-                            <img src="https://trikastain.github.io/Pelaporan-MUT/nitrokal.jpeg" class="h-12 w-12 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/120x120/be123c/ffffff?text=Nitrokal'" alt="Nitrokal">
-                            <div>
-                                <p class="font-bold text-slate-800">Nitrokal (Kalium)</p>
-                                <p class="text-slate-600">${getRec('K', item.k)}</p>
-                            </div>
+                        <div class="text-right">
+                            <p class="font-bold text-piBlue uppercase">PT Pupuk Indonesia (Persero)</p>
+                            <p class="text-[9px]">Dokumen Sah Cetak Standar Kertas A4</p>
                         </div>
                     </div>
 
-                    <!-- REKOMENDASI NPK MAJEMUK PADA AKHIR LAPORAN PETANI -->
-                    <div class="border-t border-slate-200 pt-3 mt-4">
-                        <h5 class="font-bold text-slate-800 mb-2 text-xs flex items-center gap-1.5 text-sky-900">
-                            <i class="ph-fill ph-check-circle text-sky-600 text-sm"></i> Rekomendasi Pupuk NPK Majemuk (Alternatif Praktis / Majemuk)
-                        </h5>
-                        <div class="flex items-center gap-3 border border-sky-200 bg-sky-50/60 p-3 rounded-lg text-xs">
-                            <img src="https://trikastain.github.io/Pelaporan-MUT/phonska.png" class="h-12 w-12 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/120x120/0284c7/ffffff?text=Phonska'" alt="Phonska NPK">
-                            <div>
-                                <p class="font-bold text-sky-950">${npkInfo.brand}</p>
-                                <p class="text-sky-800 mt-0.5">Dosis Rekomendasi: <b>${npkInfo.dose}</b> untuk komoditas <b>${item.komoditas}</b>.</p>
-                                <p class="text-[10px] text-sky-600 mt-1">* Dosis NPK Majemuk ini disesuaikan untuk mencukupi kebutuhan hara seimbang N, P, dan K tanaman dalam satu kali aplikasi.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    ${item.ph < 5.5 ? `
-                    <div class="mt-3 flex items-center gap-3 border border-red-200 bg-red-50 p-2 rounded-lg text-xs">
-                        <img src="https://trikastain.github.io/Pelaporan-MUT/kebomaskaptan.png" class="h-12 w-12 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/120x120/475569/ffffff?text=Kaptan'" alt="Kapur Pertanian Kebomas">
-                        <div>
-                            <p class="font-bold text-red-900">Kapur Pertanian Kebomas (Penetralan pH Tanah)</p>
-                            <p class="text-red-700">pH tanah sangat asam (${item.ph}). Disarankan pengapuran 1 - 2 Ton/Ha sebelum aplikasi pemupukan utama.</p>
-                        </div>
-                    </div>
-                    ` : ''}
                 </div>
             `;
             
@@ -1546,18 +1713,30 @@
             document.getElementById('reportModal').classList.add('show');
         }
 
+        /* EXPORT INDIVIDUAL REPORT TO A4 FORMAT PDF */
         function downloadPDF() {
-            const element = document.getElementById('report-container');
+            const element = document.getElementById('report-print-area');
+            if(!element) return;
+
+            showNotification('Menyiapkan file PDF ukuran A4...', 'info');
+
             const opt = {
-                margin:       0.5,
-                filename:     'Laporan_Uji_Tanah_MUT.pdf',
+                margin:       [10, 10, 10, 10], // 10mm margins for standard A4
+                filename:     `Laporan_MUT_${appState.currentReportItem ? appState.currentReportItem.id : 'Uji'}_A4.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
-            html2pdf().set(opt).from(element).save();
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                showNotification('Laporan PDF A4 berhasil diunduh!', 'success');
+            }).catch(err => {
+                showNotification('Gagal mendownload PDF', 'error');
+                console.error(err);
+            });
         }
 
+        /* EXPORT CSV DATA */
         function exportData(type) {
             if (type === 'csv') {
                 const headers = ["ID", "Tanggal", "Petani", "Kontak", "Provinsi", "Kabupaten", "Kecamatan", "Desa", "Komoditas", "pH", "C-Organik", "Status N", "Status P", "Status K", "Petugas"];
@@ -1569,7 +1748,7 @@
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
                 link.setAttribute("href", encodedUri);
-                link.setAttribute("download", `Data_Pengujian_MUT_${new Date().toISOString().slice(0,10)}.csv`);
+                link.setAttribute("download", `Data_MUT_Pupuk_Indonesia_${new Date().toISOString().slice(0,10)}.csv`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -1577,76 +1756,78 @@
             }
         }
 
-        async function downloadKecamatanReportPDF() {
+        /* EXPORT DISTRICT RECAP REPORT DEDICATED TO A4 FORMAT PDF */
+        function downloadKecamatanReportPDF() {
             const activeKecSelect = document.getElementById('select-active-kecamatan');
             const selectedKec = activeKecSelect.value || "Semua Kecamatan";
-            const data = (selectedKec === "" || selectedKec === "Semua Kecamatan") ? appState.dataUji : appState.dataUji.filter(d => d.kec === selectedKec);
+            const data = selectedKec === "Semua Kecamatan" ? appState.dataUji : appState.dataUji.filter(d => d.kec === selectedKec);
 
             if(data.length === 0) {
                 showNotification('Tidak ada data untuk diunduh pada area ini', 'error');
                 return;
             }
 
-            showNotification('Menyiapkan laporan PDF...', 'info');
-
-            const container = document.getElementById('district-pdf-export-container');
+            showNotification('Menyiapkan Laporan Kecamatan A4...', 'info');
             
-            // Render gambar Chart.js
             const chartNutrientImg = document.getElementById('kecamatanNutrientChart').toDataURL('image/png');
             const chartPhImg = document.getElementById('kecamatanPhChart').toDataURL('image/png');
 
             const tableRows = data.map((item, index) => `
                 <tr style="background-color: ${index % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom: 1px solid #e2e8f0;">
-                    <td style="padding: 6px 8px; font-size: 10px;">${item.id}</td>
-                    <td style="padding: 6px 8px; font-size: 10px;">${item.tgl}</td>
-                    <td style="padding: 6px 8px; font-size: 10px;">${item.desa}</td>
-                    <td style="padding: 6px 8px; font-size: 10px;">${item.petani}</td>
-                    <td style="padding: 6px 8px; font-size: 10px;">${item.komoditas}</td>
-                    <td style="padding: 6px 8px; font-size: 10px; font-weight: bold;">${item.ph}</td>
-                    <td style="padding: 6px 8px; font-size: 10px;">${item.corganik}</td>
-                    <td style="padding: 6px 8px; font-size: 10px;">N:${item.n[0]} P:${item.p[0]} K:${item.k[0]}</td>
+                    <td style="padding: 5px 8px; font-size: 9px; font-weight: bold;">${item.id}</td>
+                    <td style="padding: 5px 8px; font-size: 9px;">${item.tgl}</td>
+                    <td style="padding: 5px 8px; font-size: 9px;">${item.desa}</td>
+                    <td style="padding: 5px 8px; font-size: 9px; font-weight: bold;">${item.petani}</td>
+                    <td style="padding: 5px 8px; font-size: 9px;">${item.komoditas}</td>
+                    <td style="padding: 5px 8px; font-size: 9px; font-weight: bold; color: ${item.ph < 5.5 ? '#dc2626' : '#16a34a'};">${item.ph}</td>
+                    <td style="padding: 5px 8px; font-size: 9px;">${item.corganik}</td>
+                    <td style="padding: 5px 8px; font-size: 9px;">N:${item.n[0]} P:${item.p[0]} K:${item.k[0]}</td>
                 </tr>
             `).join('');
 
-            container.innerHTML = `
-                <div style="font-family: 'Inter', sans-serif; color: #1e293b; width: 750px; margin: 0 auto; background: #ffffff;">
-                    <table style="width: 100%; border-bottom: 2px solid #16a34a; padding-bottom: 12px; margin-bottom: 16px;">
-                        <tr>
-                            <td style="vertical-align: middle;">
-                                <h2 style="font-size: 18px; font-weight: bold; color: #005baa; margin: 0;">Laporan Rekapitulasi Uji Tanah MUT</h2>
-                                <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Kecamatan: <strong>${selectedKec}</strong> | Total Sampel: <strong>${data.length}</strong></p>
-                            </td>
-                            <td style="text-align: right; vertical-align: middle;">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Logo_Pupuk_Indonesia_%28Persero%29.png" style="height: 36px;" crossorigin="anonymous">
-                            </td>
-                        </tr>
-                    </table>
+            // Clean printable HTML tailored for standard A4 portrait paper
+            const htmlContent = `
+                <div style="width: 190mm; padding: 20px; font-family: 'Inter', sans-serif; background: #ffffff; color: #1e293b; box-sizing: border-box; margin: 0 auto;">
+                    
+                    <!-- MANDATORY PUPUK INDONESIA LOGO AT TOP LEFT -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #16a34a; padding-bottom: 12px; margin-bottom: 14px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Logo_Pupuk_Indonesia_%28Persero%29.png" style="height: 42px; width: auto; object-fit: contain;" crossorigin="anonymous" onerror="this.src='https://placehold.co/140x42/005baa/ffffff?text=Pupuk+Indonesia'">
+                            <div style="border-left: 2px solid #cbd5e1; padding-left: 10px;">
+                                <h2 style="font-size: 13px; font-weight: 800; color: #005baa; margin: 0; text-transform: uppercase;">PT PUPUK INDONESIA (PERSERO)</h2>
+                                <p style="font-size: 10px; color: #16a34a; margin: 2px 0 0 0; font-weight: 700;">Rekapitulasi Hasil Mobil Uji Tanah (MUT)</p>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-size: 9px; background: #005baa; color: #ffffff; padding: 3px 8px; border-radius: 10px; font-weight: bold;">FORMAT A4</span>
+                            <p style="font-size: 10px; color: #64748b; margin: 4px 0 0 0;">Kecamatan: <strong>${selectedKec}</strong></p>
+                        </div>
+                    </div>
 
-                    <table style="width: 100%; margin-bottom: 20px;">
-                        <tr>
-                            <td style="width: 50%; padding-right: 8px; vertical-align: top;">
-                                <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; text-align: center;">
-                                    <h4 style="font-size: 11px; font-weight: bold; margin: 0 0 8px 0;">Status Hara (N, P, K)</h4>
-                                    <img src="${chartNutrientImg}" style="width: 100%; max-height: 160px; object-fit: contain;">
-                                </div>
-                            </td>
-                            <td style="width: 50%; padding-left: 8px; vertical-align: top;">
-                                <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; text-align: center;">
-                                    <h4 style="font-size: 11px; font-weight: bold; margin: 0 0 8px 0;">Sebaran pH Tanah</h4>
-                                    <img src="${chartPhImg}" style="width: 100%; max-height: 160px; object-fit: contain;">
-                                </div>
-                            </td>
-                        </tr>
-                    </table>
+                    <div style="text-align: center; background-color: #f8fafc; padding: 8px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 16px;">
+                        <h3 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0; text-transform: uppercase;">LAPORAN REKAPITULASI HASIL UJI TANAH KECAMATAN</h3>
+                        <p style="font-size: 10px; color: #64748b; margin: 2px 0 0 0;">Total Sampel Teruji: <strong>${data.length} Titik Sampling</strong></p>
+                    </div>
 
-                    <h3 style="font-size: 12px; font-weight: bold; margin-bottom: 8px; color: #0f172a;">Rincian Hasil Pengujian Sampel</h3>
-                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 10px;">
+                    <div style="display: flex; gap: 14px; margin-bottom: 16px;">
+                        <div style="flex: 1; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px;">
+                            <h4 style="font-size: 10px; font-weight: bold; margin: 0 0 6px 0; text-align: center; color: #005baa;">Grafik Persentase Status Hara (N, P, K)</h4>
+                            <img src="${chartNutrientImg}" style="width: 100%; height: 130px; object-fit: contain;">
+                        </div>
+                        <div style="flex: 1; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px;">
+                            <h4 style="font-size: 10px; font-weight: bold; margin: 0 0 6px 0; text-align: center; color: #16a34a;">Sebaran Tingkat Kemasaman (pH)</h4>
+                            <img src="${chartPhImg}" style="width: 100%; height: 130px; object-fit: contain;">
+                        </div>
+                    </div>
+
+                    <h4 style="font-size: 11px; font-weight: bold; margin-bottom: 6px; color: #0f172a; text-transform: uppercase;">Tabel Rincian Data Sampel Tanah</h4>
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 9px;">
                         <thead>
                             <tr style="background-color: #005baa; color: white;">
                                 <th style="padding: 6px 8px;">ID</th>
                                 <th style="padding: 6px 8px;">Tanggal</th>
                                 <th style="padding: 6px 8px;">Desa</th>
-                                <th style="padding: 6px 8px;">Petani</th>
+                                <th style="padding: 6px 8px;">Nama Petani</th>
                                 <th style="padding: 6px 8px;">Komoditas</th>
                                 <th style="padding: 6px 8px;">pH</th>
                                 <th style="padding: 6px 8px;">C-Organik</th>
@@ -1657,34 +1838,28 @@
                             ${tableRows}
                         </tbody>
                     </table>
+
+                    <div style="margin-top: 20px; border-top: 1px solid #cbd5e1; padding-top: 8px; display: flex; justify-content: space-between; font-size: 9px; color: #64748b;">
+                        <span>Tim Tim Mobil Uji Tanah (MUT) Pupuk Indonesia</span>
+                        <span>Dokumen Resmi Terkalibrasi Standar Kertas A4</span>
+                    </div>
                 </div>
             `;
 
-            // Tampilkan sementara kontainer agar html2pdf dapat memprosesnya
-            container.style.display = 'block';
-
-            // Beri waktu sejenak agar browser merender elemen HTML
-            await new Promise(resolve => setTimeout(resolve, 300));
-
             const opt = {
-                margin:       0.4,
-                filename:     `Laporan_MUT_Kecamatan_${selectedKec.replace(/\s+/g, '_')}.pdf`,
+                margin:       [10, 10, 10, 10], // 10mm margins for standard A4
+                filename:     `Laporan_MUT_Kecamatan_${selectedKec.replace(/\s+/g, '_')}_A4.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true, logging: false },
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
             };
 
-            try {
-                await html2pdf().set(opt).from(container).save();
-                showNotification('Laporan PDF berhasil diunduh!', 'success');
-            } catch (err) {
-                showNotification('Gagal mengunduh laporan PDF', 'error');
+            html2pdf().set(opt).from(htmlContent).save().then(() => {
+                showNotification('Laporan Rekap Kecamatan (A4) berhasil diunduh!', 'success');
+            }).catch(err => {
+                showNotification('Gagal mengunduh PDF', 'error');
                 console.error(err);
-            } finally {
-                // Sembunyikan kembali kontainer setelah pengunduhan selesai
-                container.style.display = 'none';
-                container.innerHTML = '';
-            }
+            });
         }
     </script>
 </body>
