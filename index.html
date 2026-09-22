@@ -90,12 +90,10 @@
         .status-high { @apply bg-green-100 text-green-800 border-green-300; }
         
         #district-pdf-export-container {
-            position: absolute;
-            left: -9999px;
-            top: 0;
-            width: 1000px;
+            display: none;
             background: white;
-            z-index: -1;
+            width: 800px;
+            padding: 20px;
         }
     </style>
 </head>
@@ -1138,14 +1136,14 @@
             appState.charts.kecNutrient = new Chart(ctxKecNutrient, {
                 type: 'bar',
                 data: { labels: [], datasets: [] },
-                options: { ...commonOptions, scales: { y: { beginAtZero: true, max: 100 } } }
+                options: { ...commonOptions, animation: false, scales: { y: { beginAtZero: true, max: 100 } } }
             });
 
             const ctxKecPh = document.getElementById('kecamatanPhChart').getContext('2d');
             appState.charts.kecPh = new Chart(ctxKecPh, {
                 type: 'pie',
                 data: { labels: [], datasets: [] },
-                options: commonOptions
+                options: { ...commonOptions, animation: false }
             });
         }
 
@@ -1406,6 +1404,26 @@
             document.getElementById('reportModal').classList.remove('show');
         }
 
+        function getNPKSuggestion(item) {
+            let dose = "300 - 350 kg/ha";
+            let brand = "Pupuk Phonska 15-15-15 / Phonska Plus";
+            
+            if (item.komoditas === "Padi Sawah") {
+                if (item.n === 'Rendah' || item.p === 'Rendah' || item.k === 'Rendah') {
+                    dose = "300 - 350 kg/ha";
+                } else {
+                    dose = "250 - 300 kg/ha";
+                }
+            } else if (item.komoditas === "Cabai" || item.komoditas === "Bawang Merah") {
+                dose = "350 - 500 kg/ha";
+                brand = "Pupuk Phonska Plus / NPK Spesifik Hortikultura";
+            } else if (item.komoditas === "Jagung" || item.komoditas === "Singkong") {
+                dose = "300 - 400 kg/ha";
+            }
+
+            return { dose, brand };
+        }
+
         function viewReport(id) {
             const item = appState.dataUji.find(d => d.id === id);
             if(!item) return;
@@ -1416,6 +1434,8 @@
                 if(nutrient === 'K') return val==='Rendah' ? '75 - 100 kg/ha <b>(Nitrokal)</b>' : val==='Sedang' ? '50 - 75 kg/ha <b>(Nitrokal)</b>' : '< 50 kg/ha <b>(Nitrokal)</b>';
                 if(nutrient === 'C') return val.includes('Rendah') ? '2 - 3 Ton/ha <b>(Pupuk Organik Petroganik)</b>' : val.includes('Sedang') ? '1 - 2 Ton/ha <b>(Pupuk Organik Petroganik)</b>' : '500 kg/ha <b>(Pupuk Organik Petroganik)</b>';
             };
+
+            const npkInfo = getNPKSuggestion(item);
 
             const content = `
                 <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-200">
@@ -1462,9 +1482,9 @@
 
                 <div class="mt-8 border-t-2 border-green-500 pt-4">
                     <h4 class="font-bold text-slate-800 mb-3 bg-green-50 text-green-800 p-2 rounded flex items-center gap-2">
-                        <i class="ph-fill ph-plant text-lg"></i> Rekomendasi Pemupukan NPK & Produk Pupuk Indonesia
+                        <i class="ph-fill ph-plant text-lg"></i> Rekomendasi Pemupukan Tunggal & Pembenah Tanah
                     </h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs mb-4">
                         <div class="flex items-center gap-3 border p-2 rounded-lg bg-white">
                             <img src="https://trikastain.github.io/Pelaporan-MUT/petroganik.png" class="h-12 w-12 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/120x120/16a34a/ffffff?text=Petroganik'" alt="Petroganik">
                             <div>
@@ -1494,11 +1514,27 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- REKOMENDASI NPK MAJEMUK PADA AKHIR LAPORAN PETANI -->
+                    <div class="border-t border-slate-200 pt-3 mt-4">
+                        <h5 class="font-bold text-slate-800 mb-2 text-xs flex items-center gap-1.5 text-sky-900">
+                            <i class="ph-fill ph-check-circle text-sky-600 text-sm"></i> Rekomendasi Pupuk NPK Majemuk (Alternatif Praktis / Majemuk)
+                        </h5>
+                        <div class="flex items-center gap-3 border border-sky-200 bg-sky-50/60 p-3 rounded-lg text-xs">
+                            <img src="https://trikastain.github.io/Pelaporan-MUT/phonska.png" class="h-12 w-12 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/120x120/0284c7/ffffff?text=Phonska'" alt="Phonska NPK">
+                            <div>
+                                <p class="font-bold text-sky-950">${npkInfo.brand}</p>
+                                <p class="text-sky-800 mt-0.5">Dosis Rekomendasi: <b>${npkInfo.dose}</b> untuk komoditas <b>${item.komoditas}</b>.</p>
+                                <p class="text-[10px] text-sky-600 mt-1">* Dosis NPK Majemuk ini disesuaikan untuk mencukupi kebutuhan hara seimbang N, P, dan K tanaman dalam satu kali aplikasi.</p>
+                            </div>
+                        </div>
+                    </div>
+
                     ${item.ph < 5.5 ? `
                     <div class="mt-3 flex items-center gap-3 border border-red-200 bg-red-50 p-2 rounded-lg text-xs">
                         <img src="https://trikastain.github.io/Pelaporan-MUT/kebomaskaptan.png" class="h-12 w-12 object-contain flex-shrink-0" crossorigin="anonymous" onerror="this.onerror=null; this.src='https://placehold.co/120x120/475569/ffffff?text=Kaptan'" alt="Kapur Pertanian Kebomas">
                         <div>
-                            <p class="font-bold text-red-900">Kapur Pertanian Kebomas (Penetrallan pH Tanah)</p>
+                            <p class="font-bold text-red-900">Kapur Pertanian Kebomas (Penetralan pH Tanah)</p>
                             <p class="text-red-700">pH tanah sangat asam (${item.ph}). Disarankan pengapuran 1 - 2 Ton/Ha sebelum aplikasi pemupukan utama.</p>
                         </div>
                     </div>
@@ -1541,10 +1577,10 @@
             }
         }
 
-        function downloadKecamatanReportPDF() {
+        async function downloadKecamatanReportPDF() {
             const activeKecSelect = document.getElementById('select-active-kecamatan');
             const selectedKec = activeKecSelect.value || "Semua Kecamatan";
-            const data = selectedKec === "Semua Kecamatan" ? appState.dataUji : appState.dataUji.filter(d => d.kec === selectedKec);
+            const data = (selectedKec === "" || selectedKec === "Semua Kecamatan") ? appState.dataUji : appState.dataUji.filter(d => d.kec === selectedKec);
 
             if(data.length === 0) {
                 showNotification('Tidak ada data untuk diunduh pada area ini', 'error');
@@ -1555,6 +1591,7 @@
 
             const container = document.getElementById('district-pdf-export-container');
             
+            // Render gambar Chart.js
             const chartNutrientImg = document.getElementById('kecamatanNutrientChart').toDataURL('image/png');
             const chartPhImg = document.getElementById('kecamatanPhChart').toDataURL('image/png');
 
@@ -1572,25 +1609,35 @@
             `).join('');
 
             container.innerHTML = `
-                <div style="padding: 20px; font-family: 'Inter', sans-serif; background: #ffffff; color: #1e293b;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #16a34a; padding-bottom: 12px; margin-bottom: 16px;">
-                        <div>
-                            <h2 style="font-size: 18px; font-weight: bold; color: #005baa; margin: 0;">Laporan Rekapitulasi Uji Tanah MUT</h2>
-                            <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Kecamatan: <strong>${selectedKec}</strong> | Total Sampel: <strong>${data.length}</strong></p>
-                        </div>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Logo_Pupuk_Indonesia_%28Persero%29.png" style="height: 36px;" crossorigin="anonymous">
-                    </div>
+                <div style="font-family: 'Inter', sans-serif; color: #1e293b; width: 750px; margin: 0 auto; background: #ffffff;">
+                    <table style="width: 100%; border-bottom: 2px solid #16a34a; padding-bottom: 12px; margin-bottom: 16px;">
+                        <tr>
+                            <td style="vertical-align: middle;">
+                                <h2 style="font-size: 18px; font-weight: bold; color: #005baa; margin: 0;">Laporan Rekapitulasi Uji Tanah MUT</h2>
+                                <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Kecamatan: <strong>${selectedKec}</strong> | Total Sampel: <strong>${data.length}</strong></p>
+                            </td>
+                            <td style="text-align: right; vertical-align: middle;">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/d/da/Logo_Pupuk_Indonesia_%28Persero%29.png" style="height: 36px;" crossorigin="anonymous">
+                            </td>
+                        </tr>
+                    </table>
 
-                    <div style="display: flex; gap: 16px; margin-bottom: 20px;">
-                        <div style="flex: 1; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px;">
-                            <h4 style="font-size: 11px; font-weight: bold; margin: 0 0 8px 0; text-align: center;">Status Hara (N, P, K)</h4>
-                            <img src="${chartNutrientImg}" style="width: 100%; height: 140px; object-fit: contain;">
-                        </div>
-                        <div style="flex: 1; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px;">
-                            <h4 style="font-size: 11px; font-weight: bold; margin: 0 0 8px 0; text-align: center;">Sebaran pH Tanah</h4>
-                            <img src="${chartPhImg}" style="width: 100%; height: 140px; object-fit: contain;">
-                        </div>
-                    </div>
+                    <table style="width: 100%; margin-bottom: 20px;">
+                        <tr>
+                            <td style="width: 50%; padding-right: 8px; vertical-align: top;">
+                                <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; text-align: center;">
+                                    <h4 style="font-size: 11px; font-weight: bold; margin: 0 0 8px 0;">Status Hara (N, P, K)</h4>
+                                    <img src="${chartNutrientImg}" style="width: 100%; max-height: 160px; object-fit: contain;">
+                                </div>
+                            </td>
+                            <td style="width: 50%; padding-left: 8px; vertical-align: top;">
+                                <div style="border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; text-align: center;">
+                                    <h4 style="font-size: 11px; font-weight: bold; margin: 0 0 8px 0;">Sebaran pH Tanah</h4>
+                                    <img src="${chartPhImg}" style="width: 100%; max-height: 160px; object-fit: contain;">
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
 
                     <h3 style="font-size: 12px; font-weight: bold; margin-bottom: 8px; color: #0f172a;">Rincian Hasil Pengujian Sampel</h3>
                     <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 10px;">
@@ -1613,21 +1660,31 @@
                 </div>
             `;
 
+            // Tampilkan sementara kontainer agar html2pdf dapat memprosesnya
+            container.style.display = 'block';
+
+            // Beri waktu sejenak agar browser merender elemen HTML
+            await new Promise(resolve => setTimeout(resolve, 300));
+
             const opt = {
                 margin:       0.4,
                 filename:     `Laporan_MUT_Kecamatan_${selectedKec.replace(/\s+/g, '_')}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
-            html2pdf().set(opt).from(container).save().then(() => {
-                container.innerHTML = '';
+            try {
+                await html2pdf().set(opt).from(container).save();
                 showNotification('Laporan PDF berhasil diunduh!', 'success');
-            }).catch(err => {
+            } catch (err) {
                 showNotification('Gagal mengunduh laporan PDF', 'error');
                 console.error(err);
-            });
+            } finally {
+                // Sembunyikan kembali kontainer setelah pengunduhan selesai
+                container.style.display = 'none';
+                container.innerHTML = '';
+            }
         }
     </script>
 </body>
