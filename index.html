@@ -1219,7 +1219,7 @@
                         </td>
                         <td class="py-3 px-3 text-center">
                             <button onclick="viewReport('${item.id}')" class="text-piBlue hover:text-blue-800 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200 font-bold text-xs inline-flex items-center gap-1 shadow-2xs" title="Buka Laporan A4">
-                                <i class="ph ph-file-text text-sm"></i> A4 PDF
+                                <i class="ph ph-file-text text-sm"></i> PDF
                             </button>
                         </td>
                     </tr>
@@ -1351,7 +1351,7 @@
                     <td class="px-4 py-3">
                         <div class="flex items-center justify-center gap-1.5">
                             <button onclick="viewReport('${item.id}')" class="px-2.5 py-1.5 bg-blue-50 text-piBlue hover:bg-blue-100 rounded-lg border border-blue-200 text-xs font-bold transition-all flex items-center gap-1" title="Lihat Rekomendasi A4">
-                                <i class="ph ph-file-text text-sm"></i> Cetak A4
+                                <i class="ph ph-file-text text-sm"></i> PDF
                             </button>
                             <button onclick="editData('${item.id}')" class="p-1.5 bg-amber-50 text-amber-700 hover:bg-amber-100 rounded-lg border border-amber-200" title="Edit Data"><i class="ph ph-pencil-simple text-sm"></i></button>
                             <button onclick="confirmDelete('${item.id}')" class="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg border border-red-200" title="Hapus Data"><i class="ph ph-trash text-sm"></i></button>
@@ -1416,7 +1416,7 @@
                         <td class="px-3 py-2.5 text-xs text-slate-700 font-medium">${item.corganik}</td>
                         <td class="px-3 py-2.5 text-xs font-bold">N:${item.n[0]} P:${item.p[0]} K:${item.k[0]}</td>
                         <td class="px-3 py-2.5 text-center">
-                            <button onclick="viewReport('${item.id}')" class="text-piBlue hover:underline text-xs font-bold">Lihat A4</button>
+                            <button onclick="viewReport('${item.id}')" class="text-piBlue hover:underline text-xs font-bold">PDF</button>
                         </td>
                     </tr>
                 `).join('');
