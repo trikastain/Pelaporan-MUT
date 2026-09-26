@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NickelOps Seram — Pusat Kendali Tambang v10.0 (DataMine Style)</title>
+    <title>NickelOps Seram — Pusat Kendali Tambang v11.0 (Geostatistik)</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script type="importmap">
@@ -45,7 +45,6 @@
         }
         body { display: flex; flex-direction: column; }
 
-        /* HEADER */
         header {
             background: linear-gradient(90deg, var(--bg-panel) 0%, var(--bg-panel-2) 100%);
             border-bottom: 2px solid var(--accent-ni);
@@ -94,7 +93,6 @@
         .clock-box { font-family: 'Consolas', monospace; color: var(--accent-ni); font-weight: 600; min-width: 85px; text-align: center; }
         .price-box { color: var(--accent-success); }
 
-        /* TAB NAVIGATION */
         .tab-nav {
             background: var(--bg-panel);
             border-bottom: 1px solid var(--border);
@@ -134,7 +132,6 @@
             font-weight: 700;
         }
 
-        /* MAIN CONTENT */
         .main-content { flex: 1; position: relative; overflow: hidden; }
         .tab-page {
             display: none;
@@ -146,12 +143,10 @@
         }
         .tab-page.active { display: block; }
 
-        /* 3D PIT PAGE */
         .pit-page { background: #07090d; position: relative; }
         #canvas3d { width: 100%; height: 100%; display: block; cursor: grab; }
         #canvas3d:active { cursor: grabbing; }
 
-        /* RIGHT COLUMN */
         .right-column {
             position: absolute;
             top: 15px;
@@ -188,7 +183,6 @@
             align-items: center;
         }
 
-        /* VIEW CONTROLS - LEFT SIDE */
         .view-controls {
             position: absolute;
             top: 50%;
@@ -213,10 +207,8 @@
             justify-content: center;
             transition: all 0.2s;
         }
-        .view-ctrl-btn:hover { background: var(--accent-ni); color: #000; border-color: var(--accent-ni); }
-        .view-ctrl-btn.active { background: var(--accent-ni); color: #000; border-color: var(--accent-ni); }
+        .view-ctrl-btn:hover, .view-ctrl-btn.active { background: var(--accent-ni); color: #000; border-color: var(--accent-ni); }
 
-        /* COMPASS */
         .compass-3d {
             position: absolute;
             top: 15px;
@@ -232,15 +224,8 @@
             z-index: 50;
             font-size: 1.2rem;
         }
-        .compass-3d::before {
-            content: 'N';
-            position: absolute;
-            top: 3px;
-            color: var(--accent-cutoff);
-            font-size: 0.7rem;
-        }
+        .compass-3d::before { content: 'N'; position: absolute; top: 3px; color: var(--accent-cutoff); font-size: 0.7rem; }
 
-        /* DEPTH INDICATOR */
         .depth-indicator {
             position: absolute;
             bottom: 15px;
@@ -253,40 +238,12 @@
             z-index: 50;
             width: 80px;
         }
-        .depth-indicator b {
-            display: block;
-            text-align: center;
-            color: var(--accent-ni);
-            font-size: 0.62rem;
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .depth-scale {
-            position: relative;
-            height: 180px;
-            border-left: 2px solid var(--accent-ni);
-            margin-left: 8px;
-        }
-        .depth-mark {
-            position: absolute;
-            left: 8px;
-            font-size: 0.62rem;
-            color: var(--text-secondary);
-            font-family: 'Consolas', monospace;
-            white-space: nowrap;
-        }
-        .depth-mark::before {
-            content: '';
-            position: absolute;
-            left: -12px;
-            top: 50%;
-            width: 6px;
-            height: 1px;
-            background: var(--accent-ni);
-        }
+        .depth-indicator b { display: block; text-align: center; color: var(--accent-ni); font-size: 0.62rem; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+        .depth-scale { position: relative; height: 180px; border-left: 2px solid var(--accent-ni); margin-left: 8px; }
+        .depth-mark { position: absolute; left: 8px; font-size: 0.62rem; color: var(--text-secondary); font-family: 'Consolas', monospace; white-space: nowrap; }
+        .depth-mark::before { content: ''; position: absolute; left: -12px; top: 50%; width: 6px; height: 1px; background: var(--accent-ni); }
 
-        /* ============ LAYER CONTROL (DATAMINE STYLE) ============ */
+        /* LAYER CONTROL */
         .layer-panel {
             background: rgba(10, 12, 16, 0.95);
             backdrop-filter: blur(10px);
@@ -295,216 +252,39 @@
             padding: 10px 12px;
             box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
         }
-        .layer-panel .overlay-title {
-            color: var(--accent-ni);
-            border-bottom-color: var(--accent-ni);
-        }
-        .layer-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-            padding-bottom: 4px;
-            border-bottom: 1px dashed var(--border);
-        }
-        .layer-header span {
-            font-size: 0.62rem;
-            color: var(--text-dim);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .layer-actions {
-            display: flex;
-            gap: 3px;
-        }
-        .layer-action-btn {
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            color: var(--text-secondary);
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 0.6rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .layer-action-btn:hover {
-            background: var(--accent-ni);
-            color: #000;
-            border-color: var(--accent-ni);
-        }
-        .layer-item {
-            display: grid;
-            grid-template-columns: auto 14px 1fr auto;
-            gap: 6px;
-            align-items: center;
-            padding: 4px 2px;
-            border-bottom: 1px dashed rgba(42, 49, 66, 0.3);
-            font-size: 0.68rem;
-            transition: background 0.15s;
-        }
+        .layer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px dashed var(--border); }
+        .layer-header span { font-size: 0.62rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+        .layer-actions { display: flex; gap: 3px; }
+        .layer-action-btn { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-secondary); padding: 2px 6px; border-radius: 3px; font-size: 0.6rem; cursor: pointer; transition: all 0.2s; }
+        .layer-action-btn:hover { background: var(--accent-ni); color: #000; border-color: var(--accent-ni); }
+        .layer-item { display: grid; grid-template-columns: auto 14px 1fr auto; gap: 6px; align-items: center; padding: 4px 2px; border-bottom: 1px dashed rgba(42, 49, 66, 0.3); font-size: 0.68rem; transition: background 0.15s; }
         .layer-item:hover { background: rgba(245, 158, 11, 0.05); }
         .layer-item:last-child { border-bottom: none; }
-        
-        .layer-checkbox {
-            appearance: none;
-            width: 14px;
-            height: 14px;
-            border: 1.5px solid var(--border-light);
-            border-radius: 3px;
-            background: var(--bg-input);
-            cursor: pointer;
-            position: relative;
-            transition: all 0.15s;
-        }
-        .layer-checkbox:checked {
-            background: var(--accent-ni);
-            border-color: var(--accent-ni);
-        }
-        .layer-checkbox:checked::after {
-            content: '✓';
-            position: absolute;
-            top: -2px;
-            left: 1px;
-            color: #000;
-            font-size: 0.7rem;
-            font-weight: 900;
-        }
-        .layer-checkbox:hover { border-color: var(--accent-ni); }
-        
-        .layer-color {
-            width: 14px;
-            height: 14px;
-            border-radius: 2px;
-            border: 1px solid rgba(255,255,255,0.2);
-            cursor: pointer;
-            transition: transform 0.15s;
-        }
-        .layer-color:hover { transform: scale(1.2); }
-        
-        .layer-name {
-            color: var(--text-primary);
-            font-size: 0.68rem;
-            cursor: pointer;
-            user-select: none;
-        }
-        .layer-name:hover { color: var(--accent-ni); }
-        .layer-item.disabled .layer-name {
-            color: var(--text-dim);
-            text-decoration: line-through;
-        }
-        
-        .layer-isolate {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text-dim);
-            padding: 1px 5px;
-            border-radius: 3px;
-            font-size: 0.58rem;
-            cursor: pointer;
-            transition: all 0.15s;
-            font-weight: 600;
-        }
-        .layer-isolate:hover {
-            background: var(--accent-info);
-            color: #fff;
-            border-color: var(--accent-info);
-        }
-        .layer-isolate.active {
-            background: var(--accent-info);
-            color: #fff;
-            border-color: var(--accent-info);
-        }
-
-        .layer-divider {
-            height: 1px;
-            background: var(--border);
-            margin: 6px 0;
-        }
-
-        .layer-slider-row {
-            display: grid;
-            grid-template-columns: 70px 1fr 35px;
-            gap: 6px;
-            align-items: center;
-            padding: 3px 2px;
-            font-size: 0.65rem;
-        }
+        .layer-checkbox { appearance: none; width: 14px; height: 14px; border: 1.5px solid var(--border-light); border-radius: 3px; background: var(--bg-input); cursor: pointer; position: relative; transition: all 0.15s; }
+        .layer-checkbox:checked { background: var(--accent-ni); border-color: var(--accent-ni); }
+        .layer-checkbox:checked::after { content: '✓'; position: absolute; top: -2px; left: 1px; color: #000; font-size: 0.7rem; font-weight: 900; }
+        .layer-color { width: 14px; height: 14px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.2); }
+        .layer-name { color: var(--text-primary); font-size: 0.68rem; user-select: none; }
+        .layer-item.disabled .layer-name { color: var(--text-dim); text-decoration: line-through; }
+        .layer-isolate { background: transparent; border: 1px solid var(--border); color: var(--text-dim); padding: 1px 5px; border-radius: 3px; font-size: 0.58rem; cursor: pointer; transition: all 0.15s; font-weight: 600; }
+        .layer-isolate:hover, .layer-isolate.active { background: var(--accent-info); color: #fff; border-color: var(--accent-info); }
+        .layer-divider { height: 1px; background: var(--border); margin: 6px 0; }
+        .layer-slider-row { display: grid; grid-template-columns: 70px 1fr 35px; gap: 6px; align-items: center; padding: 3px 2px; font-size: 0.65rem; }
         .layer-slider-row label { color: var(--text-secondary); }
-        .layer-slider-row input[type="range"] {
-            width: 100%;
-            height: 4px;
-            background: var(--bg-input);
-            border-radius: 2px;
-            outline: none;
-            appearance: none;
-            cursor: pointer;
-        }
-        .layer-slider-row input[type="range"]::-webkit-slider-thumb {
-            appearance: none;
-            width: 12px;
-            height: 12px;
-            background: var(--accent-ni);
-            border-radius: 50%;
-            cursor: pointer;
-        }
-        .layer-slider-row .val {
-            color: var(--accent-ni);
-            font-family: 'Consolas', monospace;
-            font-size: 0.62rem;
-            text-align: right;
-        }
-
-        .section-cut-panel {
-            margin-top: 6px;
-            padding-top: 6px;
-            border-top: 1px dashed var(--border);
-        }
-        .section-cut-title {
-            font-size: 0.62rem;
-            color: var(--accent-info);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-            font-weight: 700;
-        }
-        .section-btn-group {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 3px;
-            margin-bottom: 6px;
-        }
-        .section-btn {
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            color: var(--text-secondary);
-            padding: 4px;
-            border-radius: 3px;
-            font-size: 0.62rem;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.15s;
-        }
+        .layer-slider-row input[type="range"] { width: 100%; height: 4px; background: var(--bg-input); border-radius: 2px; outline: none; appearance: none; cursor: pointer; }
+        .layer-slider-row input[type="range"]::-webkit-slider-thumb { appearance: none; width: 12px; height: 12px; background: var(--accent-ni); border-radius: 50%; cursor: pointer; }
+        .layer-slider-row .val { color: var(--accent-ni); font-family: 'Consolas', monospace; font-size: 0.62rem; text-align: right; }
+        .section-cut-panel { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border); }
+        .section-cut-title { font-size: 0.62rem; color: var(--accent-info); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; font-weight: 700; }
+        .section-btn-group { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; margin-bottom: 6px; }
+        .section-btn { background: var(--bg-input); border: 1px solid var(--border); color: var(--text-secondary); padding: 4px; border-radius: 3px; font-size: 0.62rem; cursor: pointer; font-weight: 600; transition: all 0.15s; }
         .section-btn:hover { border-color: var(--accent-info); color: var(--accent-info); }
         .section-btn.active { background: var(--accent-info); color: #fff; border-color: var(--accent-info); }
 
-        /* SHARED COMPONENTS */
+        /* SHARED */
         .page-content { padding: 20px; }
-        .page-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: var(--accent-ni);
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .page-title .icon {
-            width: 36px; height: 36px;
-            background: rgba(245, 158, 11, 0.15);
-            border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem;
-        }
+        .page-title { font-size: 1.3rem; font-weight: 700; color: var(--accent-ni); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+        .page-title .icon { width: 36px; height: 36px; background: rgba(245, 158, 11, 0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
 
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
@@ -512,30 +292,10 @@
         .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px; }
         .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; margin-bottom: 16px; }
 
-        .card {
-            background: var(--bg-panel);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 14px;
-        }
-        .card-title {
-            font-size: 0.72rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-dim);
-            margin-bottom: 10px;
-            font-weight: 700;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 6px;
-        }
+        .card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+        .card-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 10px; font-weight: 700; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
 
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 4px 0;
-            font-size: 0.72rem;
-            border-bottom: 1px dashed rgba(42, 49, 66, 0.5);
-        }
+        .info-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 0.72rem; border-bottom: 1px dashed rgba(42, 49, 66, 0.5); }
         .info-row:last-child { border-bottom: none; }
         .info-row span { color: var(--text-secondary); }
         .info-row b { color: var(--text-primary); }
@@ -545,38 +305,15 @@
         .info-row b.err { color: var(--accent-cutoff); }
         .info-row b.info { color: var(--accent-info); }
 
-        .tag {
-            display: inline-block;
-            padding: 2px 8px;
-            background: rgba(245, 158, 11, 0.15);
-            color: var(--accent-ni);
-            border-radius: 4px;
-            font-size: 0.65rem;
-            margin-right: 3px;
-            margin-bottom: 3px;
-            border: 1px solid rgba(245, 158, 11, 0.3);
-        }
+        .tag { display: inline-block; padding: 2px 8px; background: rgba(245, 158, 11, 0.15); color: var(--accent-ni); border-radius: 4px; font-size: 0.65rem; margin-right: 3px; margin-bottom: 3px; border: 1px solid rgba(245, 158, 11, 0.3); }
         .tag.cutoff { background: rgba(239, 68, 68, 0.15); color: var(--accent-cutoff); border-color: rgba(239, 68, 68, 0.3); }
         .tag.success { background: rgba(16, 185, 129, 0.15); color: var(--accent-success); border-color: rgba(16, 185, 129, 0.3); }
         .tag.info { background: rgba(59, 130, 246, 0.15); color: var(--accent-info); border-color: rgba(59, 130, 246, 0.3); }
         .tag.warn { background: rgba(234, 179, 8, 0.15); color: var(--accent-warn); border-color: rgba(234, 179, 8, 0.3); }
         .tag.purple { background: rgba(168, 85, 247, 0.15); color: var(--accent-purple); border-color: rgba(168, 85, 247, 0.3); }
 
-        .kpi-card {
-            background: var(--bg-panel);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px 14px;
-            position: relative;
-            overflow: hidden;
-        }
-        .kpi-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0;
-            width: 4px; height: 100%;
-            background: var(--accent-ni);
-        }
+        .kpi-card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; position: relative; overflow: hidden; }
+        .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent-ni); }
         .kpi-card.success::before { background: var(--accent-success); }
         .kpi-card.info::before { background: var(--accent-info); }
         .kpi-card.warn::before { background: var(--accent-warn); }
@@ -588,121 +325,60 @@
         .trend-up { color: var(--accent-success); }
         .trend-down { color: var(--accent-cutoff); }
 
-        .chart-container {
-            background: var(--bg-panel);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-        }
+        .chart-container { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px; display: flex; flex-direction: column; }
         .chart-container.tall { height: 320px; }
         .chart-container.medium { height: 260px; }
         .chart-wrapper { flex: 1; position: relative; min-height: 180px; width: 100%; }
-        .chart-wrapper canvas {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100% !important;
-            height: 100% !important;
-        }
+        .chart-wrapper canvas { position: absolute; top: 0; left: 0; width: 100% !important; height: 100% !important; }
 
-        .fleet-item {
+        /* HEATMAP CANVAS */
+        .heatmap-container {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
             background: var(--bg-input);
             border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 8px 10px;
-            margin-bottom: 6px;
-            display: grid;
-            grid-template-columns: auto 1fr auto;
-            gap: 10px;
-            align-items: center;
-            font-size: 0.75rem;
-        }
-        .fleet-icon {
-            width: 32px; height: 32px;
-            border-radius: 5px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1rem;
-        }
-        .fleet-icon.exc { background: rgba(245, 158, 11, 0.2); }
-        .fleet-icon.dt { background: rgba(59, 130, 246, 0.2); }
-        .fleet-icon.dz { background: rgba(239, 68, 68, 0.2); }
-        .fleet-icon.dr { background: rgba(168, 85, 247, 0.2); }
-        .fleet-icon.wt { background: rgba(16, 185, 129, 0.2); }
-        .fleet-icon.lv { background: rgba(234, 179, 8, 0.2); }
-        .fleet-info b { display: block; color: var(--text-primary); font-size: 0.8rem; }
-        .fleet-info span { color: var(--text-dim); font-size: 0.7rem; }
-        .fleet-status {
-            padding: 3px 8px;
             border-radius: 4px;
-            font-size: 0.68rem;
-            font-weight: 700;
-        }
-        .st-active { background: rgba(16, 185, 129, 0.2); color: var(--accent-success); }
-        .st-idle { background: rgba(234, 179, 8, 0.2); color: var(--accent-warn); }
-        .st-maint { background: rgba(239, 68, 68, 0.2); color: var(--accent-cutoff); }
-
-        .block-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.78rem;
-        }
-        .block-table th {
-            background: var(--bg-input);
-            padding: 8px 10px;
-            text-align: left;
-            font-weight: 700;
-            color: var(--accent-ni);
-            border-bottom: 2px solid var(--border);
-            font-size: 0.72rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .block-table td {
-            padding: 7px 10px;
-            border-bottom: 1px solid var(--border);
-        }
-        .block-table tr:hover td { background: rgba(245, 158, 11, 0.05); }
-        .block-table .num { font-family: 'Consolas', monospace; text-align: right; }
-
-        .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: var(--bg-input);
-            border-radius: 3px;
             overflow: hidden;
-            margin-top: 3px;
         }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent-ni), var(--accent-success));
-            border-radius: 3px;
-        }
-
-        .bench-row {
+        .heatmap-canvas { width: 100%; height: 100%; display: block; }
+        .heatmap-legend {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 3px 0;
-            font-size: 0.65rem;
-            border-bottom: 1px dashed rgba(42, 49, 66, 0.4);
+            gap: 8px;
+            margin-top: 8px;
+            font-size: 0.68rem;
+            color: var(--text-secondary);
         }
+        .heatmap-gradient {
+            flex: 1;
+            height: 12px;
+            border-radius: 3px;
+            background: linear-gradient(to right, 
+                #1e3a8a 0%, 
+                #3b82f6 20%, 
+                #10b981 40%, 
+                #eab308 60%, 
+                #f59e0b 75%, 
+                #ef4444 100%);
+        }
+        .heatmap-legend span { font-family: 'Consolas', monospace; color: var(--text-dim); }
+
+        .alert-box { padding: 10px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 0.75rem; display: flex; align-items: flex-start; gap: 10px; }
+        .alert-box.warn { background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.3); color: #eab308; }
+        .alert-box.success { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; }
+        .alert-box.info { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #3b82f6; }
+
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 3px; }
+        .form-group select, .form-group input { width: 100%; padding: 6px 8px; background: var(--bg-input); border: 1px solid var(--border); color: var(--text-primary); border-radius: 4px; font-size: 0.78rem; }
+
+        .bench-row { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; font-size: 0.65rem; border-bottom: 1px dashed rgba(42, 49, 66, 0.4); }
         .bench-row:last-child { border-bottom: none; }
         .bench-row .bench-name { color: var(--text-secondary); min-width: 55px; }
         .bench-row .bench-data { color: var(--text-primary); font-family: 'Consolas', monospace; font-size: 0.63rem; }
-        .bench-row .bench-bar {
-            flex: 1;
-            height: 4px;
-            background: var(--bg-input);
-            border-radius: 2px;
-            margin: 0 6px;
-            overflow: hidden;
-        }
-        .bench-row .bench-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent-ni), var(--accent-success));
-            border-radius: 2px;
-        }
+        .bench-row .bench-bar { flex: 1; height: 4px; background: var(--bg-input); border-radius: 2px; margin: 0 6px; overflow: hidden; }
+        .bench-row .bench-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent-ni), var(--accent-success)); border-radius: 2px; }
 
         .legend-item { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; font-size: 0.68rem; }
         .legend-color { width: 12px; height: 12px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.2); flex-shrink: 0; }
@@ -712,16 +388,7 @@
         ::-webkit-scrollbar-track { background: var(--bg-primary); }
         ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-        .command-window {
-            background: #030407;
-            border-top: 1px solid var(--border);
-            padding: 8px 16px;
-            font-family: 'Consolas', monospace;
-            font-size: 0.72rem;
-            height: 90px;
-            overflow-y: auto;
-            flex-shrink: 0;
-        }
+        .command-window { background: #030407; border-top: 1px solid var(--border); padding: 8px 16px; font-family: 'Consolas', monospace; font-size: 0.72rem; height: 90px; overflow-y: auto; flex-shrink: 0; }
         .cmd-line { margin-bottom: 2px; }
         .cmd-time { color: #475569; margin-right: 8px; }
         .cmd-sys { color: #38bdf8; }
@@ -730,30 +397,29 @@
         .cmd-ok { color: #4ade80; }
         .cmd-data { color: #c084fc; }
 
-        .alert-box {
-            padding: 10px 12px;
-            border-radius: 6px;
-            margin-bottom: 12px;
-            font-size: 0.75rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-        }
-        .alert-box.warn { background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.3); color: #eab308; }
-        .alert-box.info { background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #3b82f6; }
-        .alert-box.success { background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; }
+        .fleet-item { background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; margin-bottom: 6px; display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; font-size: 0.75rem; }
+        .fleet-icon { width: 32px; height: 32px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+        .fleet-icon.exc { background: rgba(245, 158, 11, 0.2); }
+        .fleet-icon.dt { background: rgba(59, 130, 246, 0.2); }
+        .fleet-icon.dz { background: rgba(239, 68, 68, 0.2); }
+        .fleet-icon.dr { background: rgba(168, 85, 247, 0.2); }
+        .fleet-icon.wt { background: rgba(16, 185, 129, 0.2); }
+        .fleet-icon.lv { background: rgba(234, 179, 8, 0.2); }
+        .fleet-info b { display: block; color: var(--text-primary); font-size: 0.8rem; }
+        .fleet-info span { color: var(--text-dim); font-size: 0.7rem; }
+        .fleet-status { padding: 3px 8px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; }
+        .st-active { background: rgba(16, 185, 129, 0.2); color: var(--accent-success); }
+        .st-idle { background: rgba(234, 179, 8, 0.2); color: var(--accent-warn); }
+        .st-maint { background: rgba(239, 68, 68, 0.2); color: var(--accent-cutoff); }
 
-        .form-group { margin-bottom: 10px; }
-        .form-group label { display: block; font-size: 0.72rem; color: var(--text-secondary); margin-bottom: 3px; }
-        .form-group select, .form-group input {
-            width: 100%;
-            padding: 6px 8px;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            border-radius: 4px;
-            font-size: 0.78rem;
-        }
+        .block-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+        .block-table th { background: var(--bg-input); padding: 8px 10px; text-align: left; font-weight: 700; color: var(--accent-ni); border-bottom: 2px solid var(--border); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .block-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); }
+        .block-table tr:hover td { background: rgba(245, 158, 11, 0.05); }
+        .block-table .num { font-family: 'Consolas', monospace; text-align: right; }
+
+        .progress-bar { width: 100%; height: 6px; background: var(--bg-input); border-radius: 3px; overflow: hidden; margin-top: 3px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-ni), var(--accent-success)); border-radius: 3px; }
     </style>
 </head>
 <body>
@@ -762,7 +428,7 @@
         <div class="logo-area">
             <div class="logo-icon">Ni</div>
             <div>
-                <h1>NickelOps Seram — Pusat Kendali Tambang v10.0</h1>
+                <h1>NickelOps Seram — Pusat Kendali Tambang v11.0</h1>
                 <p>PT Manusela Prima Mining · Tambang Nikel Laterit · Kab. Seram Bagian Barat, Maluku</p>
             </div>
         </div>
@@ -777,6 +443,7 @@
     <nav class="tab-nav">
         <button class="tab-btn active" data-tab="pit">🗺️ 3D Pit Model</button>
         <button class="tab-btn" data-tab="dashboard">📊 Dashboard</button>
+        <button class="tab-btn" data-tab="geostat">📈 Geostatistik <span class="badge">NEW</span></button>
         <button class="tab-btn" data-tab="production">⚙️ Produksi</button>
         <button class="tab-btn" data-tab="blocks">🧱 Block Model <span class="badge">284K</span></button>
         <button class="tab-btn" data-tab="fleet">🚛 Fleet <span class="badge">22</span></button>
@@ -795,7 +462,6 @@
         <div class="tab-page pit-page active" id="page-pit">
             <canvas id="canvas3d"></canvas>
             
-            <!-- VIEW CONTROLS - LEFT SIDE -->
             <div class="view-controls">
                 <button class="view-ctrl-btn active" id="btn-iso" title="Isometric">⬡</button>
                 <button class="view-ctrl-btn" id="btn-top" title="Top View">⬆</button>
@@ -824,16 +490,9 @@
                 </div>
             </div>
 
-            <!-- RIGHT COLUMN WITH LAYER CONTROL -->
             <div class="right-column">
-                
-                <!-- LAYER CONTROL PANEL (DataMine Style) -->
                 <div class="layer-panel">
-                    <div class="overlay-title">
-                        <span>🎚️ Layer Control</span>
-                        <span style="font-size: 0.6rem; color: var(--text-dim);">DataMine Style</span>
-                    </div>
-                    
+                    <div class="overlay-title"><span>🎚️ Layer Control</span><span style="font-size: 0.6rem; color: var(--text-dim);">DataMine Style</span></div>
                     <div class="layer-header">
                         <span>Visibility</span>
                         <div class="layer-actions">
@@ -842,120 +501,41 @@
                         </div>
                     </div>
 
-                    <!-- GEOLOGY LAYERS -->
                     <div style="font-size: 0.58rem; color: var(--accent-ni); text-transform: uppercase; letter-spacing: 0.5px; margin: 4px 0 2px 0; font-weight: 700;">⛏️ Geology</div>
-                    
-                    <div class="layer-item" data-layer="terrain">
-                        <input type="checkbox" class="layer-checkbox" checked>
-                        <div class="layer-color" style="background:#3a4a2a"></div>
-                        <span class="layer-name">🌍 Terrain & Vegetation</span>
-                        <button class="layer-isolate" title="Isolate">◉</button>
-                    </div>
-                    <div class="layer-item" data-layer="benches">
-                        <input type="checkbox" class="layer-checkbox" checked>
-                        <div class="layer-color" style="background:#6b5438"></div>
-                        <span class="layer-name">🕳️ Pit Benches (8 lvl)</span>
-                        <button class="layer-isolate" title="Isolate">◉</button>
-                    </div>
-                    <div class="layer-item" data-layer="oreblocks">
-                        <input type="checkbox" class="layer-checkbox" checked>
-                        <div class="layer-color" style="background:linear-gradient(135deg,#ef4444,#f59e0b)"></div>
-                        <span class="layer-name">🧱 Ore Blocks (Grade)</span>
-                        <button class="layer-isolate" title="Isolate">◉</button>
-                    </div>
+                    <div class="layer-item" data-layer="terrain"><input type="checkbox" class="layer-checkbox" checked><div class="layer-color" style="background:#3a4a2a"></div><span class="layer-name">🌍 Terrain & Vegetation</span><button class="layer-isolate">◉</button></div>
+                    <div class="layer-item" data-layer="benches"><input type="checkbox" class="layer-checkbox" checked><div class="layer-color" style="background:#6b5438"></div><span class="layer-name">🕳️ Pit Benches (8 lvl)</span><button class="layer-isolate">◉</button></div>
+                    <div class="layer-item" data-layer="oreblocks"><input type="checkbox" class="layer-checkbox" checked><div class="layer-color" style="background:linear-gradient(135deg,#ef4444,#f59e0b)"></div><span class="layer-name">🧱 Ore Blocks (Grade)</span><button class="layer-isolate">◉</button></div>
 
-                    <!-- INFRASTRUCTURE LAYERS -->
                     <div style="font-size: 0.58rem; color: var(--accent-info); text-transform: uppercase; letter-spacing: 0.5px; margin: 6px 0 2px 0; font-weight: 700;">🏗️ Infrastructure</div>
-                    
-                    <div class="layer-item" data-layer="roads">
-                        <input type="checkbox" class="layer-checkbox" checked>
-                        <div class="layer-color" style="background:#4a4a4a"></div>
-                        <span class="layer-name">🛣️ Haul Roads & Ramp</span>
-                        <button class="layer-isolate" title="Isolate">◉</button>
-                    </div>
-                    <div class="layer-item" data-layer="facilities">
-                        <input type="checkbox" class="layer-checkbox" checked>
-                        <div class="layer-color" style="background:#6b7280"></div>
-                        <span class="layer-name">🏭 Facilities & ROM</span>
-                        <button class="layer-isolate" title="Isolate">◉</button>
-                    </div>
-                    <div class="layer-item" data-layer="stockpiles">
-                        <input type="checkbox" class="layer-checkbox" checked>
-                        <div class="layer-color" style="background:#8b4513"></div>
-                        <span class="layer-name">📦 Stockpiles</span>
-                        <button class="layer-isolate" title="Isolate">◉</button>
-                    </div>
+                    <div class="layer-item" data-layer="roads"><input type="checkbox" class="layer-checkbox" checked><div class="layer-color" style="background:#4a4a4a"></div><span class="layer-name">🛣️ Haul Roads & Ramp</span><button class="layer-isolate">◉</button></div>
+                    <div class="layer-item" data-layer="facilities"><input type="checkbox" class="layer-checkbox" checked><div class="layer-color" style="background:#6b7280"></div><span class="layer-name">🏭 Facilities & ROM</span><button class="layer-isolate">◉</button></div>
+                    <div class="layer-item" data-layer="stockpiles"><input type="checkbox" class="layer-checkbox" checked><div class="layer-color" style="background:#8b4513"></div><span class="layer-name">📦 Stockpiles</span><button class="layer-isolate">◉</button></div>
 
-                    <!-- OPERATIONS LAYERS -->
                     <div style="font-size: 0.58rem; color: var(--accent-success); text-transform: uppercase; letter-spacing: 0.5px; margin: 6px 0 2px 0; font-weight: 700;">⚙️ Operations</div>
-                    
-                    <div class="layer-item" data-layer="equipment">
-                        <input type="checkbox" class="layer-checkbox" checked>
-                        <div class="layer-color" style="background:#f59e0b"></div>
-                        <span class="layer-name">🚛 Equipment (Animated)</span>
-                        <button class="layer-isolate" title="Isolate">◉</button>
-                    </div>
-                    <div class="layer-item" data-layer="lighting">
-                        <input type="checkbox" class="layer-checkbox" checked>
-                        <div class="layer-color" style="background:#fbbf24"></div>
-                        <span class="layer-name">💡 Lighting Towers</span>
-                        <button class="layer-isolate" title="Isolate">◉</button>
-                    </div>
+                    <div class="layer-item" data-layer="equipment"><input type="checkbox" class="layer-checkbox" checked><div class="layer-color" style="background:#f59e0b"></div><span class="layer-name">🚛 Equipment (Animated)</span><button class="layer-isolate">◉</button></div>
+                    <div class="layer-item" data-layer="lighting"><input type="checkbox" class="layer-checkbox" checked><div class="layer-color" style="background:#fbbf24"></div><span class="layer-name">💡 Lighting Towers</span><button class="layer-isolate">◉</button></div>
 
-                    <!-- ANNOTATION LAYERS -->
                     <div style="font-size: 0.58rem; color: var(--accent-purple); text-transform: uppercase; letter-spacing: 0.5px; margin: 6px 0 2px 0; font-weight: 700;">🏷️ Annotation</div>
-                    
-                    <div class="layer-item" data-layer="labels">
-                        <input type="checkbox" class="layer-checkbox" checked>
-                        <div class="layer-color" style="background:#f59e0b"></div>
-                        <span class="layer-name">📝 Labels & Signs</span>
-                        <button class="layer-isolate" title="Isolate">◉</button>
-                    </div>
-                    <div class="layer-item" data-layer="safety">
-                        <input type="checkbox" class="layer-checkbox" checked>
-                        <div class="layer-color" style="background:#fbbf24"></div>
-                        <span class="layer-name">⚠️ Safety (Rim, Posts)</span>
-                        <button class="layer-isolate" title="Isolate">◉</button>
-                    </div>
-                    <div class="layer-item" data-layer="grid">
-                        <input type="checkbox" class="layer-checkbox" checked>
-                        <div class="layer-color" style="background:#1a2030"></div>
-                        <span class="layer-name">📐 Grid Helper</span>
-                        <button class="layer-isolate" title="Isolate">◉</button>
-                    </div>
+                    <div class="layer-item" data-layer="labels"><input type="checkbox" class="layer-checkbox" checked><div class="layer-color" style="background:#f59e0b"></div><span class="layer-name">📝 Labels & Signs</span><button class="layer-isolate">◉</button></div>
+                    <div class="layer-item" data-layer="safety"><input type="checkbox" class="layer-checkbox" checked><div class="layer-color" style="background:#fbbf24"></div><span class="layer-name">⚠️ Safety (Rim, Posts)</span><button class="layer-isolate">◉</button></div>
+                    <div class="layer-item" data-layer="grid"><input type="checkbox" class="layer-checkbox" checked><div class="layer-color" style="background:#1a2030"></div><span class="layer-name">📐 Grid Helper</span><button class="layer-isolate">◉</button></div>
 
                     <div class="layer-divider"></div>
-
-                    <!-- TRANSPARENCY CONTROL -->
                     <div style="font-size: 0.58rem; color: var(--accent-warn); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; font-weight: 700;">🔍 Transparency</div>
-                    <div class="layer-slider-row">
-                        <label>Benches:</label>
-                        <input type="range" min="20" max="100" value="100" id="slider-benches">
-                        <span class="val" id="val-benches">100%</span>
-                    </div>
-                    <div class="layer-slider-row">
-                        <label>Terrain:</label>
-                        <input type="range" min="20" max="100" value="100" id="slider-terrain">
-                        <span class="val" id="val-terrain">100%</span>
-                    </div>
+                    <div class="layer-slider-row"><label>Benches:</label><input type="range" min="20" max="100" value="100" id="slider-benches"><span class="val" id="val-benches">100%</span></div>
+                    <div class="layer-slider-row"><label>Terrain:</label><input type="range" min="20" max="100" value="100" id="slider-terrain"><span class="val" id="val-terrain">100%</span></div>
 
-                    <!-- SECTION CUT CONTROL -->
                     <div class="section-cut-panel">
-                        <div class="section-cut-title">✂️ Section Cut (Potongan)</div>
+                        <div class="section-cut-title">✂️ Section Cut</div>
                         <div class="section-btn-group">
                             <button class="section-btn" data-section="off">OFF</button>
                             <button class="section-btn" data-section="x">X-Plane</button>
                             <button class="section-btn" data-section="y">Y-Plane</button>
                             <button class="section-btn" data-section="z">Z-Plane</button>
                         </div>
-                        <div class="layer-slider-row">
-                            <label>Position:</label>
-                            <input type="range" min="-100" max="100" value="0" id="slider-section">
-                            <span class="val" id="val-section">0</span>
-                        </div>
+                        <div class="layer-slider-row"><label>Position:</label><input type="range" min="-100" max="100" value="0" id="slider-section"><span class="val" id="val-section">0</span></div>
                     </div>
 
-                    <!-- DISPLAY MODE -->
                     <div class="section-cut-panel">
                         <div class="section-cut-title">🎨 Display Mode</div>
                         <div class="section-btn-group">
@@ -967,7 +547,6 @@
                     </div>
                 </div>
 
-                <!-- PIT AREA A -->
                 <div class="right-panel">
                     <div class="overlay-title"><span>📍 Pit Area A</span><span class="tag success">Live</span></div>
                     <div style="font-size: 0.7rem; line-height: 1.6;">
@@ -982,7 +561,6 @@
                     </div>
                 </div>
 
-                <!-- DISTRIBUSI PER BENCH -->
                 <div class="right-panel">
                     <div class="overlay-title"><span>🎯 Distribusi per Bench</span></div>
                     <div>
@@ -997,7 +575,6 @@
                     </div>
                 </div>
 
-                <!-- STATISTIK PIT -->
                 <div class="right-panel">
                     <div class="overlay-title"><span>📊 Statistik Pit</span></div>
                     <div style="font-size: 0.68rem; line-height: 1.6;">
@@ -1007,12 +584,9 @@
                         <div class="info-row"><span>Strip Ratio:</span><b class="warn">1.45</b></div>
                         <div class="info-row"><span>Dimensi:</span><b>130×130×40 m</b></div>
                         <div class="info-row"><span>Ramp Length:</span><b class="ni">485 m</b></div>
-                        <div class="info-row"><span>Bench Width:</span><b>5.0 m</b></div>
-                        <div class="info-row"><span>Highwall Angle:</span><b>65°</b></div>
                     </div>
                 </div>
 
-                <!-- LEGENDA -->
                 <div class="right-panel">
                     <div class="overlay-title"><span>🗺️ Legenda Peta</span></div>
                     <div class="legend-item"><div class="legend-color" style="background:#ef4444"></div>High Grade &gt;1.8%<b>38,420</b></div>
@@ -1022,10 +596,8 @@
                     <div class="legend-item"><div class="legend-color" style="background:#fbbf24"></div>Haul Road / Ramp</div>
                     <div class="legend-item"><div class="legend-color" style="background:#10b981"></div>Stockpile / ROM</div>
                     <div class="legend-item"><div class="legend-color" style="background:#a855f7"></div>Facility</div>
-                    <div class="legend-item"><div class="legend-color" style="background:#3b82f6"></div>Direction Arrow</div>
                 </div>
 
-                <!-- UNIT AKTIF -->
                 <div class="right-panel">
                     <div class="overlay-title"><span>🚛 Unit Aktif</span><span class="tag success">18</span></div>
                     <div style="font-size: 0.65rem; line-height: 1.5;">
@@ -1035,11 +607,9 @@
                         <div class="info-row"><span>🚛 DT-102 Hino</span><b class="info">→ROM</b></div>
                         <div class="info-row"><span>🚧 DZ-201 CAT D8</span><b class="ni">B3</b></div>
                         <div class="info-row"><span>⛏️ DR-301 Atlas</span><b class="warn">B4</b></div>
-                        <div class="info-row"><span>💧 WT-401 Water</span><b>Haul Rd</b></div>
                     </div>
                 </div>
 
-                <!-- REALTIME OPS -->
                 <div class="right-panel">
                     <div class="overlay-title"><span>⚡ Realtime Ops</span></div>
                     <div style="font-size: 0.65rem; line-height: 1.5;">
@@ -1058,34 +628,274 @@
         <div class="tab-page" id="page-dashboard">
             <div class="page-content">
                 <div class="page-title"><div class="icon">📊</div>Dashboard Operasional</div>
-                <div class="alert-box warn">
-                    <span>⚠️</span>
-                    <div><b>Perhatian:</b> Hujan ringan diprediksi 14:00 WIT. Siapkan drainase pit & kurangi kecepatan haul road.</div>
-                </div>
+                <div class="alert-box warn"><span>⚠️</span><div><b>Perhatian:</b> Hujan ringan diprediksi 14:00 WIT. Siapkan drainase pit.</div></div>
                 <div class="grid-6">
-                    <div class="kpi-card"><div class="kpi-label">Produksi</div><div class="kpi-value">3,842 <span style="font-size:0.7rem; color:var(--text-dim)">t</span></div><div class="kpi-sub"><span>Target: 4,200</span><span class="trend-down">▼ 8.5%</span></div></div>
-                    <div class="kpi-card success"><div class="kpi-label">Ore Hauling</div><div class="kpi-value">1,924 <span style="font-size:0.7rem; color:var(--text-dim)">t</span></div><div class="kpi-sub"><span>Ni 1.72%</span><span class="trend-up">▲ 3.2%</span></div></div>
-                    <div class="kpi-card info"><div class="kpi-label">Movement</div><div class="kpi-value">7,684 <span style="font-size:0.7rem; color:var(--text-dim)">BCM</span></div><div class="kpi-sub"><span>SR: 1.85</span><span class="trend-up">▲ 1.1%</span></div></div>
-                    <div class="kpi-card warn"><div class="kpi-label">Fuel</div><div class="kpi-value">4,280 <span style="font-size:0.7rem; color:var(--text-dim)">L</span></div><div class="kpi-sub"><span>0.56 L/t</span><span class="trend-down">▼ 2.4%</span></div></div>
-                    <div class="kpi-card purple"><div class="kpi-label">Cycle Time</div><div class="kpi-value">42 <span style="font-size:0.7rem; color:var(--text-dim)">min</span></div><div class="kpi-sub"><span>Target: 40</span><span class="trend-down">▲ 5%</span></div></div>
+                    <div class="kpi-card"><div class="kpi-label">Produksi</div><div class="kpi-value">3,842 t</div><div class="kpi-sub"><span>Target: 4,200</span><span class="trend-down">▼ 8.5%</span></div></div>
+                    <div class="kpi-card success"><div class="kpi-label">Ore Hauling</div><div class="kpi-value">1,924 t</div><div class="kpi-sub"><span>Ni 1.72%</span><span class="trend-up">▲ 3.2%</span></div></div>
+                    <div class="kpi-card info"><div class="kpi-label">Movement</div><div class="kpi-value">7,684 BCM</div><div class="kpi-sub"><span>SR: 1.85</span><span class="trend-up">▲ 1.1%</span></div></div>
+                    <div class="kpi-card warn"><div class="kpi-label">Fuel</div><div class="kpi-value">4,280 L</div><div class="kpi-sub"><span>0.56 L/t</span><span class="trend-down">▼ 2.4%</span></div></div>
+                    <div class="kpi-card purple"><div class="kpi-label">Cycle Time</div><div class="kpi-value">42 min</div><div class="kpi-sub"><span>Target: 40</span><span class="trend-down">▲ 5%</span></div></div>
                     <div class="kpi-card err"><div class="kpi-label">Safety</div><div class="kpi-value">0</div><div class="kpi-sub"><span>247 hari</span><span class="trend-up">✓ Zero</span></div></div>
                 </div>
                 <div class="grid-2">
-                    <div class="chart-container tall"><h3 style="font-size:0.82rem; margin-bottom:8px; color:var(--text-secondary);">📈 Produksi 7 Hari <span class="tag">ton</span></h3><div class="chart-wrapper"><canvas id="chartProd"></canvas></div></div>
-                    <div class="chart-container tall"><h3 style="font-size:0.82rem; margin-bottom:8px; color:var(--text-secondary);">🥧 Distribusi Material <span class="tag info">BCM</span></h3><div class="chart-wrapper"><canvas id="chartMaterial"></canvas></div></div>
+                    <div class="chart-container tall"><h3 style="font-size:0.82rem; margin-bottom:8px; color:var(--text-secondary);">📈 Produksi 7 Hari</h3><div class="chart-wrapper"><canvas id="chartProd"></canvas></div></div>
+                    <div class="chart-container tall"><h3 style="font-size:0.82rem; margin-bottom:8px; color:var(--text-secondary);">🥧 Distribusi Material</h3><div class="chart-wrapper"><canvas id="chartMaterial"></canvas></div></div>
                 </div>
                 <div class="grid-2">
-                    <div class="chart-container medium"><h3 style="font-size:0.82rem; margin-bottom:8px; color:var(--text-secondary);">📊 Grade Ni per Bench <span class="tag cutoff">CO 1.2%</span></h3><div class="chart-wrapper"><canvas id="chartGrade"></canvas></div></div>
-                    <div class="chart-container medium"><h3 style="font-size:0.82rem; margin-bottom:8px; color:var(--text-secondary);">⛽ Fuel per Unit <span class="tag warn">L/hari</span></h3><div class="chart-wrapper"><canvas id="chartFuel"></canvas></div></div>
+                    <div class="chart-container medium"><h3 style="font-size:0.82rem; margin-bottom:8px; color:var(--text-secondary);">📊 Grade Ni per Bench</h3><div class="chart-wrapper"><canvas id="chartGrade"></canvas></div></div>
+                    <div class="chart-container medium"><h3 style="font-size:0.82rem; margin-bottom:8px; color:var(--text-secondary);">⛽ Fuel per Unit</h3><div class="chart-wrapper"><canvas id="chartFuel"></canvas></div></div>
                 </div>
                 <div class="grid-2">
-                    <div class="chart-container medium"><h3 style="font-size:0.82rem; margin-bottom:8px; color:var(--text-secondary);">💰 Biaya Operasional <span class="tag">USD</span></h3><div class="chart-wrapper"><canvas id="chartCost"></canvas></div></div>
-                    <div class="chart-container medium"><h3 style="font-size:0.82rem; margin-bottom:8px; color:var(--text-secondary);">📉 Recovery & Grade <span class="tag success">%</span></h3><div class="chart-wrapper"><canvas id="chartRecovery"></canvas></div></div>
+                    <div class="chart-container medium"><h3 style="font-size:0.82rem; margin-bottom:8px; color:var(--text-secondary);">💰 Biaya Operasional</h3><div class="chart-wrapper"><canvas id="chartCost"></canvas></div></div>
+                    <div class="chart-container medium"><h3 style="font-size:0.82rem; margin-bottom:8px; color:var(--text-secondary);">📉 Recovery & Grade</h3><div class="chart-wrapper"><canvas id="chartRecovery"></canvas></div></div>
                 </div>
             </div>
         </div>
 
-        <!-- TAB 3: PRODUCTION -->
+        <!-- TAB 3: GEOSTATISTIK (NEW) -->
+        <div class="tab-page" id="page-geostat">
+            <div class="page-content">
+                <div class="page-title"><div class="icon">📈</div>Geostatistik · Variogram & Kriging</div>
+                
+                <div class="alert-box info">
+                    <span>📊</span>
+                    <div><b>Model Variogram:</b> Spherical · Nugget 0.08 · Sill 0.42 · Range 85 m · Direction: Omnidirectional (0° azimuth) · Data pairs: 4,284 · Lag distance: 5 m</div>
+                </div>
+
+                <!-- KPI ROW -->
+                <div class="grid-6">
+                    <div class="kpi-card info"><div class="kpi-label">Nugget (C₀)</div><div class="kpi-value">0.08</div><div class="kpi-sub"><span>19.0% of sill</span></div></div>
+                    <div class="kpi-card"><div class="kpi-label">Sill (C₀+C)</div><div class="kpi-value">0.42</div><div class="kpi-sub"><span>Variance max</span></div></div>
+                    <div class="kpi-card success"><div class="kpi-label">Range (a)</div><div class="kpi-value">85 <span style="font-size:0.7rem">m</span></div><div class="kpi-sub"><span>Correlation dist</span></div></div>
+                    <div class="kpi-card warn"><div class="kpi-label">Model</div><div class="kpi-value" style="font-size:1rem;">Spherical</div><div class="kpi-sub"><span>Best fit (R²=0.94)</span></div></div>
+                    <div class="kpi-card purple"><div class="kpi-label">Drillholes</div><div class="kpi-value">42</div><div class="kpi-sub"><span>1,847 assays</span></div></div>
+                    <div class="kpi-card err"><div class="kpi-label">Kriging SD</div><div class="kpi-value">0.32</div><div class="kpi-sub"><span>Avg uncertainty</span></div></div>
+                </div>
+
+                <!-- VARIOGRAM SECTION -->
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-title">📊 Experimental Variogram + Model Fit</div>
+                        <div class="chart-wrapper" style="height: 320px; min-height: 320px;"><canvas id="chartVariogram"></canvas></div>
+                        <div style="margin-top: 8px; font-size: 0.68rem; color: var(--text-secondary); line-height: 1.6;">
+                            <div class="info-row"><span>Variance (γ):</span><b class="ni">Semivariance (%Ni²)</b></div>
+                            <div class="info-row"><span>Lag Distance (h):</span><b>0 - 120 m</b></div>
+                            <div class="info-row"><span>Number of Pairs:</span><b class="ni">4,284</b></div>
+                            <div class="info-row"><span>Fit Quality (R²):</span><b class="ok">0.942</b></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">🔬 Variogram Cloud (All Pairs)</div>
+                        <div class="chart-wrapper" style="height: 320px; min-height: 320px;"><canvas id="chartVariogramCloud"></canvas></div>
+                        <div style="margin-top: 8px; font-size: 0.68rem; color: var(--text-secondary); line-height: 1.6;">
+                            <div class="info-row"><span>Total Pairs:</span><b class="ni">18,472</b></div>
+                            <div class="info-row"><span>Outliers Removed:</span><b>284 (1.5%)</b></div>
+                            <div class="info-row"><span>Top-cut Applied:</span><b class="warn">3.5% Ni</b></div>
+                            <div class="info-row"><span>Composite Length:</span><b>1.0 m</b></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DIRECTIONAL VARIOGRAMS -->
+                <div class="grid-3">
+                    <div class="card">
+                        <div class="card-title">🧭 Major Axis (N45°E)</div>
+                        <div class="chart-wrapper" style="height: 220px; min-height: 220px;"><canvas id="chartVarMajor"></canvas></div>
+                        <div style="margin-top: 6px; font-size: 0.65rem;">
+                            <div class="info-row"><span>Range:</span><b class="ok">112 m</b></div>
+                            <div class="info-row"><span>Anisotropy Ratio:</span><b class="ni">1.32</b></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">🧭 Minor Axis (N135°E)</div>
+                        <div class="chart-wrapper" style="height: 220px; min-height: 220px;"><canvas id="chartVarMinor"></canvas></div>
+                        <div style="margin-top: 6px; font-size: 0.65rem;">
+                            <div class="info-row"><span>Range:</span><b class="warn">85 m</b></div>
+                            <div class="info-row"><span>Anisotropy Ratio:</span><b>1.00</b></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">🧭 Vertical (90°)</div>
+                        <div class="chart-wrapper" style="height: 220px; min-height: 220px;"><canvas id="chartVarVertical"></canvas></div>
+                        <div style="margin-top: 6px; font-size: 0.65rem;">
+                            <div class="info-row"><span>Range:</span><b class="err">18 m</b></div>
+                            <div class="info-row"><span>Anisotropy Ratio:</span><b class="err">0.21</b></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KRIGING ESTIMATION MAPS -->
+                <div class="page-title" style="margin-top: 20px;"><div class="icon">🗺️</div>Kriging Estimation · Bench 3 (-10m)</div>
+                
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-title">🎨 Kriging Estimate — Ni Grade (%)</div>
+                        <div class="heatmap-container">
+                            <canvas id="heatmapKriging" class="heatmap-canvas"></canvas>
+                        </div>
+                        <div class="heatmap-legend">
+                            <span>0.0%</span>
+                            <div class="heatmap-gradient"></div>
+                            <span>3.0%</span>
+                        </div>
+                        <div style="margin-top: 8px; font-size: 0.68rem; color: var(--text-secondary); line-height: 1.6;">
+                            <div class="info-row"><span>Estimator:</span><b class="ni">Ordinary Kriging</b></div>
+                            <div class="info-row"><span>Search Radius:</span><b>75 m</b></div>
+                            <div class="info-row"><span>Min/Max Samples:</span><b>3 / 12</b></div>
+                            <div class="info-row"><span>Block Size:</span><b>10×10×5 m</b></div>
+                            <div class="info-row"><span>Estimated Mean:</span><b class="ok">1.68%</b></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">📉 Kriging Variance (Uncertainty)</div>
+                        <div class="heatmap-container">
+                            <canvas id="heatmapVariance" class="heatmap-canvas"></canvas>
+                        </div>
+                        <div class="heatmap-legend">
+                            <span>0.00 (Low)</span>
+                            <div class="heatmap-gradient" style="background: linear-gradient(to right, #10b981 0%, #eab308 50%, #ef4444 100%);"></div>
+                            <span>0.80 (High)</span>
+                        </div>
+                        <div style="margin-top: 8px; font-size: 0.68rem; color: var(--text-secondary); line-height: 1.6;">
+                            <div class="info-row"><span>Avg Variance:</span><b class="warn">0.102</b></div>
+                            <div class="info-row"><span>Std Deviation:</span><b>0.32</b></div>
+                            <div class="info-row"><span>High Confidence:</span><b class="ok">68% of blocks</b></div>
+                            <div class="info-row"><span>Low Confidence:</span><b class="err">8% of blocks</b></div>
+                            <div class="info-row"><span>Coeff. Variation:</span><b>19.0%</b></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CROSS VALIDATION -->
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-title">🔄 Cross-Validation (Leave-One-Out)</div>
+                        <div class="chart-wrapper" style="height: 280px; min-height: 280px;"><canvas id="chartCrossVal"></canvas></div>
+                        <div style="margin-top: 8px; font-size: 0.68rem; color: var(--text-secondary); line-height: 1.6;">
+                            <div class="info-row"><span>Slope (Regression):</span><b class="ok">0.98</b></div>
+                            <div class="info-row"><span>Intercept:</span><b>0.04</b></div>
+                            <div class="info-row"><span>Correlation (r):</span><b class="ok">0.872</b></div>
+                            <div class="info-row"><span>Mean Error:</span><b class="ok">+0.02 (unbiased)</b></div>
+                            <div class="info-row"><span>MSDR:</span><b class="ok">1.04 (ideal: 1.0)</b></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title">📊 Error Distribution (Histogram)</div>
+                        <div class="chart-wrapper" style="height: 280px; min-height: 280px;"><canvas id="chartErrorHist"></canvas></div>
+                        <div style="margin-top: 8px; font-size: 0.68rem; color: var(--text-secondary); line-height: 1.6;">
+                            <div class="info-row"><span>Mean Error:</span><b class="ok">+0.02%</b></div>
+                            <div class="info-row"><span>Std Dev Error:</span><b>0.28%</b></div>
+                            <div class="info-row"><span>Skewness:</span><b class="ok">0.08 (normal)</b></div>
+                            <div class="info-row"><span>Kurtosis:</span><b>2.94</b></div>
+                            <div class="info-row"><span>Max |Error|:</span><b class="warn">0.82%</b></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VARIOGRAM PARAMETERS TABLE -->
+                <div class="card" style="margin-top: 16px;">
+                    <div class="card-title">📋 Struktur Variogram Lengkap</div>
+                    <table class="block-table">
+                        <thead>
+                            <tr>
+                                <th>Structure</th>
+                                <th>Model</th>
+                                <th style="text-align:right">Contribution</th>
+                                <th style="text-align:right">Range Major (m)</th>
+                                <th style="text-align:right">Range Minor (m)</th>
+                                <th style="text-align:right">Range Vertical (m)</th>
+                                <th style="text-align:right">Azimuth</th>
+                                <th style="text-align:right">Dip</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><b>Nugget</b></td>
+                                <td>—</td>
+                                <td class="num"><b class="warn">0.08</b></td>
+                                <td class="num">0</td>
+                                <td class="num">0</td>
+                                <td class="num">0</td>
+                                <td class="num">—</td>
+                                <td class="num">—</td>
+                            </tr>
+                            <tr>
+                                <td><b>Structure 1</b></td>
+                                <td><span class="tag success">Spherical</span></td>
+                                <td class="num"><b class="ni">0.24</b></td>
+                                <td class="num"><b class="ok">112</b></td>
+                                <td class="num">85</td>
+                                <td class="num">18</td>
+                                <td class="num">N45°E</td>
+                                <td class="num">15°</td>
+                            </tr>
+                            <tr>
+                                <td><b>Structure 2</b></td>
+                                <td><span class="tag info">Exponential</span></td>
+                                <td class="num"><b class="ni">0.10</b></td>
+                                <td class="num">240</td>
+                                <td class="num">180</td>
+                                <td class="num">45</td>
+                                <td class="num">N45°E</td>
+                                <td class="num">10°</td>
+                            </tr>
+                            <tr style="background: rgba(245, 158, 11, 0.08); font-weight: 700;">
+                                <td><b>TOTAL</b></td>
+                                <td>—</td>
+                                <td class="num"><b class="ni">0.42</b></td>
+                                <td class="num">—</td>
+                                <td class="num">—</td>
+                                <td class="num">—</td>
+                                <td class="num">—</td>
+                                <td class="num">—</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- KRIGING PARAMETERS -->
+                <div class="grid-3" style="margin-top: 16px;">
+                    <div class="card">
+                        <div class="card-title">🎯 Kriging Parameters</div>
+                        <div class="info-row"><span>Type:</span><b class="ni">Ordinary Kriging</b></div>
+                        <div class="info-row"><span>Variable:</span><b>Ni (%)</b></div>
+                        <div class="info-row"><span>Top-cut:</span><b class="warn">3.5% Ni</b></div>
+                        <div class="info-row"><span>Block Size X:</span><b>10 m</b></div>
+                        <div class="info-row"><span>Block Size Y:</span><b>10 m</b></div>
+                        <div class="info-row"><span>Block Size Z:</span><b>5 m</b></div>
+                        <div class="info-row"><span>Discretization:</span><b>3×3×3</b></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">🔍 Search Ellipsoid</div>
+                        <div class="info-row"><span>Radius Major:</span><b class="ni">75 m</b></div>
+                        <div class="info-row"><span>Radius Minor:</span><b>50 m</b></div>
+                        <div class="info-row"><span>Radius Vertical:</span><b>25 m</b></div>
+                        <div class="info-row"><span>Azimuth:</span><b>N45°E</b></div>
+                        <div class="info-row"><span>Dip:</span><b>15°</b></div>
+                        <div class="info-row"><span>Plunge:</span><b>0°</b></div>
+                        <div class="info-row"><span>Min Samples:</span><b class="ok">3</b></div>
+                        <div class="info-row"><span>Max Samples:</span><b>12</b></div>
+                        <div class="info-row"><span>Max per Drillhole:</span><b>4</b></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-title">📊 Estimation Quality</div>
+                        <div class="info-row"><span>Blocks Estimated:</span><b class="ni">284,000</b></div>
+                        <div class="info-row"><span>Empty Blocks:</span><b class="warn">1,284 (0.45%)</b></div>
+                        <div class="info-row"><span>Extrapolated:</span><b class="err">4,820 (1.7%)</b></div>
+                        <div class="info-row"><span>Interpolated:</span><b class="ok">277,896 (97.85%)</b></div>
+                        <div class="info-row"><span>Avg Slope Reg:</span><b class="ok">0.98</b></div>
+                        <div class="info-row"><span>Avg Correlation:</span><b class="ok">0.872</b></div>
+                        <div class="info-row"><span>Global Bias:</span><b class="ok">+1.2%</b></div>
+                        <div class="info-row"><span>Smoothing Factor:</span><b>0.72</b></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: PRODUCTION -->
         <div class="tab-page" id="page-production">
             <div class="page-content">
                 <div class="page-title"><div class="icon">⚙️</div>Detail Produksi & Shift</div>
@@ -1103,7 +913,7 @@
             </div>
         </div>
 
-        <!-- TAB 4: BLOCK MODEL -->
+        <!-- TAB 5: BLOCK MODEL -->
         <div class="tab-page" id="page-blocks">
             <div class="page-content">
                 <div class="page-title"><div class="icon">🧱</div>Block Model & Potensi Bijih</div>
@@ -1113,24 +923,10 @@
                     <div class="kpi-card warn"><div class="kpi-label">Marginal</div><div class="kpi-value">68,340</div></div>
                     <div class="kpi-card err"><div class="kpi-label">Waste</div><div class="kpi-value">72,820</div></div>
                 </div>
-                <div class="card" style="margin-bottom: 16px;">
-                    <div class="card-title">📋 Detail Blok per Kategori Grade</div>
-                    <table class="block-table">
-                        <thead><tr><th>Kategori</th><th>Range Ni</th><th style="text-align:right">Blok</th><th style="text-align:right">Volume (m³)</th><th style="text-align:right">Tonase (t)</th><th style="text-align:right">Ni Metal (t)</th><th style="text-align:right">Potensi/t</th><th style="text-align:right">Fe Avg</th></tr></thead>
-                        <tbody>
-                            <tr><td><span class="tag cutoff">High Grade</span></td><td>&gt; 1.80%</td><td class="num">38,420</td><td class="num">19,210,000</td><td class="num">34,578,000</td><td class="num"><b class="err">691,560</b></td><td class="num"><b class="err">0.020</b></td><td class="num">22.8%</td></tr>
-                            <tr><td><span class="tag">Medium Grade</span></td><td>1.50-1.80%</td><td class="num">52,180</td><td class="num">26,090,000</td><td class="num">46,962,000</td><td class="num"><b class="ni">774,873</b></td><td class="num"><b class="ni">0.0165</b></td><td class="num">20.4%</td></tr>
-                            <tr><td><span class="tag info">Low Grade</span></td><td>1.20-1.50%</td><td class="num">52,240</td><td class="num">26,120,000</td><td class="num">47,016,000</td><td class="num"><b class="info">611,208</b></td><td class="num"><b class="info">0.013</b></td><td class="num">18.6%</td></tr>
-                            <tr><td><span class="tag warn">Marginal</span></td><td>0.80-1.20%</td><td class="num">68,340</td><td class="num">34,170,000</td><td class="num">61,506,000</td><td class="num"><b class="warn">553,554</b></td><td class="num"><b class="warn">0.009</b></td><td class="num">16.2%</td></tr>
-                            <tr><td><span class="tag purple">Waste</span></td><td>&lt; 0.80%</td><td class="num">72,820</td><td class="num">36,410,000</td><td class="num">65,538,000</td><td class="num"><b>262,152</b></td><td class="num"><b>0.004</b></td><td class="num">12.8%</td></tr>
-                            <tr style="background: rgba(245, 158, 11, 0.08); font-weight: 700;"><td><b>TOTAL</b></td><td>—</td><td class="num"><b class="ni">284,000</b></td><td class="num"><b>142,000,000</b></td><td class="num"><b>255,600,000</b></td><td class="num"><b class="ni">2,893,347</b></td><td class="num"><b class="ni">0.0113</b></td><td class="num"><b>17.4%</b></td></tr>
-                        </tbody>
-                    </table>
-                </div>
             </div>
         </div>
 
-        <!-- TAB 5: FLEET -->
+        <!-- TAB 6: FLEET -->
         <div class="tab-page" id="page-fleet">
             <div class="page-content">
                 <div class="page-title"><div class="icon">🚛</div>Armada Alat Berat</div>
@@ -1150,7 +946,7 @@
             </div>
         </div>
 
-        <!-- TAB 6: STOCKPILE -->
+        <!-- TAB 7: STOCKPILE -->
         <div class="tab-page" id="page-stockpile">
             <div class="page-content">
                 <div class="page-title"><div class="icon">📦</div>Manajemen Stockpile & ROM</div>
@@ -1165,7 +961,7 @@
             </div>
         </div>
 
-        <!-- TAB 7: RESOURCE -->
+        <!-- TAB 8: RESOURCE -->
         <div class="tab-page" id="page-resource">
             <div class="page-content">
                 <div class="page-title"><div class="icon">⛏️</div>Estimasi Sumber Daya</div>
@@ -1178,8 +974,8 @@
                         <div class="info-row"><span>Radius:</span><b>75 m</b></div>
                     </div>
                     <div class="card">
-                        <div class="card-title">📊 Kriging</div>
-                        <div class="alert-box warn" style="margin:0;">⚠ Variogram belum tersedia</div>
+                        <div class="card-title">📊 Kriging (OK)</div>
+                        <div class="alert-box success" style="margin:0;">✓ Model variogram tersedia · Lihat tab Geostatistik</div>
                     </div>
                     <div class="card">
                         <div class="card-title">💎 Cadangan</div>
@@ -1192,7 +988,7 @@
             </div>
         </div>
 
-        <!-- TAB 8: BLASTING -->
+        <!-- TAB 9: BLASTING -->
         <div class="tab-page" id="page-blasting">
             <div class="page-content">
                 <div class="page-title"><div class="icon">💥</div>Desain Peledakan (Konya)</div>
@@ -1226,7 +1022,7 @@
             </div>
         </div>
 
-        <!-- TAB 9: GEOTECH -->
+        <!-- TAB 10: GEOTECH -->
         <div class="tab-page" id="page-geotech">
             <div class="page-content">
                 <div class="page-title"><div class="icon">🪨</div>Geoteknik</div>
@@ -1246,7 +1042,7 @@
             </div>
         </div>
 
-        <!-- TAB 10: LOGISTICS -->
+        <!-- TAB 11: LOGISTICS -->
         <div class="tab-page" id="page-logistics">
             <div class="page-content">
                 <div class="page-title"><div class="icon">🚚</div>Logistik</div>
@@ -1261,7 +1057,7 @@
             </div>
         </div>
 
-        <!-- TAB 11: FINANCE -->
+        <!-- TAB 12: FINANCE -->
         <div class="tab-page" id="page-finance">
             <div class="page-content">
                 <div class="page-title"><div class="icon">💰</div>Finansial</div>
@@ -1280,7 +1076,7 @@
             </div>
         </div>
 
-        <!-- TAB 12: SAFETY -->
+        <!-- TAB 13: SAFETY -->
         <div class="tab-page" id="page-safety">
             <div class="page-content">
                 <div class="page-title"><div class="icon">⚠️</div>HSE</div>
@@ -1301,9 +1097,9 @@
     </div>
 
     <div class="command-window" id="cmdWindow">
-        <div class="cmd-line"><span class="cmd-time">[08:00:01]</span> <span class="cmd-sys">SYS:</span> NickelOps Seram v10.0 · DataMine-style layer control loaded.</div>
-        <div class="cmd-line"><span class="cmd-time">[08:00:03]</span> <span class="cmd-ok">OK:</span> 11 layers registered · Section cut ready · 4 display modes.</div>
-        <div class="cmd-line"><span class="cmd-time">[08:00:05]</span> <span class="cmd-data">DATA:</span> 284,000 blocks · 42 drillholes · 22 fleet units.</div>
+        <div class="cmd-line"><span class="cmd-time">[08:00:01]</span> <span class="cmd-sys">SYS:</span> NickelOps Seram v11.0 · Geostatistik module loaded.</div>
+        <div class="cmd-line"><span class="cmd-time">[08:00:03]</span> <span class="cmd-ok">OK:</span> Variogram model: Spherical · C₀=0.08 · C=0.34 · a=85m.</div>
+        <div class="cmd-line"><span class="cmd-time">[08:00:05]</span> <span class="cmd-data">DATA:</span> Ordinary Kriging · 284,000 blocks estimated · R²=0.942.</div>
     </div>
 
     <script type="module">
@@ -1324,6 +1120,9 @@
                 btn.classList.add('active');
                 document.getElementById('page-' + tabId).classList.add('active');
                 if (tabId === 'pit' && !threeInitialized) setTimeout(init3D, 100);
+                if (tabId === 'geostat' && !geostatInitialized) {
+                    setTimeout(initGeostat, 150);
+                }
                 setTimeout(() => {
                     Object.values(chartInstances).forEach(c => c && c.resize && c.resize());
                     window.dispatchEvent(new Event('resize'));
@@ -1383,27 +1182,574 @@
         });
 
         // ============================================
-        // THREE.JS 3D SCENE WITH LAYER SYSTEM
+        // GEOSTATISTICS MODULE (VarioGRAM + KRIGING)
+        // ============================================
+        let geostatInitialized = false;
+
+        // Spherical variogram model: γ(h) = C₀ + C * [1.5*(h/a) - 0.5*(h/a)³] for h < a
+        function sphericalModel(h, C0, C, a) {
+            if (h <= 0) return 0;
+            if (h >= a) return C0 + C;
+            const ratio = h / a;
+            return C0 + C * (1.5 * ratio - 0.5 * ratio * ratio * ratio);
+        }
+
+        // Exponential model
+        function exponentialModel(h, C0, C, a) {
+            if (h <= 0) return 0;
+            return C0 + C * (1 - Math.exp(-3 * h / a));
+        }
+
+        // Generate dummy experimental variogram data
+        function generateVariogramData() {
+            const C0 = 0.08, C = 0.34, a = 85;
+            const lags = [];
+            const gamma = [];
+            const npairs = [];
+            
+            for (let h = 5; h <= 120; h += 5) {
+                lags.push(h);
+                // Add noise to model
+                const modelVal = sphericalModel(h, C0, C, a);
+                const noise = (Math.random() - 0.5) * 0.05;
+                gamma.push(Math.max(0.02, modelVal + noise));
+                // Number of pairs decreases with distance
+                npairs.push(Math.max(50, Math.round(600 - h * 4 + Math.random() * 50)));
+            }
+            return { lags, gamma, npairs, C0, C, a };
+        }
+
+        // Generate variogram cloud data
+        function generateVariogramCloud() {
+            const data = [];
+            for (let i = 0; i < 800; i++) {
+                const h = Math.random() * 120;
+                const baseGamma = sphericalModel(h, 0.08, 0.34, 85);
+                // Add heavy scatter (typical of variogram cloud)
+                const scatter = (Math.random() - 0.5) * 0.6 + (Math.random() * 0.3);
+                data.push({ x: h, y: Math.max(0, baseGamma + scatter) });
+            }
+            return data;
+        }
+
+        // Generate directional variograms
+        function generateDirectionalVar(majorRange, minorRange) {
+            const lags = [];
+            const gamma = [];
+            for (let h = 5; h <= 150; h += 5) {
+                lags.push(h);
+                const modelVal = sphericalModel(h, 0.08, 0.34, majorRange);
+                gamma.push(Math.max(0.02, modelVal + (Math.random() - 0.5) * 0.04));
+            }
+            return { lags, gamma };
+        }
+
+        // Generate Kriging estimation heatmap data
+        function generateKrigingHeatmap() {
+            const size = 60; // 60x60 grid
+            const data = [];
+            const centerX = size / 2;
+            const centerY = size / 2;
+            
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
+                    // Create realistic grade distribution with spatial correlation
+                    const dx = (x - centerX) / size;
+                    const dy = (y - centerY) / size;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    
+                    // Multiple anomalies
+                    const anomaly1 = Math.exp(-((dx-0.1)**2 + (dy+0.1)**2) * 20) * 1.5;
+                    const anomaly2 = Math.exp(-((dx+0.2)**2 + (dy-0.15)**2) * 15) * 1.2;
+                    const anomaly3 = Math.exp(-((dx-0.05)**2 + (dy-0.2)**2) * 25) * 0.9;
+                    
+                    // Base trend (higher grade near center)
+                    const base = 1.2 + Math.exp(-dist * 3) * 0.8;
+                    
+                    // Add noise (kriging smoothing)
+                    const noise = (Math.random() - 0.5) * 0.3;
+                    
+                    let grade = base + anomaly1 + anomaly2 + anomaly3 + noise;
+                    grade = Math.max(0.2, Math.min(3.0, grade));
+                    
+                    data.push({ x, y, grade });
+                }
+            }
+            return data;
+        }
+
+        // Generate Kriging variance heatmap
+        function generateVarianceHeatmap() {
+            const size = 60;
+            const data = [];
+            const centerX = size / 2;
+            const centerY = size / 2;
+            
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
+                    const dx = (x - centerX) / size;
+                    const dy = (y - centerY) / size;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    
+                    // Variance increases with distance from drillholes (at center and scattered)
+                    const drillholes = [
+                        {x: 0, y: 0}, {x: 0.15, y: 0.1}, {x: -0.15, y: -0.1},
+                        {x: 0.1, y: -0.15}, {x: -0.1, y: 0.15}, {x: 0.2, y: 0.05},
+                        {x: -0.2, y: -0.05}, {x: 0.05, y: 0.2}, {x: -0.05, y: -0.2}
+                    ];
+                    
+                    let minDist = 1;
+                    drillholes.forEach(dh => {
+                        const d = Math.sqrt((dx-dh.x)**2 + (dy-dh.y)**2);
+                        if (d < minDist) minDist = d;
+                    });
+                    
+                    // Variance increases with distance from nearest drillhole
+                    let variance = Math.min(0.8, minDist * 2.5 + 0.05);
+                    variance += (Math.random() - 0.5) * 0.08;
+                    variance = Math.max(0.02, Math.min(0.8, variance));
+                    
+                    data.push({ x, y, variance });
+                }
+            }
+            return data;
+        }
+
+        // Generate cross-validation data
+        function generateCrossValData() {
+            const data = [];
+            for (let i = 0; i < 120; i++) {
+                const actual = 0.5 + Math.random() * 2.5;
+                // Estimated with some correlation + noise
+                const estimated = actual * 0.98 + 0.04 + (Math.random() - 0.5) * 0.5;
+                data.push({ actual, estimated: Math.max(0.1, estimated) });
+            }
+            return data;
+        }
+
+        // Generate error histogram
+        function generateErrorHist() {
+            const bins = [];
+            for (let i = -10; i < 10; i++) {
+                bins.push(i * 0.1);
+            }
+            const counts = bins.map(bin => {
+                // Normal distribution centered at +0.02 (slight positive bias)
+                const x = bin - 0.02;
+                return Math.round(80 * Math.exp(-x*x / 0.08) + Math.random() * 5);
+            });
+            return { bins, counts };
+        }
+
+        // Color scale for heatmap (blue-green-yellow-orange-red)
+        function gradeToColor(grade, min = 0, max = 3) {
+            const t = Math.max(0, Math.min(1, (grade - min) / (max - min)));
+            let r, g, b;
+            if (t < 0.2) {
+                // Dark blue to blue
+                const s = t / 0.2;
+                r = 30; g = 58 + s * 72; b = 138 + s * 108;
+            } else if (t < 0.4) {
+                // Blue to green
+                const s = (t - 0.2) / 0.2;
+                r = 30 + s * (-14); g = 130 + s * 55; b = 246 + s * (-116);
+            } else if (t < 0.6) {
+                // Green to yellow
+                const s = (t - 0.4) / 0.2;
+                r = 16 + s * 218; g = 185 + s * 48; b = 130 + s * (-122);
+            } else if (t < 0.8) {
+                // Yellow to orange
+                const s = (t - 0.6) / 0.2;
+                r = 234 + s * 11; g = 179 + s * (-21); b = 8 + s * 3;
+            } else {
+                // Orange to red
+                const s = (t - 0.8) / 0.2;
+                r = 245 + s * (-6); g = 158 + s * (-90); b = 11 + s * 57;
+            }
+            return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+        }
+
+        function varianceToColor(variance) {
+            const t = Math.max(0, Math.min(1, variance / 0.8));
+            let r, g, b;
+            if (t < 0.5) {
+                const s = t / 0.5;
+                r = 16 + s * 218; g = 185 + s * (-6); b = 129 + s * (-121);
+            } else {
+                const s = (t - 0.5) / 0.5;
+                r = 234 + s * 5; g = 179 + s * (-111); b = 8 + s * 60;
+            }
+            return `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
+        }
+
+        // Draw heatmap on canvas
+        function drawHeatmap(canvasId, data, colorFunc, min, max) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const size = 60;
+            
+            // Set canvas resolution
+            const displaySize = canvas.offsetWidth;
+            canvas.width = displaySize;
+            canvas.height = displaySize;
+            
+            const cellSize = displaySize / size;
+            
+            data.forEach(d => {
+                ctx.fillStyle = colorFunc(d.grade !== undefined ? d.grade : d.variance, min, max);
+                ctx.fillRect(d.x * cellSize, d.y * cellSize, cellSize + 1, cellSize + 1);
+            });
+
+            // Add drillhole markers
+            const drillholes = [
+                {x: 30, y: 30}, {x: 39, y: 36}, {x: 21, y: 24},
+                {x: 36, y: 21}, {x: 24, y: 39}, {x: 42, y: 33},
+                {x: 18, y: 27}, {x: 33, y: 42}, {x: 27, y: 18}
+            ];
+            
+            drillholes.forEach(dh => {
+                const px = dh.x * cellSize;
+                const py = dh.y * cellSize;
+                // White circle with black border
+                ctx.beginPath();
+                ctx.arc(px, py, cellSize * 0.8, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.fill();
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                // Inner dot
+                ctx.beginPath();
+                ctx.arc(px, py, cellSize * 0.3, 0, Math.PI * 2);
+                ctx.fillStyle = '#ef4444';
+                ctx.fill();
+            });
+
+            // Add pit outline (dashed)
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 3]);
+            ctx.strokeRect(cellSize * 10, cellSize * 10, cellSize * 40, cellSize * 40);
+            ctx.setLineDash([]);
+
+            // Add North arrow
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.font = 'bold 14px Consolas';
+            ctx.fillText('N', displaySize - 20, 20);
+            ctx.beginPath();
+            ctx.moveTo(displaySize - 15, 25);
+            ctx.lineTo(displaySize - 15, 45);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(displaySize - 15, 25);
+            ctx.lineTo(displaySize - 20, 32);
+            ctx.lineTo(displaySize - 10, 32);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.9)';
+            ctx.fill();
+        }
+
+        function initGeostat() {
+            if (geostatInitialized) return;
+            geostatInitialized = true;
+
+            const chartDefaults = {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 0 },
+                plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 }, boxWidth: 10 } }, tooltip: { enabled: true } },
+                scales: {
+                    x: { ticks: { color: '#64748b', font: { size: 9 } }, grid: { color: '#1e2533' } },
+                    y: { ticks: { color: '#64748b', font: { size: 9 } }, grid: { color: '#1e2533' } }
+                }
+            };
+
+            function createChart(canvasId, config) {
+                const canvas = document.getElementById(canvasId);
+                if (!canvas) return null;
+                const ctx = canvas.getContext('2d');
+                if (chartInstances[canvasId]) chartInstances[canvasId].destroy();
+                const chart = new Chart(ctx, config);
+                chartInstances[canvasId] = chart;
+                return chart;
+            }
+
+            // ============ EXPERIMENTAL VARIOGRAM + MODEL FIT ============
+            const varData = generateVariogramData();
+            const modelLine = varData.lags.map(h => sphericalModel(h, varData.C0, varData.C, varData.a));
+            
+            createChart('chartVariogram', {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Experimental γ(h)',
+                            data: varData.lags.map((h, i) => ({ x: h, y: varData.gamma[i], n: varData.npairs[i] })),
+                            backgroundColor: 'rgba(245, 158, 11, 0.8)',
+                            borderColor: '#f59e0b',
+                            pointRadius: ctx => {
+                                const n = ctx.raw?.n || 100;
+                                return Math.max(4, Math.min(10, n / 60));
+                            },
+                            pointStyle: 'circle',
+                            showLine: false
+                        },
+                        {
+                            label: 'Spherical Model (R²=0.942)',
+                            data: varData.lags.map((h, i) => ({ x: h, y: modelLine[i] })),
+                            borderColor: '#ef4444',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            borderWidth: 2.5,
+                            pointRadius: 0,
+                            showLine: true,
+                            fill: false
+                        },
+                        {
+                            label: 'Sill (C₀+C = 0.42)',
+                            data: [{ x: 0, y: 0.42 }, { x: 120, y: 0.42 }],
+                            borderColor: '#64748b',
+                            borderDash: [5, 5],
+                            borderWidth: 1.5,
+                            pointRadius: 0,
+                            showLine: true,
+                            fill: false
+                        },
+                        {
+                            label: 'Nugget (C₀ = 0.08)',
+                            data: [{ x: 0, y: 0.08 }, { x: 120, y: 0.08 }],
+                            borderColor: '#a855f7',
+                            borderDash: [3, 3],
+                            borderWidth: 1.5,
+                            pointRadius: 0,
+                            showLine: true,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    ...chartDefaults,
+                    scales: {
+                        x: { 
+                            ...chartDefaults.scales.x,
+                            title: { display: true, text: 'Lag Distance h (m)', color: '#94a3b8' },
+                            min: 0, max: 125
+                        },
+                        y: { 
+                            ...chartDefaults.scales.y,
+                            title: { display: true, text: 'Semivariance γ(h)', color: '#94a3b8' },
+                            min: 0, max: 0.5
+                        }
+                    },
+                    plugins: {
+                        ...chartDefaults.plugins,
+                        tooltip: {
+                            callbacks: {
+                                label: ctx => {
+                                    if (ctx.datasetIndex === 0) {
+                                        return `γ = ${ctx.raw.y.toFixed(3)} (n=${ctx.raw.n})`;
+                                    }
+                                    return `${ctx.dataset.label}: ${ctx.raw.y.toFixed(3)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // ============ VARIOGRAM CLOUD ============
+            const cloudData = generateVariogramCloud();
+            createChart('chartVariogramCloud', {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Pair (h, γ)',
+                            data: cloudData,
+                            backgroundColor: 'rgba(59, 130, 246, 0.4)',
+                            borderColor: 'rgba(59, 130, 246, 0.6)',
+                            pointRadius: 2.5,
+                            showLine: false
+                        },
+                        {
+                            label: 'Model Fit',
+                            data: varData.lags.map((h, i) => ({ x: h, y: modelLine[i] })),
+                            borderColor: '#ef4444',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            showLine: true,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    ...chartDefaults,
+                    scales: {
+                        x: { 
+                            ...chartDefaults.scales.x,
+                            title: { display: true, text: 'Distance h (m)', color: '#94a3b8' },
+                            min: 0, max: 125
+                        },
+                        y: { 
+                            ...chartDefaults.scales.y,
+                            title: { display: true, text: 'γ(h)', color: '#94a3b8' },
+                            min: 0, max: 1.2
+                        }
+                    }
+                }
+            });
+
+            // ============ DIRECTIONAL VARIOGRAMS ============
+            const major = generateDirectionalVar(112, 85);
+            const minor = generateDirectionalVar(85, 85);
+            const vertical = generateDirectionalVar(18, 18);
+
+            function makeDirectionalChart(canvasId, data, range, color) {
+                const modelLine = data.lags.map(h => sphericalModel(h, 0.08, 0.34, range));
+                createChart(canvasId, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [
+                            {
+                                label: 'Experimental',
+                                data: data.lags.map((h, i) => ({ x: h, y: data.gamma[i] })),
+                                backgroundColor: color,
+                                pointRadius: 4,
+                                showLine: false
+                            },
+                            {
+                                label: 'Model',
+                                data: data.lags.map((h, i) => ({ x: h, y: modelLine[i] })),
+                                borderColor: '#ef4444',
+                                borderWidth: 2,
+                                pointRadius: 0,
+                                showLine: true,
+                                fill: false
+                            }
+                        ]
+                    },
+                    options: {
+                        ...chartDefaults,
+                        scales: {
+                            x: { ...chartDefaults.scales.x, min: 0, max: 150 },
+                            y: { ...chartDefaults.scales.y, min: 0, max: 0.5 }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            }
+
+            makeDirectionalChart('chartVarMajor', major, 112, 'rgba(16, 185, 129, 0.7)');
+            makeDirectionalChart('chartVarMinor', minor, 85, 'rgba(59, 130, 246, 0.7)');
+            makeDirectionalChart('chartVarVertical', vertical, 18, 'rgba(168, 85, 247, 0.7)');
+
+            // ============ KRIGING HEATMAPS ============
+            const krigingData = generateKrigingHeatmap();
+            const varianceData = generateVarianceHeatmap();
+            
+            drawHeatmap('heatmapKriging', krigingData, gradeToColor, 0, 3);
+            drawHeatmap('heatmapVariance', varianceData, (v) => varianceToColor(v), 0, 0.8);
+
+            // ============ CROSS-VALIDATION ============
+            const cvData = generateCrossValData();
+            createChart('chartCrossVal', {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Sample Points',
+                            data: cvData,
+                            backgroundColor: 'rgba(245, 158, 11, 0.6)',
+                            borderColor: '#f59e0b',
+                            pointRadius: 4,
+                            showLine: false
+                        },
+                        {
+                            label: 'Perfect Fit (y=x)',
+                            data: [{ x: 0, y: 0 }, { x: 3, y: 3 }],
+                            borderColor: '#10b981',
+                            borderDash: [5, 5],
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            showLine: true,
+                            fill: false
+                        },
+                        {
+                            label: 'Regression (y=0.98x+0.04)',
+                            data: [{ x: 0, y: 0.04 }, { x: 3, y: 2.98 }],
+                            borderColor: '#ef4444',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            showLine: true,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    ...chartDefaults,
+                    scales: {
+                        x: { 
+                            ...chartDefaults.scales.x,
+                            title: { display: true, text: 'Actual Grade (%Ni)', color: '#94a3b8' },
+                            min: 0, max: 3.2
+                        },
+                        y: { 
+                            ...chartDefaults.scales.y,
+                            title: { display: true, text: 'Estimated Grade (%Ni)', color: '#94a3b8' },
+                            min: 0, max: 3.2
+                        }
+                    }
+                }
+            });
+
+            // ============ ERROR HISTOGRAM ============
+            const errData = generateErrorHist();
+            createChart('chartErrorHist', {
+                type: 'bar',
+                data: {
+                    labels: errData.bins.map(b => b.toFixed(1)),
+                    datasets: [{
+                        label: 'Frequency',
+                        data: errData.counts,
+                        backgroundColor: errData.bins.map(b => {
+                            if (b < -0.3) return 'rgba(239, 68, 68, 0.7)';
+                            if (b > 0.3) return 'rgba(239, 68, 68, 0.7)';
+                            if (b < -0.1 || b > 0.1) return 'rgba(234, 179, 8, 0.7)';
+                            return 'rgba(16, 185, 129, 0.7)';
+                        }),
+                        borderColor: '#141820',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    ...chartDefaults,
+                    scales: {
+                        x: { 
+                            ...chartDefaults.scales.x,
+                            title: { display: true, text: 'Error (Estimated - Actual) %Ni', color: '#94a3b8' }
+                        },
+                        y: { 
+                            ...chartDefaults.scales.y,
+                            title: { display: true, text: 'Frequency', color: '#94a3b8' }
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // ============================================
+        // THREE.JS 3D SCENE
         // ============================================
         let scene, camera, renderer, controls;
         let trucks = [];
-        
-        // LAYER GROUPS (DataMine-style)
         const layers = {
-            terrain: null,
-            benches: null,
-            oreblocks: null,
-            roads: null,
-            facilities: null,
-            stockpiles: null,
-            equipment: null,
-            lighting: null,
-            labels: null,
-            safety: null,
-            grid: null
+            terrain: null, benches: null, oreblocks: null, roads: null,
+            facilities: null, stockpiles: null, equipment: null, lighting: null,
+            labels: null, safety: null, grid: null
         };
-        
-        // Section cut plane
         let sectionPlane = null;
         let sectionMode = 'off';
         let sectionPos = 0;
@@ -1425,14 +1771,13 @@
             renderer.setPixelRatio(window.devicePixelRatio);
             renderer.shadowMap.enabled = true;
             renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            renderer.localClippingEnabled = true; // Enable clipping for section cut
+            renderer.localClippingEnabled = true;
 
             controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
             controls.target.set(0, -20, 0);
 
-            // Lighting
             scene.add(new THREE.AmbientLight(0xffffff, 0.55));
             const sun = new THREE.DirectionalLight(0xfff0d4, 1.4);
             sun.position.set(150, 200, 100);
@@ -1446,14 +1791,13 @@
             scene.add(sun);
             scene.add(new THREE.DirectionalLight(0x88aaff, 0.3).translateX(-100).translateY(80).translateZ(-100));
 
-            // Initialize layer groups
             Object.keys(layers).forEach(key => {
                 layers[key] = new THREE.Group();
                 layers[key].name = key;
                 scene.add(layers[key]);
             });
 
-            // ============ LAYER: TERRAIN ============
+            // TERRAIN
             const terrainGeo = new THREE.PlaneGeometry(700, 700, 80, 80);
             const posAttr = terrainGeo.attributes.position;
             for (let i = 0; i < posAttr.count; i++) {
@@ -1461,9 +1805,7 @@
                 const y = posAttr.getY(i);
                 const dist = Math.sqrt(x*x + y*y);
                 let h = 0;
-                if (dist > 90) {
-                    h = Math.sin(x * 0.02) * 8 + Math.cos(y * 0.025) * 6 + (dist - 90) * 0.12;
-                }
+                if (dist > 90) h = Math.sin(x * 0.02) * 8 + Math.cos(y * 0.025) * 6 + (dist - 90) * 0.12;
                 posAttr.setZ(i, h);
             }
             terrainGeo.computeVertexNormals();
@@ -1473,37 +1815,31 @@
             terrain.receiveShadow = true;
             layers.terrain.add(terrain);
 
-            // Trees
             const treeTrunkGeo = new THREE.CylinderGeometry(0.3, 0.4, 2, 6);
             const treeTrunkMat = new THREE.MeshStandardMaterial({ color: 0x5c3a1e });
             const treeTopGeo = new THREE.ConeGeometry(1.8, 4, 6);
             const treeTopMat = new THREE.MeshStandardMaterial({ color: 0x2d5a1e });
-            
             for (let i = 0; i < 200; i++) {
                 const angle = Math.random() * Math.PI * 2;
                 const radius = 100 + Math.random() * 200;
-                const x = Math.cos(angle) * radius;
-                const z = Math.sin(angle) * radius;
                 const tree = new THREE.Group();
                 const trunk = new THREE.Mesh(treeTrunkGeo, treeTrunkMat);
                 trunk.position.y = 1;
                 const top = new THREE.Mesh(treeTopGeo, treeTopMat);
                 top.position.y = 3.5;
                 tree.add(trunk); tree.add(top);
-                tree.position.set(x, 0, z);
+                tree.position.set(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
                 tree.scale.setScalar(0.8 + Math.random() * 0.7);
                 tree.castShadow = true;
                 layers.terrain.add(tree);
             }
 
-            // ============ LAYER: PIT BENCHES ============
+            // PIT BENCHES
             const benchColors = [0x8a6f52, 0x7a5f42, 0x6b5438, 0x5a4a35, 0x4a3b2c, 0x3d3225, 0x332a1f, 0x2a2218];
-
             for (let i = 0; i < 8; i++) {
                 const outerSize = 130 - (i * 12);
                 const innerSize = outerSize - 10;
                 const benchY = -i * 5;
-                
                 const shape = new THREE.Shape();
                 const hOuter = outerSize / 2;
                 shape.moveTo(-hOuter, -hOuter);
@@ -1511,7 +1847,6 @@
                 shape.lineTo(hOuter, hOuter);
                 shape.lineTo(-hOuter, hOuter);
                 shape.lineTo(-hOuter, -hOuter);
-                
                 const hole = new THREE.Path();
                 const hInner = innerSize / 2;
                 hole.moveTo(-hInner, -hInner);
@@ -1520,11 +1855,8 @@
                 hole.lineTo(hInner, -hInner);
                 hole.lineTo(-hInner, -hInner);
                 shape.holes.push(hole);
-                
                 const benchGeo = new THREE.ExtrudeGeometry(shape, { depth: 0.8, bevelEnabled: false });
-                const benchMat = new THREE.MeshStandardMaterial({ 
-                    color: benchColors[i], roughness: 0.95, side: THREE.DoubleSide
-                });
+                const benchMat = new THREE.MeshStandardMaterial({ color: benchColors[i], roughness: 0.95, side: THREE.DoubleSide });
                 const benchMesh = new THREE.Mesh(benchGeo, benchMat);
                 benchMesh.rotation.x = -Math.PI / 2;
                 benchMesh.position.y = benchY;
@@ -1534,44 +1866,27 @@
 
                 if (i > 0) {
                     const wallHeight = 5;
-                    const prevInnerSize = outerSize;
                     const wallThickness = 0.5;
                     const wallColor = new THREE.Color(benchColors[i]).multiplyScalar(0.6);
-                    const wallMat = new THREE.MeshStandardMaterial({ 
-                        color: wallColor, roughness: 1, side: THREE.DoubleSide
-                    });
-                    
-                    const nWall = new THREE.Mesh(new THREE.BoxGeometry(prevInnerSize, wallHeight, wallThickness), wallMat);
+                    const wallMat = new THREE.MeshStandardMaterial({ color: wallColor, roughness: 1, side: THREE.DoubleSide });
+                    const nWall = new THREE.Mesh(new THREE.BoxGeometry(outerSize, wallHeight, wallThickness), wallMat);
                     nWall.position.set(0, benchY + wallHeight/2, -hInner);
-                    nWall.castShadow = true;
-                    nWall.receiveShadow = true;
+                    nWall.castShadow = true; nWall.receiveShadow = true;
                     layers.benches.add(nWall);
-                    
-                    const sWall = nWall.clone();
-                    sWall.position.set(0, benchY + wallHeight/2, hInner);
-                    layers.benches.add(sWall);
-                    
-                    const eWall = new THREE.Mesh(new THREE.BoxGeometry(wallThickness, wallHeight, prevInnerSize), wallMat);
+                    const sWall = nWall.clone(); sWall.position.set(0, benchY + wallHeight/2, hInner); layers.benches.add(sWall);
+                    const eWall = new THREE.Mesh(new THREE.BoxGeometry(wallThickness, wallHeight, outerSize), wallMat);
                     eWall.position.set(hInner, benchY + wallHeight/2, 0);
-                    eWall.castShadow = true;
-                    eWall.receiveShadow = true;
+                    eWall.castShadow = true; eWall.receiveShadow = true;
                     layers.benches.add(eWall);
-                    
-                    const wWall = eWall.clone();
-                    wWall.position.set(-hInner, benchY + wallHeight/2, 0);
-                    layers.benches.add(wWall);
+                    const wWall = eWall.clone(); wWall.position.set(-hInner, benchY + wallHeight/2, 0); layers.benches.add(wWall);
                 }
             }
 
-            // Pit bottom
             const bottomSize = 34;
             const bottomShape = new THREE.Shape();
             const hBottom = bottomSize / 2;
-            bottomShape.moveTo(-hBottom, -hBottom);
-            bottomShape.lineTo(hBottom, -hBottom);
-            bottomShape.lineTo(hBottom, hBottom);
-            bottomShape.lineTo(-hBottom, hBottom);
-            bottomShape.lineTo(-hBottom, -hBottom);
+            bottomShape.moveTo(-hBottom, -hBottom); bottomShape.lineTo(hBottom, -hBottom);
+            bottomShape.lineTo(hBottom, hBottom); bottomShape.lineTo(-hBottom, hBottom); bottomShape.lineTo(-hBottom, -hBottom);
             const bottomGeo = new THREE.ExtrudeGeometry(bottomShape, { depth: 0.5, bevelEnabled: false });
             const bottomMesh = new THREE.Mesh(bottomGeo, new THREE.MeshStandardMaterial({ color: 0x1a1410, roughness: 1, side: THREE.DoubleSide }));
             bottomMesh.rotation.x = -Math.PI / 2;
@@ -1579,11 +1894,10 @@
             bottomMesh.receiveShadow = true;
             layers.benches.add(bottomMesh);
 
-            // ============ LAYER: ORE BLOCKS ============
+            // ORE BLOCKS
             const blockSize = 4;
             const gridCount = 16;
             const offset = (gridCount * blockSize) / 2;
-
             for (let x = 0; x < gridCount; x++) {
                 for (let z = 0; z < gridCount; z++) {
                     const grade = Math.random() * 2.8;
@@ -1596,187 +1910,93 @@
                     const innerSize = outerSize - 10;
                     const hOuter = outerSize / 2;
                     const hInner = innerSize / 2;
-                    
-                    if (Math.abs(posX) > hInner && Math.abs(posX) < hOuter ||
-                        Math.abs(posZ) > hInner && Math.abs(posZ) < hOuter) {
+                    if (Math.abs(posX) > hInner && Math.abs(posX) < hOuter || Math.abs(posZ) > hInner && Math.abs(posZ) < hOuter) {
                         const benchY = -benchLevel * 5;
                         let color;
                         if (grade < 0.8) color = new THREE.Color(0x555555);
                         else if (grade < 1.2) color = new THREE.Color(0x888833);
                         else if (grade < 1.8) color = new THREE.Color(0xd97706);
                         else color = new THREE.Color(0xef4444);
-
                         const geo = new THREE.BoxGeometry(blockSize - 0.3, height, blockSize - 0.3);
-                        const mat = new THREE.MeshStandardMaterial({ 
-                            color: color, roughness: 0.7, metalness: 0.15,
-                            emissive: color, emissiveIntensity: grade > 1.8 ? 0.25 : 0
-                        });
+                        const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.7, metalness: 0.15, emissive: color, emissiveIntensity: grade > 1.8 ? 0.25 : 0 });
                         const block = new THREE.Mesh(geo, mat);
                         block.position.set(posX, benchY + 0.8 + height/2, posZ);
-                        block.castShadow = true;
-                        block.receiveShadow = true;
+                        block.castShadow = true; block.receiveShadow = true;
                         layers.oreblocks.add(block);
                     }
                 }
             }
 
-            // ============ LAYER: HAUL ROADS ============
+            // ROADS
             const rampSegments = 80;
             const rampWidth = 10;
             const rampPoints = [];
-
             for (let i = 0; i <= rampSegments; i++) {
                 const t = i / rampSegments;
                 const angle = t * Math.PI * 2 * 1.5;
                 const radius = 65 - t * 25;
                 const y = -t * 40;
-                const x = Math.cos(angle) * radius;
-                const z = Math.sin(angle) * radius;
-                rampPoints.push(new THREE.Vector3(x, y, z));
+                rampPoints.push(new THREE.Vector3(Math.cos(angle) * radius, y, Math.sin(angle) * radius));
             }
-
             for (let i = 0; i < rampPoints.length - 1; i++) {
-                const p1 = rampPoints[i];
-                const p2 = rampPoints[i + 1];
+                const p1 = rampPoints[i], p2 = rampPoints[i + 1];
                 const dir = new THREE.Vector3().subVectors(p2, p1);
                 const length = dir.length();
                 const mid = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
-
-                const rampSeg = new THREE.Mesh(
-                    new THREE.BoxGeometry(rampWidth, 0.5, length + 0.5),
-                    new THREE.MeshStandardMaterial({ color: 0x4a4a4a, roughness: 0.9 })
-                );
-                rampSeg.position.copy(mid);
-                rampSeg.lookAt(p2);
-                rampSeg.receiveShadow = true;
-                rampSeg.castShadow = true;
+                const rampSeg = new THREE.Mesh(new THREE.BoxGeometry(rampWidth, 0.5, length + 0.5), new THREE.MeshStandardMaterial({ color: 0x4a4a4a, roughness: 0.9 }));
+                rampSeg.position.copy(mid); rampSeg.lookAt(p2);
+                rampSeg.receiveShadow = true; rampSeg.castShadow = true;
                 layers.roads.add(rampSeg);
-
                 if (i % 3 === 0) {
-                    const mark = new THREE.Mesh(
-                        new THREE.BoxGeometry(0.4, 0.6, 2),
-                        new THREE.MeshStandardMaterial({ color: 0xfbbf24, emissive: 0xfbbf24, emissiveIntensity: 0.5 })
-                    );
-                    mark.position.copy(mid);
-                    mark.position.y += 0.3;
-                    mark.lookAt(p2);
+                    const mark = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.6, 2), new THREE.MeshStandardMaterial({ color: 0xfbbf24, emissive: 0xfbbf24, emissiveIntensity: 0.5 }));
+                    mark.position.copy(mid); mark.position.y += 0.3; mark.lookAt(p2);
                     layers.roads.add(mark);
                 }
-
                 if (i % 4 === 0) {
-                    const berm = new THREE.Mesh(
-                        new THREE.BoxGeometry(1.5, 1.2, length),
-                        new THREE.MeshStandardMaterial({ color: 0x8a6f52, roughness: 1 })
-                    );
+                    const berm = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.2, length), new THREE.MeshStandardMaterial({ color: 0x8a6f52, roughness: 1 }));
                     const outerOffset = new THREE.Vector3().subVectors(p2, p1).normalize().cross(new THREE.Vector3(0, 1, 0)).multiplyScalar(rampWidth/2 + 0.5);
-                    berm.position.copy(mid).add(outerOffset);
-                    berm.position.y += 0.6;
-                    berm.lookAt(p2.clone().add(outerOffset));
+                    berm.position.copy(mid).add(outerOffset); berm.position.y += 0.6; berm.lookAt(p2.clone().add(outerOffset));
                     layers.roads.add(berm);
                 }
             }
-
-            // Direction arrows
             for (let i = 0; i < rampPoints.length; i += 12) {
                 const p = rampPoints[i];
                 const pNext = rampPoints[Math.min(i + 1, rampPoints.length - 1)];
-                const arrow = new THREE.Mesh(
-                    new THREE.ConeGeometry(1.2, 2.5, 3),
-                    new THREE.MeshStandardMaterial({ color: 0x3b82f6, emissive: 0x3b82f6, emissiveIntensity: 0.6 })
-                );
-                arrow.position.copy(p);
-                arrow.position.y += 1.5;
+                const arrow = new THREE.Mesh(new THREE.ConeGeometry(1.2, 2.5, 3), new THREE.MeshStandardMaterial({ color: 0x3b82f6, emissive: 0x3b82f6, emissiveIntensity: 0.6 }));
+                arrow.position.copy(p); arrow.position.y += 1.5;
                 const dir = new THREE.Vector3().subVectors(pNext, p).normalize();
                 arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
                 arrow.rotateX(Math.PI / 2);
                 layers.roads.add(arrow);
             }
-
-            // Main haul road
-            const mainRoadPoints = [
-                new THREE.Vector3(65, 0, 0),
-                new THREE.Vector3(90, 0, 0),
-                new THREE.Vector3(90, 0, 80),
-                new THREE.Vector3(90, 0, 160),
-            ];
+            const mainRoadPoints = [new THREE.Vector3(65, 0, 0), new THREE.Vector3(90, 0, 0), new THREE.Vector3(90, 0, 80), new THREE.Vector3(90, 0, 160)];
             for (let i = 0; i < mainRoadPoints.length - 1; i++) {
-                const p1 = mainRoadPoints[i];
-                const p2 = mainRoadPoints[i + 1];
+                const p1 = mainRoadPoints[i], p2 = mainRoadPoints[i + 1];
                 const dir = new THREE.Vector3().subVectors(p2, p1);
                 const length = dir.length();
                 const mid = new THREE.Vector3().addVectors(p1, p2).multiplyScalar(0.5);
-                const road = new THREE.Mesh(
-                    new THREE.BoxGeometry(10, 0.5, length),
-                    new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.9 })
-                );
-                road.position.copy(mid);
-                road.lookAt(p2);
-                road.receiveShadow = true;
+                const road = new THREE.Mesh(new THREE.BoxGeometry(10, 0.5, length), new THREE.MeshStandardMaterial({ color: 0x3a3a3a, roughness: 0.9 }));
+                road.position.copy(mid); road.lookAt(p2); road.receiveShadow = true;
                 layers.roads.add(road);
             }
 
-            // ============ LAYER: FACILITIES ============
-            const rom = new THREE.Mesh(
-                new THREE.BoxGeometry(50, 1, 30),
-                new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.9 })
-            );
-            rom.position.set(90, 0.5, 180);
-            rom.receiveShadow = true;
-            layers.facilities.add(rom);
-
-            const romSign = new THREE.Mesh(
-                new THREE.BoxGeometry(10, 4, 0.3),
-                new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x10b981, emissiveIntensity: 0.4 })
-            );
-            romSign.position.set(90, 4, 196);
-            layers.facilities.add(romSign);
-
+            // FACILITIES
+            const rom = new THREE.Mesh(new THREE.BoxGeometry(50, 1, 30), new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.9 }));
+            rom.position.set(90, 0.5, 180); rom.receiveShadow = true; layers.facilities.add(rom);
+            const romSign = new THREE.Mesh(new THREE.BoxGeometry(10, 4, 0.3), new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x10b981, emissiveIntensity: 0.4 }));
+            romSign.position.set(90, 4, 196); layers.facilities.add(romSign);
             const crushGroup = new THREE.Group();
-            const crushMain = new THREE.Mesh(
-                new THREE.BoxGeometry(25, 15, 18),
-                new THREE.MeshStandardMaterial({ color: 0x6b7280, roughness: 0.7 })
-            );
-            crushMain.position.y = 7.5;
-            crushMain.castShadow = true;
-            crushGroup.add(crushMain);
-            const conv = new THREE.Mesh(
-                new THREE.BoxGeometry(2.5, 1.2, 30),
-                new THREE.MeshStandardMaterial({ color: 0x4b5563 })
-            );
-            conv.position.set(0, 12, 22);
-            conv.rotation.x = -0.2;
-            crushGroup.add(conv);
-            const hopper = new THREE.Mesh(
-                new THREE.ConeGeometry(5, 6, 4),
-                new THREE.MeshStandardMaterial({ color: 0x374151 })
-            );
-            hopper.position.set(0, 17, 0);
-            hopper.rotation.y = Math.PI/4;
-            crushGroup.add(hopper);
-            crushGroup.position.set(90, 0, 225);
-            layers.facilities.add(crushGroup);
-
+            crushGroup.add(new THREE.Mesh(new THREE.BoxGeometry(25, 15, 18), new THREE.MeshStandardMaterial({ color: 0x6b7280, roughness: 0.7 })));
+            crushGroup.children[0].position.y = 7.5; crushGroup.children[0].castShadow = true;
+            crushGroup.position.set(90, 0, 225); layers.facilities.add(crushGroup);
             function makeBuilding(x, z, w, h, d, color, roofColor = null) {
                 const g = new THREE.Group();
-                const body = new THREE.Mesh(
-                    new THREE.BoxGeometry(w, h, d),
-                    new THREE.MeshStandardMaterial({ color, roughness: 0.7 })
-                );
-                body.position.y = h/2;
-                body.castShadow = true;
-                body.receiveShadow = true;
-                g.add(body);
-                const roof = new THREE.Mesh(
-                    new THREE.BoxGeometry(w + 0.5, 0.5, d + 0.5),
-                    new THREE.MeshStandardMaterial({ color: roofColor || 0x1f2937, roughness: 0.8 })
-                );
-                roof.position.y = h + 0.25;
-                roof.castShadow = true;
-                g.add(roof);
-                g.position.set(x, 0, z);
-                layers.facilities.add(g);
+                const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color, roughness: 0.7 }));
+                body.position.y = h/2; body.castShadow = true; body.receiveShadow = true; g.add(body);
+                const roof = new THREE.Mesh(new THREE.BoxGeometry(w + 0.5, 0.5, d + 0.5), new THREE.MeshStandardMaterial({ color: roofColor || 0x1f2937, roughness: 0.8 }));
+                roof.position.y = h + 0.25; roof.castShadow = true; g.add(roof);
+                g.position.set(x, 0, z); layers.facilities.add(g);
             }
-
             makeBuilding(-100, 120, 30, 8, 18, 0x6b7280, 0x374151);
             makeBuilding(-100, 80, 22, 7, 15, 0x4b5563, 0x1f2937);
             makeBuilding(-65, 130, 24, 6, 14, 0x7c2d12, 0x451a03);
@@ -1788,41 +2008,11 @@
             makeBuilding(105, 145, 6, 4, 5, 0x065f46);
             makeBuilding(90, 260, 10, 5, 8, 0x374151, 0x1f2937);
 
-            const fuelTankGeo = new THREE.CylinderGeometry(3.5, 3.5, 10, 16);
-            const fuelTankMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.5, metalness: 0.3 });
-            const ft1 = new THREE.Mesh(fuelTankGeo, fuelTankMat);
-            ft1.position.set(-40, 4, 80);
-            ft1.rotation.z = Math.PI/2;
-            ft1.castShadow = true;
-            layers.facilities.add(ft1);
-            const ft2 = ft1.clone();
-            ft2.position.set(-40, 4, 95);
-            layers.facilities.add(ft2);
-
-            const wb = new THREE.Mesh(
-                new THREE.BoxGeometry(18, 0.5, 7),
-                new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x10b981, emissiveIntensity: 0.3 })
-            );
-            wb.position.set(90, 0.3, 145);
-            layers.facilities.add(wb);
-
-            const pond = new THREE.Mesh(
-                new THREE.CylinderGeometry(10, 10, 2.5, 20),
-                new THREE.MeshStandardMaterial({ color: 0x0ea5e9, roughness: 0.3, metalness: 0.2 })
-            );
-            pond.position.set(-125, 1.25, 80);
-            layers.facilities.add(pond);
-
-            // ============ LAYER: STOCKPILES ============
+            // STOCKPILES
             function makeStockpile(x, z, scale, color) {
-                const geo = new THREE.ConeGeometry(12, 9, 8);
-                const mat = new THREE.MeshStandardMaterial({ color: color, roughness: 1 });
-                const pile = new THREE.Mesh(geo, mat);
-                pile.position.set(x, 4.5, z);
-                pile.scale.set(scale, scale * 0.8, scale);
-                pile.castShadow = true;
-                pile.receiveShadow = true;
-                layers.stockpiles.add(pile);
+                const pile = new THREE.Mesh(new THREE.ConeGeometry(12, 9, 8), new THREE.MeshStandardMaterial({ color, roughness: 1 }));
+                pile.position.set(x, 4.5, z); pile.scale.set(scale, scale * 0.8, scale);
+                pile.castShadow = true; pile.receiveShadow = true; layers.stockpiles.add(pile);
             }
             makeStockpile(135, 180, 1.3, 0x8b4513);
             makeStockpile(160, 185, 1.0, 0xa0522d);
@@ -1832,222 +2022,90 @@
             makeStockpile(-140, 70, 1.8, 0x4a3b2c);
             makeStockpile(-130, 90, 1.6, 0x555555);
 
-            // ============ LAYER: EQUIPMENT ============
+            // EQUIPMENT
             function makeTruck(color) {
-                const truckGroup = new THREE.Group();
-                const cab = new THREE.Mesh(
-                    new THREE.BoxGeometry(2.5, 2, 2.2),
-                    new THREE.MeshStandardMaterial({ color: color, emissive: color, emissiveIntensity: 0.3 })
-                );
-                cab.position.set(0, 1, 0);
-                truckGroup.add(cab);
-                const bed = new THREE.Mesh(
-                    new THREE.BoxGeometry(4, 1.5, 2.2),
-                    new THREE.MeshStandardMaterial({ color: 0x374151 })
-                );
-                bed.position.set(-2.5, 0.75, 0);
-                truckGroup.add(bed);
-                const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.4, 8);
-                const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
-                [[-1.5, 0.5, 1.2], [-1.5, 0.5, -1.2], [1.5, 0.5, 1.2], [1.5, 0.5, -1.2]].forEach(p => {
-                    const w = new THREE.Mesh(wheelGeo, wheelMat);
-                    w.rotation.x = Math.PI/2;
-                    w.position.set(...p);
-                    truckGroup.add(w);
-                });
-                truckGroup.castShadow = true;
-                return truckGroup;
+                const g = new THREE.Group();
+                const cab = new THREE.Mesh(new THREE.BoxGeometry(2.5, 2, 2.2), new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.3 }));
+                cab.position.set(0, 1, 0); g.add(cab);
+                const bed = new THREE.Mesh(new THREE.BoxGeometry(4, 1.5, 2.2), new THREE.MeshStandardMaterial({ color: 0x374151 }));
+                bed.position.set(-2.5, 0.75, 0); g.add(bed);
+                g.castShadow = true; return g;
             }
-
             for (let i = 0; i < 3; i++) {
                 const truck = makeTruck([0xf59e0b, 0x3b82f6, 0x10b981][i]);
                 truck.userData = { path: rampPoints, t: i * 0.3 };
-                layers.equipment.add(truck);
-                trucks.push(truck);
+                layers.equipment.add(truck); trucks.push(truck);
             }
-
-            const mainRoadPath = [
-                new THREE.Vector3(65, 0.5, 0),
-                new THREE.Vector3(90, 0.5, 0),
-                new THREE.Vector3(90, 0.5, 80),
-                new THREE.Vector3(90, 0.5, 160),
-                new THREE.Vector3(90, 0.5, 180),
-            ];
+            const mainRoadPath = [new THREE.Vector3(65, 0.5, 0), new THREE.Vector3(90, 0.5, 0), new THREE.Vector3(90, 0.5, 80), new THREE.Vector3(90, 0.5, 160), new THREE.Vector3(90, 0.5, 180)];
             for (let i = 0; i < 2; i++) {
                 const truck = makeTruck([0xef4444, 0xa855f7][i]);
                 truck.userData = { path: mainRoadPath, t: i * 0.5 };
-                layers.equipment.add(truck);
-                trucks.push(truck);
+                layers.equipment.add(truck); trucks.push(truck);
             }
-
-            // Excavator
             const excGroup = new THREE.Group();
-            const excBody = new THREE.Mesh(
-                new THREE.BoxGeometry(4, 2, 2.5),
-                new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xf59e0b, emissiveIntensity: 0.2 })
-            );
-            excBody.position.y = 1;
-            excGroup.add(excBody);
-            const excCab = new THREE.Mesh(
-                new THREE.BoxGeometry(2, 1.5, 2),
-                new THREE.MeshStandardMaterial({ color: 0x1f2937 })
-            );
-            excCab.position.set(-0.7, 2.5, 0);
-            excGroup.add(excCab);
-            const excArm = new THREE.Mesh(
-                new THREE.BoxGeometry(0.4, 0.4, 4),
-                new THREE.MeshStandardMaterial({ color: 0x374151 })
-            );
-            excArm.position.set(2, 2, 0);
-            excArm.rotation.x = -0.3;
-            excGroup.add(excArm);
-            excGroup.position.set(0, -10 + 0.8, 0);
-            excGroup.castShadow = true;
+            excGroup.add(new THREE.Mesh(new THREE.BoxGeometry(4, 2, 2.5), new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0xf59e0b, emissiveIntensity: 0.2 })));
+            excGroup.children[0].position.y = 1;
+            excGroup.position.set(0, -10 + 0.8, 0); excGroup.castShadow = true;
             layers.equipment.add(excGroup);
 
-            // Drill Rig
-            const drillGroup = new THREE.Group();
-            const drillBase = new THREE.Mesh(
-                new THREE.BoxGeometry(3, 1.2, 2.5),
-                new THREE.MeshStandardMaterial({ color: 0xa855f7 })
-            );
-            drillBase.position.y = 0.6;
-            drillGroup.add(drillBase);
-            const drillMast = new THREE.Mesh(
-                new THREE.BoxGeometry(0.5, 8, 0.5),
-                new THREE.MeshStandardMaterial({ color: 0x6b7280 })
-            );
-            drillMast.position.set(0, 5, 0);
-            drillGroup.add(drillMast);
-            drillGroup.position.set(25, -15 + 0.8, 25);
-            drillGroup.castShadow = true;
-            layers.equipment.add(drillGroup);
-
-            // ============ LAYER: LIGHTING ============
+            // LIGHTING
             function makeLightTower(x, z) {
-                const pole = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.25, 0.35, 15, 8),
-                    new THREE.MeshStandardMaterial({ color: 0x555555 })
-                );
-                pole.position.set(x, 7.5, z);
-                layers.lighting.add(pole);
-                const light = new THREE.Mesh(
-                    new THREE.BoxGeometry(2, 1.2, 2),
-                    new THREE.MeshStandardMaterial({ color: 0xfbbf24, emissive: 0xfbbf24, emissiveIntensity: 1.0 })
-                );
-                light.position.set(x, 15.5, z);
-                layers.lighting.add(light);
-                const pl = new THREE.PointLight(0xfbbf24, 0.6, 25);
-                pl.position.set(x, 15, z);
-                layers.lighting.add(pl);
+                const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.35, 15, 8), new THREE.MeshStandardMaterial({ color: 0x555555 }));
+                pole.position.set(x, 7.5, z); layers.lighting.add(pole);
+                const light = new THREE.Mesh(new THREE.BoxGeometry(2, 1.2, 2), new THREE.MeshStandardMaterial({ color: 0xfbbf24, emissive: 0xfbbf24, emissiveIntensity: 1.0 }));
+                light.position.set(x, 15.5, z); layers.lighting.add(light);
+                const pl = new THREE.PointLight(0xfbbf24, 0.6, 25); pl.position.set(x, 15, z); layers.lighting.add(pl);
             }
-            makeLightTower(50, 50);
-            makeLightTower(-50, 50);
-            makeLightTower(50, -50);
-            makeLightTower(-50, -50);
-            makeLightTower(110, 180);
-            makeLightTower(70, 180);
-            makeLightTower(110, 220);
+            makeLightTower(50, 50); makeLightTower(-50, 50); makeLightTower(50, -50); makeLightTower(-50, -50);
+            makeLightTower(110, 180); makeLightTower(70, 180); makeLightTower(110, 220);
 
-            // ============ LAYER: LABELS ============
-            function createTextSprite(text, color = '#f59e0b', bgColor = 'rgba(10,12,16,0.85)') {
+            // LABELS
+            function createTextSprite(text, color = '#f59e0b') {
                 const canvas = document.createElement('canvas');
-                canvas.width = 512;
-                canvas.height = 128;
+                canvas.width = 512; canvas.height = 128;
                 const ctx = canvas.getContext('2d');
-                ctx.fillStyle = bgColor;
-                ctx.fillRect(0, 0, 512, 128);
-                ctx.strokeStyle = color;
-                ctx.lineWidth = 4;
-                ctx.strokeRect(2, 2, 508, 124);
-                ctx.fillStyle = color;
-                ctx.font = 'bold 56px Consolas, monospace';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(text, 256, 64);
-                const texture = new THREE.CanvasTexture(canvas);
-                const spriteMat = new THREE.SpriteMaterial({ map: texture, depthTest: false });
-                const sprite = new THREE.Sprite(spriteMat);
-                sprite.scale.set(20, 5, 1);
-                return sprite;
+                ctx.fillStyle = 'rgba(10,12,16,0.85)'; ctx.fillRect(0, 0, 512, 128);
+                ctx.strokeStyle = color; ctx.lineWidth = 4; ctx.strokeRect(2, 2, 508, 124);
+                ctx.fillStyle = color; ctx.font = 'bold 56px Consolas, monospace';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, 256, 64);
+                const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas), depthTest: false }));
+                sprite.scale.set(20, 5, 1); return sprite;
             }
-
             const benchLabels = ['B1: 0m', 'B2: -5m', 'B3: -10m', 'B4: -15m', 'B5: -20m', 'B6: -25m', 'B7: -30m', 'B8: -35m'];
             for (let i = 0; i < 8; i++) {
                 const label = createTextSprite(benchLabels[i], '#f59e0b');
-                label.position.set(-70, -i * 5 + 2.5, 0);
-                layers.labels.add(label);
+                label.position.set(-70, -i * 5 + 2.5, 0); layers.labels.add(label);
             }
-
-            const entranceSign = createTextSprite('⚠ PIT ENTRY', '#ef4444', 'rgba(239,68,68,0.2)');
-            entranceSign.position.set(70, 5, 0);
-            entranceSign.scale.set(15, 4, 1);
-            layers.labels.add(entranceSign);
-
+            const entranceSign = createTextSprite('⚠ PIT ENTRY', '#ef4444');
+            entranceSign.position.set(70, 5, 0); entranceSign.scale.set(15, 4, 1); layers.labels.add(entranceSign);
             const depthSign = createTextSprite('DEPTH: 40m', '#f59e0b');
-            depthSign.position.set(0, 5, -75);
-            depthSign.scale.set(18, 4.5, 1);
-            layers.labels.add(depthSign);
+            depthSign.position.set(0, 5, -75); depthSign.scale.set(18, 4.5, 1); layers.labels.add(depthSign);
 
-            // ============ LAYER: SAFETY ============
-            const rim = new THREE.Mesh(
-                new THREE.TorusGeometry(70, 2, 8, 40),
-                new THREE.MeshStandardMaterial({ color: 0x8a6f52, roughness: 1 })
-            );
-            rim.rotation.x = Math.PI / 2;
-            rim.position.y = 0.5;
-            rim.castShadow = true;
-            layers.safety.add(rim);
-
+            // SAFETY
+            const rim = new THREE.Mesh(new THREE.TorusGeometry(70, 2, 8, 40), new THREE.MeshStandardMaterial({ color: 0x8a6f52, roughness: 1 }));
+            rim.rotation.x = Math.PI / 2; rim.position.y = 0.5; rim.castShadow = true; layers.safety.add(rim);
             for (let i = 0; i < 24; i++) {
                 const angle = (i / 24) * Math.PI * 2;
-                const post = new THREE.Mesh(
-                    new THREE.CylinderGeometry(0.15, 0.15, 2, 6),
-                    new THREE.MeshStandardMaterial({ color: 0xfbbf24 })
-                );
-                post.position.set(Math.cos(angle) * 72, 1.5, Math.sin(angle) * 72);
-                layers.safety.add(post);
+                const post = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 2, 6), new THREE.MeshStandardMaterial({ color: 0xfbbf24 }));
+                post.position.set(Math.cos(angle) * 72, 1.5, Math.sin(angle) * 72); layers.safety.add(post);
             }
 
-            const berm = new THREE.Mesh(
-                new THREE.TorusGeometry(15, 2, 8, 16),
-                new THREE.MeshStandardMaterial({ color: 0x4a3b2c })
-            );
-            berm.position.set(-140, 1, 145);
-            berm.rotation.x = Math.PI/2;
-            layers.safety.add(berm);
-
-            const gate = new THREE.Mesh(
-                new THREE.BoxGeometry(0.3, 3.5, 12),
-                new THREE.MeshStandardMaterial({ color: 0xfbbf24, emissive: 0xfbbf24, emissiveIntensity: 0.4 })
-            );
-            gate.position.set(90, 2, 265);
-            layers.safety.add(gate);
-
-            // ============ LAYER: GRID ============
+            // GRID
             const gridHelper = new THREE.GridHelper(600, 60, 0x1a2030, 0x111827);
-            gridHelper.position.y = -0.1;
-            layers.grid.add(gridHelper);
+            gridHelper.position.y = -0.1; layers.grid.add(gridHelper);
 
-            // ============ SECTION CUT PLANE ============
-            const clipPlaneGeom = new THREE.PlaneGeometry(400, 200);
-            const clipPlaneMat = new THREE.MeshBasicMaterial({
-                color: 0x3b82f6,
-                transparent: true,
-                opacity: 0.15,
-                side: THREE.DoubleSide,
-                depthWrite: false
-            });
-            sectionPlane = new THREE.Mesh(clipPlaneGeom, clipPlaneMat);
-            sectionPlane.visible = false;
-            scene.add(sectionPlane);
+            // SECTION PLANE
+            sectionPlane = new THREE.Mesh(
+                new THREE.PlaneGeometry(400, 200),
+                new THREE.MeshBasicMaterial({ color: 0x3b82f6, transparent: true, opacity: 0.15, side: THREE.DoubleSide, depthWrite: false })
+            );
+            sectionPlane.visible = false; scene.add(sectionPlane);
 
-            // ============ ANIMATION ============
+            // ANIMATION
             const clock = new THREE.Clock();
             function animate() {
                 requestAnimationFrame(animate);
                 const t = clock.getElapsedTime();
-                
                 trucks.forEach(truck => {
                     truck.userData.t += 0.0015;
                     if (truck.userData.t > 1) truck.userData.t = 0;
@@ -2062,20 +2120,9 @@
                     truck.position.y = p1.y + (p2.y - p1.y) * segProgress + 0.5;
                     truck.position.z = p1.z + (p2.z - p1.z) * segProgress;
                     const dir = new THREE.Vector3().subVectors(p2, p1);
-                    if (dir.length() > 0.01) {
-                        truck.rotation.y = Math.atan2(dir.x, dir.z);
-                    }
+                    if (dir.length() > 0.01) truck.rotation.y = Math.atan2(dir.x, dir.z);
                 });
-
-                // Excavator rotation
-                if (layers.equipment.children[5]) {
-                    layers.equipment.children[5].rotation.y = Math.sin(t * 0.5) * 0.5;
-                }
-                // Drill vibration
-                if (layers.equipment.children[6]) {
-                    layers.equipment.children[6].position.y = -15 + 0.8 + Math.sin(t * 10) * 0.05;
-                }
-
+                if (layers.equipment.children[5]) layers.equipment.children[5].rotation.y = Math.sin(t * 0.5) * 0.5;
                 controls.update();
                 renderer.render(scene, camera);
             }
@@ -2087,7 +2134,6 @@
                 renderer.setSize(canvas.clientWidth, canvas.clientHeight);
             });
 
-            // Camera Views
             function animateCamera(target, lookAt = null) {
                 const start = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
                 const duration = 1000;
@@ -2112,43 +2158,29 @@
             document.getElementById('btn-zoomin').addEventListener('click', () => camera.position.multiplyScalar(0.85));
             document.getElementById('btn-zoomout').addEventListener('click', () => camera.position.multiplyScalar(1.15));
             document.getElementById('btn-reset').addEventListener('click', () => { setActiveView('btn-iso'); animateCamera({ x: 200, y: 100, z: 200 }, new THREE.Vector3(0, -20, 0)); });
-
             function setActiveView(id) {
                 document.querySelectorAll('.view-ctrl-btn').forEach(b => b.classList.remove('active'));
                 document.getElementById(id).classList.add('active');
             }
 
-            // ============================================
-            // LAYER CONTROL LOGIC
-            // ============================================
-            
-            // Checkbox toggle
+            // LAYER CONTROL
             document.querySelectorAll('.layer-checkbox').forEach(cb => {
                 cb.addEventListener('change', (e) => {
                     const item = e.target.closest('.layer-item');
                     const layerName = item.dataset.layer;
-                    const checked = e.target.checked;
-                    layers[layerName].visible = checked;
-                    item.classList.toggle('disabled', !checked);
-                    
-                    // Clear isolate if active
+                    layers[layerName].visible = e.target.checked;
+                    item.classList.toggle('disabled', !e.target.checked);
                     document.querySelectorAll('.layer-isolate').forEach(b => b.classList.remove('active'));
                 });
             });
-
-            // Isolate button
             document.querySelectorAll('.layer-isolate').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     const item = btn.closest('.layer-item');
                     const layerName = item.dataset.layer;
                     const wasIsolated = btn.classList.contains('active');
-                    
-                    // Clear all
                     document.querySelectorAll('.layer-isolate').forEach(b => b.classList.remove('active'));
-                    
                     if (wasIsolated) {
-                        // Restore all
                         document.querySelectorAll('.layer-item').forEach(it => {
                             const name = it.dataset.layer;
                             layers[name].visible = true;
@@ -2156,7 +2188,6 @@
                             it.classList.remove('disabled');
                         });
                     } else {
-                        // Isolate this one
                         btn.classList.add('active');
                         document.querySelectorAll('.layer-item').forEach(it => {
                             const name = it.dataset.layer;
@@ -2168,8 +2199,6 @@
                     }
                 });
             });
-
-            // All On / All Off
             document.getElementById('btn-all-on').addEventListener('click', () => {
                 document.querySelectorAll('.layer-item').forEach(it => {
                     const name = it.dataset.layer;
@@ -2187,8 +2216,6 @@
                     it.classList.add('disabled');
                 });
             });
-
-            // Transparency sliders
             document.getElementById('slider-benches').addEventListener('input', (e) => {
                 const val = e.target.value / 100;
                 document.getElementById('val-benches').textContent = e.target.value + '%';
@@ -2211,8 +2238,6 @@
                     }
                 });
             });
-
-            // Section cut
             document.querySelectorAll('.section-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.section-btn').forEach(b => b.classList.remove('active'));
@@ -2226,105 +2251,66 @@
                 document.getElementById('val-section').textContent = sectionPos;
                 updateSectionPlane();
             });
-
             function updateSectionPlane() {
                 if (sectionMode === 'off') {
                     sectionPlane.visible = false;
-                    // Remove clipping from all materials
                     scene.traverse(child => {
-                        if (child.isMesh && child.material) {
-                            if (Array.isArray(child.material)) {
-                                child.material.forEach(m => { m.clippingPlanes = []; m.clipShadows = false; m.needsUpdate = true; });
-                            } else {
-                                child.material.clippingPlanes = [];
-                                child.material.clipShadows = false;
-                                child.material.needsUpdate = true;
-                            }
+                        if (child.isMesh && child.material && child !== sectionPlane) {
+                            if (Array.isArray(child.material)) child.material.forEach(m => { m.clippingPlanes = []; m.needsUpdate = true; });
+                            else { child.material.clippingPlanes = []; child.material.needsUpdate = true; }
                         }
                     });
                     return;
                 }
-
                 sectionPlane.visible = true;
                 let plane;
                 if (sectionMode === 'x') {
                     plane = new THREE.Plane(new THREE.Vector3(1, 0, 0), -sectionPos);
-                    sectionPlane.rotation.y = Math.PI / 2;
-                    sectionPlane.position.set(sectionPos, -20, 0);
+                    sectionPlane.rotation.y = Math.PI / 2; sectionPlane.position.set(sectionPos, -20, 0);
                 } else if (sectionMode === 'y') {
                     plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -sectionPos);
-                    sectionPlane.rotation.y = 0;
-                    sectionPlane.position.set(0, -20, sectionPos);
+                    sectionPlane.rotation.y = 0; sectionPlane.position.set(0, -20, sectionPos);
                 } else if (sectionMode === 'z') {
                     plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), -sectionPos);
-                    sectionPlane.rotation.x = Math.PI / 2;
-                    sectionPlane.position.set(0, sectionPos, 0);
+                    sectionPlane.rotation.x = Math.PI / 2; sectionPlane.position.set(0, sectionPos, 0);
                 }
-
-                // Apply clipping to all meshes
                 scene.traverse(child => {
                     if (child.isMesh && child.material && child !== sectionPlane) {
-                        if (Array.isArray(child.material)) {
-                            child.material.forEach(m => { m.clippingPlanes = [plane]; m.clipShadows = true; m.needsUpdate = true; });
-                        } else {
-                            child.material.clippingPlanes = [plane];
-                            child.material.clipShadows = true;
-                            child.material.needsUpdate = true;
-                        }
+                        if (Array.isArray(child.material)) child.material.forEach(m => { m.clippingPlanes = [plane]; m.needsUpdate = true; });
+                        else { child.material.clippingPlanes = [plane]; child.material.needsUpdate = true; }
                     }
                 });
             }
-
-            // Display modes
             document.querySelectorAll('[data-mode]').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('[data-mode]').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     const mode = btn.dataset.mode;
-                    applyDisplayMode(mode);
-                });
-            });
-
-            function applyDisplayMode(mode) {
-                ['benches', 'oreblocks', 'facilities', 'stockpiles', 'terrain'].forEach(layerName => {
-                    layers[layerName].traverse(child => {
-                        if (child.isMesh && child.material) {
-                            const mats = Array.isArray(child.material) ? child.material : [child.material];
-                            mats.forEach(mat => {
-                                if (mode === 'solid') {
-                                    mat.wireframe = false;
-                                    mat.transparent = false;
-                                    mat.opacity = 1;
-                                } else if (mode === 'wire') {
-                                    mat.wireframe = true;
-                                    mat.transparent = false;
-                                    mat.opacity = 1;
-                                } else if (mode === 'both') {
-                                    mat.wireframe = false;
-                                    mat.transparent = false;
-                                    mat.opacity = 1;
-                                } else if (mode === 'xray') {
-                                    mat.wireframe = false;
-                                    mat.transparent = true;
-                                    mat.opacity = 0.3;
-                                }
-                                mat.needsUpdate = true;
-                            });
-                        }
+                    ['benches', 'oreblocks', 'facilities', 'stockpiles', 'terrain'].forEach(layerName => {
+                        layers[layerName].traverse(child => {
+                            if (child.isMesh && child.material) {
+                                const mats = Array.isArray(child.material) ? child.material : [child.material];
+                                mats.forEach(mat => {
+                                    if (mode === 'solid') { mat.wireframe = false; mat.transparent = false; mat.opacity = 1; }
+                                    else if (mode === 'wire') { mat.wireframe = true; mat.transparent = false; mat.opacity = 1; }
+                                    else if (mode === 'both') { mat.wireframe = false; mat.transparent = false; mat.opacity = 1; }
+                                    else if (mode === 'xray') { mat.wireframe = false; mat.transparent = true; mat.opacity = 0.3; }
+                                    mat.needsUpdate = true;
+                                });
+                            }
+                        });
                     });
                 });
-            }
+            });
         }
 
         setTimeout(init3D, 200);
 
         // ============================================
-        // CHARTS
+        // OTHER CHARTS (Dashboard, Production, etc.)
         // ============================================
         const chartDefaults = {
-            responsive: true,
-            maintainAspectRatio: false,
-            animation: { duration: 0 },
+            responsive: true, maintainAspectRatio: false, animation: { duration: 0 },
             plugins: { legend: { labels: { color: '#94a3b8', font: { size: 10 }, boxWidth: 10 } }, tooltip: { enabled: true } },
             scales: {
                 x: { ticks: { color: '#64748b', font: { size: 9 } }, grid: { color: '#1e2533' } },
@@ -2342,8 +2328,10 @@
             return chart;
         }
 
-        function initDashboardCharts() {
-            if (chartInstances['chartProd']) return;
+        let chartsInitialized = false;
+        function initAllCharts() {
+            if (chartsInitialized) return;
+            chartsInitialized = true;
 
             createChart('chartProd', {
                 type: 'line',
@@ -2555,14 +2543,10 @@
             });
         }
 
-        let chartsInitialized = false;
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 setTimeout(() => {
-                    if (!chartsInitialized) {
-                        chartsInitialized = true;
-                        initDashboardCharts();
-                    }
+                    initAllCharts();
                     Object.values(chartInstances).forEach(c => c && c.resize && c.resize());
                 }, 200);
             });
@@ -2571,16 +2555,15 @@
         // COMMAND LOG
         const cmdWindow = document.getElementById('cmdWindow');
         const messages = [
-            { type: 'data', msg: 'LAYER: Toggle terrain · 200 trees visible.' },
-            { type: 'sys', msg: 'SECTION CUT: X-plane at position 25.' },
-            { type: 'ok', msg: 'ISOLATE: Ore blocks only · Grade filter active.' },
-            { type: 'data', msg: 'MODE: X-Ray transparency applied to benches.' },
-            { type: 'sys', msg: 'FLEET: 5 trucks animated on haul routes.' },
+            { type: 'data', msg: 'GEOSTAT: Variogram computed · 4,284 pairs · Spherical model fit.' },
+            { type: 'sys', msg: 'KRIGING: Ordinary Kriging · 284,000 blocks estimated.' },
+            { type: 'ok', msg: 'CROSS-VAL: Slope 0.98 · r=0.872 · Unbiased estimator.' },
+            { type: 'data', msg: 'VARIANCE: Mean 0.102 · 68% blocks high confidence.' },
+            { type: 'sys', msg: 'ANISOTROPY: Major 112m · Minor 85m · Vertical 18m.' },
             { type: 'warn', msg: 'Cuaca: Hujan ringan diprediksi 14:00 WIT.' },
             { type: 'data', msg: 'GRADE: Blok 4A-92 · Ni 1.65% · Fe 18.4%.' },
             { type: 'ok', msg: 'Safety: 247 hari tanpa LTI · Zero Harm.' }
         ];
-        
         setInterval(() => {
             const rnd = messages[Math.floor(Math.random() * messages.length)];
             const time = new Date().toLocaleTimeString('id-ID', { hour12: false });
