@@ -28,7 +28,7 @@
         .page-break { page-break-after: always; break-after: page; }
         .font-serif-cert { font-family: 'Times New Roman', Times, serif; }
         
-        /* ===== Input transparan (kotak hanya muncul saat diklik) ===== */
+        /* ===== Input transparan ===== */
         .editable-input {
             border: none; background: transparent; width: 100%;
             padding: 0; font-family: inherit; font-size: inherit;
@@ -41,7 +41,7 @@
         
         .inline-input { display: inline-block; width: auto; }
         
-        /* ===== NIB inline (hanya 1 spasi) ===== */
+        /* ===== NIB inline ===== */
         .nib-inline-wrapper {
             display: inline-flex;
             justify-content: center;
@@ -62,7 +62,7 @@
             background: rgba(243, 244, 246, 0.8);
         }
         
-        /* ===== Blok Tanda Tangan: Nama tepat di atas NIP ===== */
+        /* ===== Blok Tanda Tangan ===== */
         .signature-block { display: inline-block; text-align: left; width: 220px; }
         .signature-block .name-input {
             font-weight: bold; font-size: 1.125rem; line-height: 1.4;
@@ -74,7 +74,7 @@
             outline: 1px dashed #3b82f6; background: rgba(243, 244, 246, 0.8);
         }
         
-        /* ===== NIP tanpa spasi ===== */
+        /* ===== NIP ===== */
         .nip-wrapper {
             display: flex; justify-content: flex-start; align-items: baseline;
             gap: 0; white-space: nowrap; width: 100%;
@@ -92,7 +92,7 @@
         /* ===== Peta ===== */
         #map { height: 320px; width: 100%; border: 1px solid #ccc; z-index: 1; }
         
-        /* ===== QR Code kecil ===== */
+        /* ===== QR Code ===== */
         .qr-container { width: 60px; height: 60px; }
         .qr-container img, .qr-container canvas {
             width: 60px !important; height: 60px !important; display: block;
@@ -308,7 +308,6 @@
             <!-- ==================== HALAMAN 1 ==================== -->
             <div class="f4-page font-serif-cert page-break" id="page-1">
                 
-                <!-- Header: Garuda di Tengah + Edisi Sejajar di Kanan -->
                 <div class="relative mb-6" style="min-height: 110px;">
                     <div class="flex justify-center items-center">
                         <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/9/90/National_emblem_of_Indonesia_Garuda_Pancasila.svg/250px-National_emblem_of_Indonesia_Garuda_Pancasila.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail" 
@@ -325,12 +324,10 @@
                     </div>
                 </div>
 
-                <!-- Judul Kementerian -->
                 <div class="text-center mb-6">
                     <h3 class="font-bold text-sm">KEMENTERIAN AGRARIA DAN TATA RUANG/<br>BADAN PERTANAHAN NASIONAL<br>REPUBLIK INDONESIA</h3>
                 </div>
 
-                <!-- Judul Sertifikat + NIB -->
                 <div class="text-center mb-6">
                     <h1 class="text-2xl font-bold mb-1">SERTIFIKAT HAK MILIK</h1>
                     <div class="nib-inline-wrapper">
@@ -339,12 +336,10 @@
                     </div>
                 </div>
 
-                <!-- Paragraf Pembukaan -->
                 <div class="text-justify text-sm mb-8 leading-relaxed">
                     <p>Hak Milik ini terdaftar atas nama pemegang hak yang tertera pada PEMEGANG HAK, atas sebagian tanah yang letaknya diuraikan pada bagian BIDANG TANAH, serta batasan dan kewajiban, pembebanan dan pencatatan lainnya yang tertera pada tanda bukti hak ini</p>
                 </div>
 
-                <!-- Tanda Tangan Pejabat (Kanan) -->
                 <div class="text-right mb-8 pr-16">
                     <p class="text-sm mb-4">
                         <input type="text" id="outKepalaKantor" class="editable-input text-right" value="Kepala Kantor Pertanahan Kota Administrasi Jakarta Pusat">
@@ -360,7 +355,6 @@
                     </div>
                 </div>
 
-                <!-- Bidang Tanah -->
                 <div class="text-sm mb-6">
                     <h4 class="font-bold mb-1">BIDANG TANAH</h4>
                     <p class="text-justify">
@@ -371,19 +365,16 @@
                     </p>
                 </div>
 
-                <!-- Pemegang Hak -->
                 <div class="text-sm mb-6">
                     <h4 class="font-bold mb-1">PEMEGANG HAK</h4>
                     <textarea id="outPemegangHak" class="editable-input w-full" rows="2">1) FINANSI MAHILA - NABIRE, 18 Juli 1993 - 1 bagian</textarea>
                 </div>
 
-                <!-- Catatan Pendaftaran -->
                 <div class="text-sm mb-12">
                     <h4 class="font-bold mb-1">CATATAN PENDAFTARAN</h4>
                     <textarea id="outCatatan" class="editable-input w-full" rows="2">1) Pengakuan Hak yang diperoleh atas dasar Letter C Nomor 3931</textarea>
                 </div>
 
-                <!-- Footer Halaman 1 (Editable) -->
                 <div class="flex justify-between items-end text-[10px] absolute bottom-[15mm] left-[15mm] right-[15mm]">
                     <div style="width: 60%;">
                         <input type="text" id="outTeksVerifikasiPage1" class="footer-edit" value="Telah diperiksa oleh Bagyo Sangguru tanggal 14 Desember 2023">
@@ -399,16 +390,13 @@
                 
                 <h3 class="font-bold text-sm mb-2">LETAK BIDANG TANAH</h3>
                 
-                <!-- Peta Standar (Esri World Street Map) -->
                 <div class="relative mb-4">
                     <div id="map"></div>
                     <div class="absolute bottom-2 right-2 bg-white px-2 py-1 text-[10px] border z-[1000]">© Esri</div>
                 </div>
 
-                <!-- PERHATIAN (di luar kotak) -->
                 <h4 class="font-bold text-xs mb-2">PERHATIAN</h4>
                 
-                <!-- Kotak Disclaimer (hanya berisi list) -->
                 <div class="text-xs text-justify mb-6 border p-3 bg-gray-50">
                     <ul class="list-disc pl-4 space-y-1">
                         <li>Asli dokumen ini berbentuk dokumen elektronik yang ditandatangani dengan tanda tangan elektronik yang telah disertifikasi oleh Balai Sertifikasi Elektronik (BSrE).</li>
@@ -422,12 +410,10 @@
                     </ul>
                 </div>
 
-                <!-- QR Code (Posisi di Kanan Halaman) -->
                 <div class="flex justify-end mb-6">
                     <div id="qrcode" class="qr-container"></div>
                 </div>
 
-                <!-- Footer Halaman 2 (Editable) -->
                 <div class="flex justify-between items-end text-[10px] absolute bottom-[15mm] left-[15mm] right-[15mm]">
                     <div class="flex items-center gap-3" style="width: 70%;">
                         <img src="https://trikastain.github.io/Pelaporan-MUT/sertif.png" 
@@ -442,7 +428,6 @@
 
         </div>
         
-        <!-- Footer Branding -->
         <div class="w-full max-w-[215mm] flex justify-between items-center mt-4 text-green-600 font-bold text-sm bg-green-100 p-2 rounded no-print">
             <span>Melayani | Profesional | Terpercaya</span>
             <span>@ditjenphpt.atrbpn</span>
@@ -451,7 +436,7 @@
 
     <script>
         /* ============================================================
-           1. PETA LEAFLET - PETA STANDAR (ESRI WORLD STREET MAP)
+           1. PETA LEAFLET
         ============================================================ */
         let map = L.map('map', { zoomControl: true, attributionControl: false })
                     .setView([-6.1982, 106.8256], 16);
@@ -498,10 +483,8 @@
             const centerLat = (minLat + maxLat) / 2;
             const centerLng = (minLng + maxLng) / 2;
 
-            const width = 1762;
-            const height = 1005;
-            const x = Math.round(width / 2);
-            const y = Math.round(height / 2);
+            const width = 1762, height = 1005;
+            const x = Math.round(width / 2), y = Math.round(height / 2);
 
             const bbox = `${minLng},${minLat},${maxLng},${maxLat}`;
             return `https://bhumi.atrbpn.go.id/peta?bbox=${bbox}&height=${height}&width=${width}&x=${x}&y=${y}&latitude=${centerLat}&longitude=${centerLng}`;
@@ -522,16 +505,108 @@
         }
 
         /* ============================================================
-           3. API KODE WILAYAH (WILAYAH.ID)
-           
-           Struktur API:
-           - provinces.json                        → {"data":[{"code":"11","name":"Aceh"}, ...]}
-           - regencies/[PROVINCE_CODE].json        → {"data":[{"code":"11.01","name":"..."}, ...]}
-           - districts/[REGENCY_CODE].json         → {"data":[{"code":"11.01.01","name":"..."}, ...]}
-           - villages/[DISTRICT_CODE].json         → {"data":[{"code":"11.01.01.2001","name":"..."}, ...]}
+           3. STATUS UI — tampilkan pesan di panel kiri
         ============================================================ */
-        const BASE_API = 'https://wilayah.id/api';
+        function showStatus(message, type = 'info') {
+            let box = document.getElementById('apiStatusBox');
+            if (!box) {
+                box = document.createElement('div');
+                box.id = 'apiStatusBox';
+                const parent = document.getElementById('selectProvinsi').closest('.bg-blue-50');
+                parent.insertBefore(box, parent.firstChild);
+            }
+            const colors = {
+                info:    'bg-blue-100 border-blue-300 text-blue-800',
+                success: 'bg-green-100 border-green-300 text-green-800',
+                error:   'bg-red-100 border-red-300 text-red-800',
+                warning: 'bg-yellow-100 border-yellow-300 text-yellow-800'
+            };
+            box.className = `mt-2 mb-2 p-2 rounded text-xs border ${colors[type]}`;
+            box.innerHTML = message;
+        }
 
+        /* ============================================================
+           4. API KODE WILAYAH — MULTI ENDPOINT (Anti-Gagal)
+           
+           Coba berurutan sampai ada yang berhasil:
+           1. jsDelivr CDN mirror   (paling stabil, CORS OK)
+           2. emsifa.github.io      (original)
+           3. CORS Proxy wilayah.id (cadangan terakhir)
+        ============================================================ */
+        const API_ENDPOINTS = [
+            {
+                name: 'jsDelivr CDN',
+                base: 'https://cdn.jsdelivr.net/gh/emsifa/api-wilayah-indonesia@master/api',
+                format: 'emsifa'
+            },
+            {
+                name: 'GitHub Pages emsifa',
+                base: 'https://emsifa.github.io/api-wilayah-indonesia/api',
+                format: 'emsifa'
+            },
+            {
+                name: 'CORS Proxy wilayah.id',
+                base: 'https://corsproxy.io/?https://wilayah.id/api',
+                format: 'wilayahid'
+            }
+        ];
+
+        let activeEndpoint = null;
+
+        /* ---------- Fetch dengan fallback otomatis ---------- */
+        async function fetchWilayah(path) {
+            const endpoints = activeEndpoint
+                ? [activeEndpoint, ...API_ENDPOINTS.filter(e => e.base !== activeEndpoint.base)]
+                : API_ENDPOINTS;
+
+            let lastError = null;
+
+            for (const ep of endpoints) {
+                try {
+                    console.log(`📡 Mencoba ${ep.name}: ${ep.base}/${path}`);
+                    const url = `${ep.base}/${path}`;
+                    const res = await fetch(url, { cache: 'no-store' });
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    const json = await res.json();
+
+                    // Normalisasi → selalu [{id, name}]
+                    let data;
+                    if (Array.isArray(json)) {
+                        data = json.map(x => ({ id: x.id || x.code, name: x.name }));
+                    } else if (json && Array.isArray(json.data)) {
+                        data = json.data.map(x => ({ id: x.id || x.code, name: x.name }));
+                    } else {
+                        throw new Error('Format respons tidak dikenali');
+                    }
+
+                    if (data.length === 0) throw new Error('Data kosong');
+
+                    activeEndpoint = ep;
+                    console.log(`✅ Berhasil via ${ep.name} (${data.length} item)`);
+                    showStatus(`✅ Terhubung via <b>${ep.name}</b>`, 'success');
+                    return data;
+                } catch (err) {
+                    console.warn(`✗ ${ep.name} gagal:`, err.message);
+                    lastError = err;
+                }
+            }
+
+            showStatus(
+                `❌ <b>Gagal memuat data wilayah</b><br>` +
+                `Error: ${lastError?.message || 'tidak diketahui'}<br><br>` +
+                `<b>Kemungkinan penyebab:</b><br>` +
+                `1. File dibuka via <code>file://</code> → gunakan local server<br>` +
+                `2. Tidak ada koneksi internet<br>` +
+                `3. Firewall/adblock memblokir<br><br>` +
+                `<button onclick="location.reload()" class="bg-red-600 text-white px-2 py-1 rounded mt-1">🔄 Coba Lagi</button>`,
+                'error'
+            );
+            throw lastError;
+        }
+
+        /* ============================================================
+           5. SETUP DOM
+        ============================================================ */
         const selectProvinsi = document.getElementById('selectProvinsi');
         const selectKabupaten = document.getElementById('selectKabupaten');
         const selectKecamatan = document.getElementById('selectKecamatan');
@@ -547,109 +622,69 @@
 
         let kodeTerpilih = { provinsi: '', kabupaten: '', kecamatan: '', desa: '' };
 
+        function fillSelect(selectEl, data, placeholder) {
+            selectEl.innerHTML = `<option value="">${placeholder}</option>`;
+            data.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.id;
+                opt.textContent = `${item.id} - ${item.name}`;
+                selectEl.appendChild(opt);
+            });
+        }
+
         /* ---------- LOAD PROVINSI ---------- */
         async function loadProvinsi() {
+            selectProvinsi.innerHTML = '<option value="">⏳ Memuat...</option>';
+            showStatus('⏳ Memuat data provinsi...', 'info');
             try {
-                const res = await fetch(`${BASE_API}/provinces.json`);
-                const json = await res.json();
-                const data = json.data || [];
-                
-                selectProvinsi.innerHTML = '<option value="">-- Pilih Provinsi --</option>';
-                data.forEach(item => {
-                    const opt = document.createElement('option');
-                    opt.value = item.code;
-                    opt.textContent = `${item.code} - ${item.name}`;
-                    selectProvinsi.appendChild(opt);
-                });
-                console.log('✓ Provinsi loaded:', data.length);
+                const data = await fetchWilayah('provinces.json');
+                fillSelect(selectProvinsi, data, '-- Pilih Provinsi --');
             } catch (err) {
-                console.error('✗ Gagal load provinsi:', err);
-                selectProvinsi.innerHTML = '<option value="">⚠️ Gagal memuat data</option>';
+                selectProvinsi.innerHTML = '<option value="">⚠️ Gagal memuat</option>';
             }
         }
 
-        /* ---------- LOAD KABUPATEN/KOTA ---------- */
-        async function loadKabupaten(provinsiKode) {
+        /* ---------- LOAD KABUPATEN ---------- */
+        async function loadKabupaten(provinsiId) {
             selectKabupaten.innerHTML = '<option value="">⏳ Memuat...</option>';
             selectKabupaten.disabled = true;
-            
             try {
-                const res = await fetch(`${BASE_API}/regencies/${provinsiKode}.json`);
-                const json = await res.json();
-                const data = json.data || [];
-                
-                selectKabupaten.innerHTML = '<option value="">-- Pilih Kabupaten/Kota --</option>';
-                data.forEach(item => {
-                    const opt = document.createElement('option');
-                    opt.value = item.code;
-                    opt.textContent = `${item.code} - ${item.name}`;
-                    selectKabupaten.appendChild(opt);
-                });
+                const data = await fetchWilayah(`regencies/${provinsiId}.json`);
+                fillSelect(selectKabupaten, data, '-- Pilih Kabupaten/Kota --');
                 selectKabupaten.disabled = false;
-                console.log('✓ Kabupaten loaded:', data.length);
             } catch (err) {
-                console.error('✗ Gagal load kabupaten:', err);
-                selectKabupaten.innerHTML = '<option value="">⚠️ Gagal memuat data</option>';
+                selectKabupaten.innerHTML = '<option value="">⚠️ Gagal memuat</option>';
             }
         }
 
         /* ---------- LOAD KECAMATAN ---------- */
-        async function loadKecamatan(kabupatenKode) {
+        async function loadKecamatan(kabupatenId) {
             selectKecamatan.innerHTML = '<option value="">⏳ Memuat...</option>';
             selectKecamatan.disabled = true;
-            
             try {
-                const res = await fetch(`${BASE_API}/districts/${kabupatenKode}.json`);
-                const json = await res.json();
-                const data = json.data || [];
-                
-                selectKecamatan.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
-                data.forEach(item => {
-                    const opt = document.createElement('option');
-                    opt.value = item.code;
-                    opt.textContent = `${item.code} - ${item.name}`;
-                    selectKecamatan.appendChild(opt);
-                });
+                const data = await fetchWilayah(`districts/${kabupatenId}.json`);
+                fillSelect(selectKecamatan, data, '-- Pilih Kecamatan --');
                 selectKecamatan.disabled = false;
-                console.log('✓ Kecamatan loaded:', data.length);
             } catch (err) {
-                console.error('✗ Gagal load kecamatan:', err);
-                selectKecamatan.innerHTML = '<option value="">⚠️ Gagal memuat data</option>';
+                selectKecamatan.innerHTML = '<option value="">⚠️ Gagal memuat</option>';
             }
         }
 
-        /* ---------- LOAD DESA/KELURAHAN ---------- */
-        async function loadDesa(kecamatanKode) {
+        /* ---------- LOAD DESA ---------- */
+        async function loadDesa(kecamatanId) {
             selectDesa.innerHTML = '<option value="">⏳ Memuat...</option>';
             selectDesa.disabled = true;
-            
             try {
-                const res = await fetch(`${BASE_API}/villages/${kecamatanKode}.json`);
-                const json = await res.json();
-                const data = json.data || [];
-                
-                selectDesa.innerHTML = '<option value="">-- Pilih Desa/Kelurahan --</option>';
-                data.forEach(item => {
-                    const opt = document.createElement('option');
-                    opt.value = item.code;
-                    opt.textContent = `${item.code} - ${item.name}`;
-                    selectDesa.appendChild(opt);
-                });
+                const data = await fetchWilayah(`villages/${kecamatanId}.json`);
+                fillSelect(selectDesa, data, '-- Pilih Desa/Kelurahan --');
                 selectDesa.disabled = false;
-                console.log('✓ Desa loaded:', data.length);
             } catch (err) {
-                console.error('✗ Gagal load desa:', err);
-                selectDesa.innerHTML = '<option value="">⚠️ Gagal memuat data</option>';
+                selectDesa.innerHTML = '<option value="">⚠️ Gagal memuat</option>';
             }
         }
 
         /* ============================================================
-           GENERATOR NIB-EL 14 DIGIT
-           Struktur: PP.KK.NNNNNNNNN.I
-           - PP       : 2 digit dari kode Provinsi (langsung)
-           - KK       : 2 digit dari kode Kabupaten (ambil bagian setelah titik terakhir)
-           - NNNNNNNNN: Nomor urut 9 digit
-           - I        : Indeks letak 1 digit
+           6. GENERATOR NIB-EL 14 DIGIT
         ============================================================ */
         function updateNIBPreview() {
             const prov = (kodeTerpilih.provinsi || '00').padStart(2, '0');
@@ -682,9 +717,8 @@
         }
 
         /* ============================================================
-           EVENT LISTENERS
+           7. EVENT LISTENERS
         ============================================================ */
-        
         selectProvinsi.addEventListener('change', (e) => {
             const kode = e.target.value;
             kodeTerpilih.provinsi = kode;
@@ -699,7 +733,7 @@
             selectDesa.innerHTML = '<option value="">-- Pilih Kecamatan dulu --</option>';
             selectDesa.disabled = true;
             
-            infoProvinsi.textContent = kode ? `Terpilih: ${kode} - ${e.target.options[e.target.selectedIndex].text.split(' - ')[1]}` : 'Pilih provinsi terlebih dahulu';
+            infoProvinsi.textContent = kode ? `Terpilih: ${e.target.options[e.target.selectedIndex].text}` : 'Pilih provinsi terlebih dahulu';
             infoKabupaten.textContent = '-';
             infoKecamatan.textContent = '-';
             infoDesa.textContent = '-';
@@ -719,7 +753,7 @@
             selectDesa.innerHTML = '<option value="">-- Pilih Kecamatan dulu --</option>';
             selectDesa.disabled = true;
             
-            infoKabupaten.textContent = kode ? `Terpilih: ${kode}` : '-';
+            infoKabupaten.textContent = kode ? `Terpilih: ${e.target.options[e.target.selectedIndex].text}` : '-';
             infoKecamatan.textContent = '-';
             infoDesa.textContent = '-';
             
@@ -735,7 +769,7 @@
             selectDesa.innerHTML = '<option value="">-- Pilih Kecamatan dulu --</option>';
             selectDesa.disabled = true;
             
-            infoKecamatan.textContent = kode ? `Terpilih: ${kode}` : '-';
+            infoKecamatan.textContent = kode ? `Terpilih: ${e.target.options[e.target.selectedIndex].text}` : '-';
             infoDesa.textContent = '-';
             
             if (kode) loadDesa(kode);
@@ -744,7 +778,7 @@
         selectDesa.addEventListener('change', (e) => {
             const kode = e.target.value;
             kodeTerpilih.desa = kode;
-            infoDesa.textContent = kode ? `Terpilih: ${kode}` : '-';
+            infoDesa.textContent = kode ? `Terpilih: ${e.target.options[e.target.selectedIndex].text}` : '-';
         });
 
         inputNomorUrut.addEventListener('input', (e) => {
@@ -754,10 +788,8 @@
 
         selectIndeksLetak.addEventListener('change', updateNIBPreview);
 
-        loadProvinsi();
-
         /* ============================================================
-           4. BINDING DATA FORM KE DOKUMEN
+           8. BINDING DATA FORM → DOKUMEN
         ============================================================ */
         const bindings = [
             { input: 'inputEdisi', output: 'outEdisi' },
@@ -792,7 +824,7 @@
         });
 
         /* ============================================================
-           5. BINDING TEKS VERIFIKASI (FOOTER) - 3 ARAH SINKRONISASI
+           9. BINDING TEKS VERIFIKASI
         ============================================================ */
         const inputTeksVerifikasi = document.getElementById('inputTeksVerifikasi');
         const outTeksVerifikasiPage1 = document.getElementById('outTeksVerifikasiPage1');
@@ -817,7 +849,7 @@
         });
 
         /* ============================================================
-           6. FUNGSI DOWNLOAD PDF (F4 = 215mm x 330mm, TEPAT 2 HALAMAN)
+           10. DOWNLOAD PDF
         ============================================================ */
         function generatePDF() {
             const element = document.getElementById('document-preview');
@@ -850,11 +882,12 @@
         }
 
         /* ============================================================
-           7. INISIALISASI AWAL
+           11. INISIALISASI
         ============================================================ */
         updateMap();
         generateQR();
         updateNIBPreview();
+        loadProvinsi();
 
         document.getElementById('inputKoordinat').addEventListener('input', () => {
             clearTimeout(window._qrTimeout);
