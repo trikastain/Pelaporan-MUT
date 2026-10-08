@@ -526,82 +526,47 @@
         }
 
         /* ============================================================
-           4. API KODE WILAYAH — MULTI ENDPOINT (Anti-Gagal)
+           4. API KODE WILAYAH — NUSANTARA-API
            
-           Coba berurutan sampai ada yang berhasil:
-           1. jsDelivr CDN mirror   (paling stabil, CORS OK)
-           2. emsifa.github.io      (original)
-           3. CORS Proxy wilayah.id (cadangan terakhir)
+           Endpoint (CDN):
+           - provinces/index.json              → [["11","Aceh"], ...]
+           - regencies/{kode_prov}/index.json  → [["11.01","KAB. SIMEULUE"], ...]
+           - districts/{kode_kab}/index.json   → [["11.01.01","TEUPAH SELATAN"], ...]
+           - villages/{kode_kec}/index.json    → [["11.01.01.2001","LATIUNG"], ...]
         ============================================================ */
-        const API_ENDPOINTS = [
-            {
-                name: 'jsDelivr CDN',
-                base: 'https://cdn.jsdelivr.net/gh/emsifa/api-wilayah-indonesia@master/api',
-                format: 'emsifa'
-            },
-            {
-                name: 'GitHub Pages emsifa',
-                base: 'https://emsifa.github.io/api-wilayah-indonesia/api',
-                format: 'emsifa'
-            },
-            {
-                name: 'CORS Proxy wilayah.id',
-                base: 'https://corsproxy.io/?https://wilayah.id/api',
-                format: 'wilayahid'
-            }
-        ];
+        const API_BASE = 'https://cdn.jsdelivr.net/gh/ibnushahraa/nusantara-api@cdn/data';
 
-        let activeEndpoint = null;
-
-        /* ---------- Fetch dengan fallback otomatis ---------- */
+        /* ---------- Fetch data wilayah ---------- */
         async function fetchWilayah(path) {
-            const endpoints = activeEndpoint
-                ? [activeEndpoint, ...API_ENDPOINTS.filter(e => e.base !== activeEndpoint.base)]
-                : API_ENDPOINTS;
+            try {
+                const url = `${API_BASE}/${path}`;
+                console.log(`📡 Fetch: ${url}`);
+                const res = await fetch(url, { cache: 'no-store' });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const json = await res.json();
 
-            let lastError = null;
+                // nusantara-api mengembalikan array of arrays: [["11","Aceh"], ...]
+                // Kita normalisasi menjadi array of objects: [{id, name}, ...]
+                const data = json.map(item => ({ id: item[0], name: item[1] }));
 
-            for (const ep of endpoints) {
-                try {
-                    console.log(`📡 Mencoba ${ep.name}: ${ep.base}/${path}`);
-                    const url = `${ep.base}/${path}`;
-                    const res = await fetch(url, { cache: 'no-store' });
-                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                    const json = await res.json();
-
-                    // Normalisasi → selalu [{id, name}]
-                    let data;
-                    if (Array.isArray(json)) {
-                        data = json.map(x => ({ id: x.id || x.code, name: x.name }));
-                    } else if (json && Array.isArray(json.data)) {
-                        data = json.data.map(x => ({ id: x.id || x.code, name: x.name }));
-                    } else {
-                        throw new Error('Format respons tidak dikenali');
-                    }
-
-                    if (data.length === 0) throw new Error('Data kosong');
-
-                    activeEndpoint = ep;
-                    console.log(`✅ Berhasil via ${ep.name} (${data.length} item)`);
-                    showStatus(`✅ Terhubung via <b>${ep.name}</b>`, 'success');
-                    return data;
-                } catch (err) {
-                    console.warn(`✗ ${ep.name} gagal:`, err.message);
-                    lastError = err;
-                }
+                if (data.length === 0) throw new Error('Data kosong');
+                console.log(`✅ Berhasil (${data.length} item)`);
+                showStatus(`✅ Terhubung via <b>nusantara-api CDN</b>`, 'success');
+                return data;
+            } catch (err) {
+                console.error('✗ Gagal:', err.message);
+                showStatus(
+                    `❌ <b>Gagal memuat data wilayah</b><br>` +
+                    `Error: ${err.message}<br><br>` +
+                    `<b>Kemungkinan penyebab:</b><br>` +
+                    `1. File dibuka via <code>file://</code> → gunakan local server<br>` +
+                    `2. Tidak ada koneksi internet<br>` +
+                    `3. Firewall/adblock memblokir<br><br>` +
+                    `<button onclick="location.reload()" class="bg-red-600 text-white px-2 py-1 rounded mt-1">🔄 Coba Lagi</button>`,
+                    'error'
+                );
+                throw err;
             }
-
-            showStatus(
-                `❌ <b>Gagal memuat data wilayah</b><br>` +
-                `Error: ${lastError?.message || 'tidak diketahui'}<br><br>` +
-                `<b>Kemungkinan penyebab:</b><br>` +
-                `1. File dibuka via <code>file://</code> → gunakan local server<br>` +
-                `2. Tidak ada koneksi internet<br>` +
-                `3. Firewall/adblock memblokir<br><br>` +
-                `<button onclick="location.reload()" class="bg-red-600 text-white px-2 py-1 rounded mt-1">🔄 Coba Lagi</button>`,
-                'error'
-            );
-            throw lastError;
         }
 
         /* ============================================================
@@ -637,7 +602,7 @@
             selectProvinsi.innerHTML = '<option value="">⏳ Memuat...</option>';
             showStatus('⏳ Memuat data provinsi...', 'info');
             try {
-                const data = await fetchWilayah('provinces.json');
+                const data = await fetchWilayah('provinces/index.json');
                 fillSelect(selectProvinsi, data, '-- Pilih Provinsi --');
             } catch (err) {
                 selectProvinsi.innerHTML = '<option value="">⚠️ Gagal memuat</option>';
@@ -649,7 +614,7 @@
             selectKabupaten.innerHTML = '<option value="">⏳ Memuat...</option>';
             selectKabupaten.disabled = true;
             try {
-                const data = await fetchWilayah(`regencies/${provinsiId}.json`);
+                const data = await fetchWilayah(`regencies/${provinsiId}/index.json`);
                 fillSelect(selectKabupaten, data, '-- Pilih Kabupaten/Kota --');
                 selectKabupaten.disabled = false;
             } catch (err) {
@@ -662,7 +627,7 @@
             selectKecamatan.innerHTML = '<option value="">⏳ Memuat...</option>';
             selectKecamatan.disabled = true;
             try {
-                const data = await fetchWilayah(`districts/${kabupatenId}.json`);
+                const data = await fetchWilayah(`districts/${kabupatenId}/index.json`);
                 fillSelect(selectKecamatan, data, '-- Pilih Kecamatan --');
                 selectKecamatan.disabled = false;
             } catch (err) {
@@ -675,7 +640,7 @@
             selectDesa.innerHTML = '<option value="">⏳ Memuat...</option>';
             selectDesa.disabled = true;
             try {
-                const data = await fetchWilayah(`villages/${kecamatanId}.json`);
+                const data = await fetchWilayah(`villages/${kecamatanId}/index.json`);
                 fillSelect(selectDesa, data, '-- Pilih Desa/Kelurahan --');
                 selectDesa.disabled = false;
             } catch (err) {
