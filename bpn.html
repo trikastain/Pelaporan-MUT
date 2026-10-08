@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Sertifikat Elektronik - F4</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+    
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+
+    <style>
+        body { background-color: #f3f4f6; font-family: 'Arial', sans-serif; }
+        
+        /* ===== Ukuran F4 (Folio): 215mm x 330mm ===== */
+        .f4-page {
+            width: 215mm; height: 330mm; padding: 15mm;
+            margin: 15px auto; background: #ffffff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative; box-sizing: border-box; color: #000; overflow: hidden;
+        }
+        
+        .page-break { page-break-after: always; break-after: page; }
+        .font-serif-cert { font-family: 'Times New Roman', Times, serif; }
+        
+        /* ===== Input transparan (kotak hanya muncul saat diklik) ===== */
+        .editable-input {
+            border: none; background: transparent; width: 100%;
+            padding: 0; font-family: inherit; font-size: inherit;
+            color: inherit; resize: none; line-height: 1.5; display: block;
+        }
+        .editable-input:focus {
+            outline: 1px dashed #3b82f6;
+            background: rgba(243, 244, 246, 0.8);
+        }
+        
+        .inline-input { display: inline-block; width: auto; }
+        
+        /* ===== NIB inline (hanya 1 spasi) ===== */
+        .nib-inline-wrapper {
+            display: inline-flex;
+            justify-content: center;
+            align-items: baseline;
+            gap: 0.3em;
+        }
+        .nib-inline-wrapper .nib-label {
+            font-weight: bold; font-size: 1.125rem; white-space: nowrap;
+        }
+        .nib-inline-wrapper .nib-value {
+            border: none; background: transparent;
+            font-family: inherit; font-size: 1.125rem; font-weight: bold;
+            color: inherit; padding: 0; margin: 0;
+            width: auto; min-width: 170px; max-width: 280px; outline: none;
+        }
+        .nib-inline-wrapper .nib-value:focus {
+            outline: 1px dashed #3b82f6;
+            background: rgba(243, 244, 246, 0.8);
+        }
+        
+        /* ===== Blok Tanda Tangan: Nama tepat di atas NIP ===== */
+        .signature-block { display: inline-block; text-align: left; width: 220px; }
+        .signature-block .name-input {
+            font-weight: bold; font-size: 1.125rem; line-height: 1.4;
+            border: none; background: transparent; width: 100%;
+            padding: 0; margin: 0 0 2px 0; font-family: inherit;
+            color: inherit; display: block; text-align: left;
+        }
+        .signature-block .name-input:focus {
+            outline: 1px dashed #3b82f6; background: rgba(243, 244, 246, 0.8);
+        }
+        
+        /* ===== NIP tanpa spasi ===== */
+        .nip-wrapper {
+            display: flex; justify-content: flex-start; align-items: baseline;
+            gap: 0; white-space: nowrap; width: 100%;
+        }
+        .nip-wrapper .nip-label { margin: 0; padding: 0; white-space: nowrap; }
+        .nip-wrapper .nip-value {
+            border: none; background: transparent; font-family: inherit;
+            font-size: inherit; color: inherit; padding: 0; margin: 0;
+            flex: 1; text-align: left; outline: none; min-width: 0;
+        }
+        .nip-wrapper .nip-value:focus {
+            outline: 1px dashed #3b82f6; background: rgba(243, 244, 246, 0.8);
+        }
+        
+        /* ===== Peta ===== */
+        #map { height: 320px; width: 100%; border: 1px solid #ccc; z-index: 1; }
+        
+        /* ===== QR Code kecil ===== */
+        .qr-container { width: 60px; height: 60px; }
+        .qr-container img, .qr-container canvas {
+            width: 60px !important; height: 60px !important; display: block;
+        }
+        
+        /* ===== Select styling ===== */
+        .select-wilayah {
+            width: 100%; padding: 6px 8px; border: 1px solid #d1d5db;
+            border-radius: 6px; font-size: 12px; background: white;
+        }
+        .select-wilayah:disabled { background: #f3f4f6; color: #9ca3af; cursor: not-allowed; }
+        
+        /* ===== Footer editable ===== */
+        .footer-edit {
+            border: none; background: transparent;
+            font-family: inherit; font-size: 10px; color: inherit;
+            padding: 0; width: 100%;
+        }
+        .footer-edit:focus {
+            outline: 1px dashed #3b82f6;
+            background: rgba(243, 244, 246, 0.8);
+        }
+        
+        @media print {
+            .editable-input, .nip-wrapper .nip-value, .signature-block .name-input, 
+            .footer-edit, .nib-inline-wrapper .nib-value {
+                border: none !important; background: transparent !important;
+                outline: none !important;
+            }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col lg:flex-row gap-6">
+
+    <!-- ==================== PANEL KONTROL (KIRI) ==================== -->
+    <div class="w-full lg:w-1/3 bg-white p-6 rounded-lg shadow-lg h-screen overflow-y-auto no-print">
+        <h2 class="text-xl font-bold mb-4 text-blue-800">Pengaturan Data Sertifikat</h2>
+        
+        <div class="space-y-4 text-sm">
+            <!-- ===== KODE WILAYAH & NIB-EL GENERATOR ===== -->
+            <div class="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                <h3 class="font-bold text-blue-800 mb-2">🗺️ Kode Wilayah & NIB-El</h3>
+                
+                <label class="block font-semibold text-xs mb-1">
+                    Provinsi <span class="text-gray-500">(digit 1-2 NIB)</span>
+                </label>
+                <select id="selectProvinsi" class="select-wilayah mb-1">
+                    <option value="">⏳ Memuat Provinsi...</option>
+                </select>
+                <p id="infoProvinsi" class="text-[10px] text-gray-600 mb-2 italic">Pilih provinsi terlebih dahulu</p>
+                
+                <label class="block font-semibold text-xs mb-1">
+                    Kabupaten/Kota <span class="text-gray-500">(digit 3-4 NIB)</span>
+                </label>
+                <select id="selectKabupaten" class="select-wilayah mb-1" disabled>
+                    <option value="">-- Pilih Provinsi dulu --</option>
+                </select>
+                <p id="infoKabupaten" class="text-[10px] text-gray-600 mb-2 italic">-</p>
+                
+                <label class="block font-semibold text-xs mb-1">
+                    Kecamatan <span class="text-gray-400">(info wilayah)</span>
+                </label>
+                <select id="selectKecamatan" class="select-wilayah mb-1" disabled>
+                    <option value="">-- Pilih Kabupaten/Kota dulu --</option>
+                </select>
+                <p id="infoKecamatan" class="text-[10px] text-gray-600 mb-2 italic">-</p>
+                
+                <label class="block font-semibold text-xs mb-1">
+                    Desa/Kelurahan <span class="text-gray-400">(info wilayah)</span>
+                </label>
+                <select id="selectDesa" class="select-wilayah mb-1" disabled>
+                    <option value="">-- Pilih Kecamatan dulu --</option>
+                </select>
+                <p id="infoDesa" class="text-[10px] text-gray-600 mb-2 italic">-</p>
+
+                <hr class="my-2 border-blue-200">
+                
+                <label class="block font-semibold text-xs mb-1">
+                    Nomor Urut Bidang Tanah <span class="text-gray-500">(digit 5-13, 9 digit)</span>
+                </label>
+                <input type="text" id="inputNomorUrut" class="select-wilayah mb-2 font-mono" 
+                       maxlength="9" value="000003132" placeholder="Contoh: 000003132">
+                
+                <label class="block font-semibold text-xs mb-1">
+                    Indeks Letak Bidang Tanah <span class="text-gray-500">(digit 14)</span>
+                </label>
+                <select id="selectIndeksLetak" class="select-wilayah mb-2">
+                    <option value="0">0 - Bidang tanah terletak di permukaan bumi</option>
+                    <option value="1">1 - Ruang atas tanah</option>
+                    <option value="2">2 - Ruang bawah tanah</option>
+                    <option value="3">3 - Satuan rumah susun</option>
+                    <option value="4">4 - Hak di atas hak pada bidang permukaan tanah</option>
+                    <option value="5">5 - Hak di atas hak pada ruang atas tanah</option>
+                    <option value="6">6 - Hak di atas hak pada ruang bawah tanah</option>
+                </select>
+                
+                <div class="mt-2 p-2 bg-white rounded border border-blue-300">
+                    <p class="text-xs text-gray-600">Kode NIB-El (14 digit):</p>
+                    <p id="nibPreview" class="font-bold text-blue-800 text-base tracking-wider">--</p>
+                    <p class="text-[10px] text-gray-500 mt-1 font-mono">
+                        <span id="nibStructProv" class="inline-block px-1 bg-yellow-100 rounded">--</span>.
+                        <span id="nibStructKab" class="inline-block px-1 bg-green-100 rounded">--</span>.
+                        <span id="nibStructUrut" class="inline-block px-1 bg-blue-100 rounded">--</span>.
+                        <span id="nibStructIdx" class="inline-block px-1 bg-red-100 rounded">--</span>
+                    </p>
+                    <p class="text-[9px] text-gray-500 mt-1">
+                        <span class="inline-block px-1 bg-yellow-100">Prov</span> ·
+                        <span class="inline-block px-1 bg-green-100">Kab</span> ·
+                        <span class="inline-block px-1 bg-blue-100">No. Urut</span> ·
+                        <span class="inline-block px-1 bg-red-100">Indeks Letak</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Edisi & Kode -->
+            <div>
+                <label class="block font-semibold">Edisi & Kode</label>
+                <input type="text" id="inputEdisi" class="w-full border p-2 rounded" value="Edisi 1 | Pengakuan Hak">
+                <input type="text" id="inputKodeEdisi" class="w-full border p-2 rounded mt-1" value="Q019H8">
+            </div>
+            
+            <!-- NIB -->
+            <div>
+                <label class="block font-semibold">NIB-El (Manual Override)</label>
+                <input type="text" id="inputNIB" class="w-full border p-2 rounded font-mono" value="09.01.000003132.0">
+            </div>
+            
+            <!-- Kepala Kantor -->
+            <div>
+                <label class="block font-semibold">Kepala Kantor</label>
+                <input type="text" id="inputKepalaKantor" class="w-full border p-2 rounded" value="Kepala Kantor Pertanahan Kota Administrasi Jakarta Pusat">
+            </div>
+            
+            <!-- Nama Pejabat -->
+            <div>
+                <label class="block font-semibold">Nama Pejabat</label>
+                <input type="text" id="inputNamaPejabat" class="w-full border p-2 rounded" value="Priyo Anandito">
+            </div>
+            
+            <!-- NIP -->
+            <div>
+                <label class="block font-semibold">NIP Pejabat</label>
+                <input type="text" id="inputNIP" class="w-full border p-2 rounded" value="197008101991031004">
+            </div>
+            
+            <!-- Teks Verifikasi -->
+            <div class="bg-yellow-50 p-3 rounded border border-yellow-200">
+                <h3 class="font-bold text-yellow-800 mb-2">✍️ Teks Verifikasi (Footer)</h3>
+                <label class="block font-semibold text-xs mb-1">Teks Footer Halaman 1 & 2</label>
+                <input type="text" id="inputTeksVerifikasi" class="w-full border p-2 rounded" value="Telah diperiksa oleh Bagyo Sangguru tanggal 14 Desember 2023">
+            </div>
+            
+            <hr class="my-4">
+            <h3 class="font-bold text-blue-800">Bidang Tanah (Point 5)</h3>
+            
+            <div>
+                <label class="block font-semibold">Lokasi</label>
+                <textarea id="inputLokasi" class="w-full border p-2 rounded" rows="2">Kelurahan Cempaka Putih Barat Kecamatan Cempaka Putih Kota Administrasi Jakarta Pusat Provinsi DKI Jakarta</textarea>
+            </div>
+            
+            <div>
+                <label class="block font-semibold">Luas (Angka & Huruf)</label>
+                <input type="text" id="inputLuas" class="w-full border p-2 rounded" value="248 M² (dua ratus empat puluh delapan meter persegi)">
+            </div>
+
+            <hr class="my-4">
+            <h3 class="font-bold text-blue-800">Pemegang Hak (Point 6)</h3>
+            
+            <div>
+                <label class="block font-semibold">Data Pemegang Hak</label>
+                <textarea id="inputPemegangHak" class="w-full border p-2 rounded" rows="3">1) FINANSI MAHILA - NABIRE, 18 Juli 1993 - 1 bagian</textarea>
+            </div>
+
+            <hr class="my-4">
+            <h3 class="font-bold text-blue-800">Catatan Pendaftaran (Point 7)</h3>
+            
+            <div>
+                <label class="block font-semibold">Catatan</label>
+                <textarea id="inputCatatan" class="w-full border p-2 rounded" rows="2">1) Pengakuan Hak yang diperoleh atas dasar Letter C Nomor 3931</textarea>
+            </div>
+
+            <hr class="my-4">
+            <h3 class="font-bold text-blue-800">Keterangan Letak (Point 8)</h3>
+            
+            <div>
+                <label class="block font-semibold">Koordinat Polygon</label>
+                <p class="text-xs text-gray-500 mb-1">Format: lat,lng; lat,lng; ...</p>
+                <textarea id="inputKoordinat" class="w-full border p-2 rounded" rows="3">-6.1982,106.8256; -6.1975,106.8270; -6.1969,106.8260; -6.1976,106.8245</textarea>
+                <button onclick="updateMap(); generateQR()" class="mt-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">
+                    🔄 Update Peta & QR Bhumi
+                </button>
+            </div>
+
+            <hr class="my-4">
+            <h3 class="font-bold text-blue-800">QR Code → Bhumi ATR/BPN (Point 10)</h3>
+            
+            <div>
+                <label class="block font-semibold">Link Bhumi (otomatis dari koordinat)</label>
+                <input type="text" id="inputQRLink" class="w-full border p-2 rounded text-xs font-mono" value="">
+            </div>
+
+            <button onclick="generatePDF()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded mt-6 transition">
+                ⬇ Download PDF (F4)
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== PREVIEW DOKUMEN (KANAN) ==================== -->
+    <div class="w-full lg:w-2/3 flex flex-col items-center">
+        <div id="document-preview">
+            
+            <!-- ==================== HALAMAN 1 ==================== -->
+            <div class="f4-page font-serif-cert page-break" id="page-1">
+                
+                <!-- Header: Garuda di Tengah + Edisi Sejajar di Kanan -->
+                <div class="relative mb-6" style="min-height: 110px;">
+                    <div class="flex justify-center items-center">
+                        <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/9/90/National_emblem_of_Indonesia_Garuda_Pancasila.svg/250px-National_emblem_of_Indonesia_Garuda_Pancasila.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail" 
+                             alt="Garuda Pancasila" class="h-24 object-contain">
+                    </div>
+                    
+                    <div class="absolute top-0 right-0 text-right text-sm leading-tight" style="padding-top: 5px;">
+                        <p class="font-bold">
+                            <input type="text" id="outEdisi" class="editable-input text-right inline-input" style="width: 180px;" value="Edisi 1 | Pengakuan Hak">
+                        </p>
+                        <p>
+                            <input type="text" id="outKodeEdisi" class="editable-input text-right inline-input" style="width: 180px;" value="Q019H8">
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Judul Kementerian -->
+                <div class="text-center mb-6">
+                    <h3 class="font-bold text-sm">KEMENTERIAN AGRARIA DAN TATA RUANG/<br>BADAN PERTANAHAN NASIONAL<br>REPUBLIK INDONESIA</h3>
+                </div>
+
+                <!-- Judul Sertifikat + NIB -->
+                <div class="text-center mb-6">
+                    <h1 class="text-2xl font-bold mb-1">SERTIFIKAT HAK MILIK</h1>
+                    <div class="nib-inline-wrapper">
+                        <span class="nib-label">NIB.</span>
+                        <input type="text" id="outNIB" class="nib-value" value="09.01.000003132.0">
+                    </div>
+                </div>
+
+                <!-- Paragraf Pembukaan -->
+                <div class="text-justify text-sm mb-8 leading-relaxed">
+                    <p>Hak Milik ini terdaftar atas nama pemegang hak yang tertera pada PEMEGANG HAK, atas sebagian tanah yang letaknya diuraikan pada bagian BIDANG TANAH, serta batasan dan kewajiban, pembebanan dan pencatatan lainnya yang tertera pada tanda bukti hak ini</p>
+                </div>
+
+                <!-- Tanda Tangan Pejabat (Kanan) -->
+                <div class="text-right mb-8 pr-16">
+                    <p class="text-sm mb-4">
+                        <input type="text" id="outKepalaKantor" class="editable-input text-right" value="Kepala Kantor Pertanahan Kota Administrasi Jakarta Pusat">
+                    </p>
+                    <br><br>
+                    
+                    <div class="signature-block">
+                        <input type="text" id="outNamaPejabat" class="name-input" value="Priyo Anandito">
+                        <div class="nip-wrapper text-sm">
+                            <span class="nip-label">NIP.</span>
+                            <input type="text" id="outNIP" class="nip-value" value="197008101991031004">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bidang Tanah -->
+                <div class="text-sm mb-6">
+                    <h4 class="font-bold mb-1">BIDANG TANAH</h4>
+                    <p class="text-justify">
+                        Bidang tanah ini terletak di 
+                        <input type="text" id="outLokasi" class="editable-input mt-1 mb-1" value="Kelurahan Cempaka Putih Barat Kecamatan Cempaka Putih Kota Administrasi Jakarta Pusat Provinsi DKI Jakarta"> 
+                        seluas 
+                        <input type="text" id="outLuas" class="editable-input inline-input" style="width: 280px;" value="248 M² (dua ratus empat puluh delapan meter persegi)">
+                    </p>
+                </div>
+
+                <!-- Pemegang Hak -->
+                <div class="text-sm mb-6">
+                    <h4 class="font-bold mb-1">PEMEGANG HAK</h4>
+                    <textarea id="outPemegangHak" class="editable-input w-full" rows="2">1) FINANSI MAHILA - NABIRE, 18 Juli 1993 - 1 bagian</textarea>
+                </div>
+
+                <!-- Catatan Pendaftaran -->
+                <div class="text-sm mb-12">
+                    <h4 class="font-bold mb-1">CATATAN PENDAFTARAN</h4>
+                    <textarea id="outCatatan" class="editable-input w-full" rows="2">1) Pengakuan Hak yang diperoleh atas dasar Letter C Nomor 3931</textarea>
+                </div>
+
+                <!-- Footer Halaman 1 (Editable) -->
+                <div class="flex justify-between items-end text-[10px] absolute bottom-[15mm] left-[15mm] right-[15mm]">
+                    <div style="width: 60%;">
+                        <input type="text" id="outTeksVerifikasiPage1" class="footer-edit" value="Telah diperiksa oleh Bagyo Sangguru tanggal 14 Desember 2023">
+                    </div>
+                    <div class="text-center">
+                        <p>1 dari 2 Halaman</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== HALAMAN 2 ==================== -->
+            <div class="f4-page font-serif-cert" id="page-2">
+                
+                <h3 class="font-bold text-sm mb-2">LETAK BIDANG TANAH</h3>
+                
+                <!-- Peta Standar (Esri World Street Map) -->
+                <div class="relative mb-4">
+                    <div id="map"></div>
+                    <div class="absolute bottom-2 right-2 bg-white px-2 py-1 text-[10px] border z-[1000]">© Esri</div>
+                </div>
+
+                <!-- PERHATIAN (di luar kotak) -->
+                <h4 class="font-bold text-xs mb-2">PERHATIAN</h4>
+                
+                <!-- Kotak Disclaimer (hanya berisi list) -->
+                <div class="text-xs text-justify mb-6 border p-3 bg-gray-50">
+                    <ul class="list-disc pl-4 space-y-1">
+                        <li>Asli dokumen ini berbentuk dokumen elektronik yang ditandatangani dengan tanda tangan elektronik yang telah disertifikasi oleh Balai Sertifikasi Elektronik (BSrE).</li>
+                        <li>Dilarang melakukan penyebaran dan/atau penggandaan kepada pihak yang tidak berkepentingan.</li>
+                        <li>Pemalsuan surat atau manipulasi informasi elektronik dan/atau dokumen elektronik dapat dikenakan Pasal 263 KUHP dengan ancaman pidana paling lama 6 (enam) tahun.</li>
+                        <li>Untuk mencegah pemalsuan atas hasil cetak sertipikat elektronik, halaman pertama sertipikat elektronik mempunyai nomor seri blanko yang tercatat dalam sistem elektronik.</li>
+                        <li>Gambar letak bidang tanah dapat diakses melalui layanan Bhumi ATR/BPN dengan skala dan sistem referensi koordinat bidang tanah yang berbeda sehingga dapat terjadi pergeseran letak pada peta.</li>
+                        <li>Pemegang hak wajib mengetahui dan menjaga batas bidang tanah.</li>
+                        <li>Setiap perbuatan hukum atas bidang tanah ini termasuk perjanjian pengikatan jual beli, perjanjian sewa atau bentuk lainnya wajib didaftarkan ke Kantor Pertanahan setempat.</li>
+                        <li>Apabila bidang tanah tersebut jaminan utang hanya dapat dilakukan melalui lembaga Hak Tanggungan. Hasil cetak sertipikat elektronik ini tidak diperbolehkan untuk dijadikan jaminan utang dalam bentuk gadai atau bentuk lainnya selain Hak Tanggungan.</li>
+                    </ul>
+                </div>
+
+                <!-- QR Code (Posisi di Kanan Halaman) -->
+                <div class="flex justify-end mb-6">
+                    <div id="qrcode" class="qr-container"></div>
+                </div>
+
+                <!-- Footer Halaman 2 (Editable) -->
+                <div class="flex justify-between items-end text-[10px] absolute bottom-[15mm] left-[15mm] right-[15mm]">
+                    <div class="flex items-center gap-3" style="width: 70%;">
+                        <img src="https://trikastain.github.io/Pelaporan-MUT/sertif.png" 
+                             alt="Balai Sertifikat Elektronik" class="h-10 object-contain flex-shrink-0">
+                        <input type="text" id="outTeksVerifikasiPage2" class="footer-edit" value="Telah diperiksa oleh Bagyo Sangguru tanggal 14 Desember 2023">
+                    </div>
+                    <div class="text-center">
+                        <p>2 dari 2 Halaman</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        
+        <!-- Footer Branding -->
+        <div class="w-full max-w-[215mm] flex justify-between items-center mt-4 text-green-600 font-bold text-sm bg-green-100 p-2 rounded no-print">
+            <span>Melayani | Profesional | Terpercaya</span>
+            <span>@ditjenphpt.atrbpn</span>
+        </div>
+    </div>
+
+    <script>
+        /* ============================================================
+           1. PETA LEAFLET - PETA STANDAR (ESRI WORLD STREET MAP)
+        ============================================================ */
+        let map = L.map('map', { zoomControl: true, attributionControl: false })
+                    .setView([-6.1982, 106.8256], 16);
+
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 19
+        }).addTo(map);
+
+        let polygonLayer = null;
+
+        function updateMap() {
+            const coordString = document.getElementById('inputKoordinat').value;
+            const coords = coordString.split(';').map(pair => {
+                const [lat, lng] = pair.split(',').map(Number);
+                return [lat, lng];
+            });
+
+            if (polygonLayer) map.removeLayer(polygonLayer);
+
+            polygonLayer = L.polygon(coords, {
+                color: '#dc2626', fillColor: '#ef4444',
+                fillOpacity: 0.35, weight: 3
+            }).addTo(map);
+
+            map.fitBounds(polygonLayer.getBounds());
+        }
+
+        /* ============================================================
+           2. GENERATOR LINK BHUMI & QR CODE
+        ============================================================ */
+        function buildBhumiUrl() {
+            const coordString = document.getElementById('inputKoordinat').value;
+            const coords = coordString.split(';').map(pair => {
+                const [lat, lng] = pair.split(',').map(Number);
+                return [lat, lng];
+            });
+
+            const lats = coords.map(c => c[0]);
+            const lngs = coords.map(c => c[1]);
+            const minLat = Math.min(...lats);
+            const maxLat = Math.max(...lats);
+            const minLng = Math.min(...lngs);
+            const maxLng = Math.max(...lngs);
+            const centerLat = (minLat + maxLat) / 2;
+            const centerLng = (minLng + maxLng) / 2;
+
+            const width = 1762;
+            const height = 1005;
+            const x = Math.round(width / 2);
+            const y = Math.round(height / 2);
+
+            const bbox = `${minLng},${minLat},${maxLng},${maxLat}`;
+            return `https://bhumi.atrbpn.go.id/peta?bbox=${bbox}&height=${height}&width=${width}&x=${x}&y=${y}&latitude=${centerLat}&longitude=${centerLng}`;
+        }
+
+        function generateQR() {
+            const bhumiUrl = buildBhumiUrl();
+            document.getElementById('inputQRLink').value = bhumiUrl;
+
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: bhumiUrl,
+                width: 60, height: 60,
+                colorDark: "#000000", colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        /* ============================================================
+           3. API KODE WILAYAH (WILAYAH.ID)
+           
+           Struktur API:
+           - provinces.json                        → {"data":[{"code":"11","name":"Aceh"}, ...]}
+           - regencies/[PROVINCE_CODE].json        → {"data":[{"code":"11.01","name":"..."}, ...]}
+           - districts/[REGENCY_CODE].json         → {"data":[{"code":"11.01.01","name":"..."}, ...]}
+           - villages/[DISTRICT_CODE].json         → {"data":[{"code":"11.01.01.2001","name":"..."}, ...]}
+        ============================================================ */
+        const BASE_API = 'https://wilayah.id/api';
+
+        const selectProvinsi = document.getElementById('selectProvinsi');
+        const selectKabupaten = document.getElementById('selectKabupaten');
+        const selectKecamatan = document.getElementById('selectKecamatan');
+        const selectDesa = document.getElementById('selectDesa');
+        const inputNomorUrut = document.getElementById('inputNomorUrut');
+        const selectIndeksLetak = document.getElementById('selectIndeksLetak');
+        const nibPreview = document.getElementById('nibPreview');
+
+        const infoProvinsi = document.getElementById('infoProvinsi');
+        const infoKabupaten = document.getElementById('infoKabupaten');
+        const infoKecamatan = document.getElementById('infoKecamatan');
+        const infoDesa = document.getElementById('infoDesa');
+
+        let kodeTerpilih = { provinsi: '', kabupaten: '', kecamatan: '', desa: '' };
+
+        /* ---------- LOAD PROVINSI ---------- */
+        async function loadProvinsi() {
+            try {
+                const res = await fetch(`${BASE_API}/provinces.json`);
+                const json = await res.json();
+                const data = json.data || [];
+                
+                selectProvinsi.innerHTML = '<option value="">-- Pilih Provinsi --</option>';
+                data.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.code;
+                    opt.textContent = `${item.code} - ${item.name}`;
+                    selectProvinsi.appendChild(opt);
+                });
+                console.log('✓ Provinsi loaded:', data.length);
+            } catch (err) {
+                console.error('✗ Gagal load provinsi:', err);
+                selectProvinsi.innerHTML = '<option value="">⚠️ Gagal memuat data</option>';
+            }
+        }
+
+        /* ---------- LOAD KABUPATEN/KOTA ---------- */
+        async function loadKabupaten(provinsiKode) {
+            selectKabupaten.innerHTML = '<option value="">⏳ Memuat...</option>';
+            selectKabupaten.disabled = true;
+            
+            try {
+                const res = await fetch(`${BASE_API}/regencies/${provinsiKode}.json`);
+                const json = await res.json();
+                const data = json.data || [];
+                
+                selectKabupaten.innerHTML = '<option value="">-- Pilih Kabupaten/Kota --</option>';
+                data.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.code;
+                    opt.textContent = `${item.code} - ${item.name}`;
+                    selectKabupaten.appendChild(opt);
+                });
+                selectKabupaten.disabled = false;
+                console.log('✓ Kabupaten loaded:', data.length);
+            } catch (err) {
+                console.error('✗ Gagal load kabupaten:', err);
+                selectKabupaten.innerHTML = '<option value="">⚠️ Gagal memuat data</option>';
+            }
+        }
+
+        /* ---------- LOAD KECAMATAN ---------- */
+        async function loadKecamatan(kabupatenKode) {
+            selectKecamatan.innerHTML = '<option value="">⏳ Memuat...</option>';
+            selectKecamatan.disabled = true;
+            
+            try {
+                const res = await fetch(`${BASE_API}/districts/${kabupatenKode}.json`);
+                const json = await res.json();
+                const data = json.data || [];
+                
+                selectKecamatan.innerHTML = '<option value="">-- Pilih Kecamatan --</option>';
+                data.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.code;
+                    opt.textContent = `${item.code} - ${item.name}`;
+                    selectKecamatan.appendChild(opt);
+                });
+                selectKecamatan.disabled = false;
+                console.log('✓ Kecamatan loaded:', data.length);
+            } catch (err) {
+                console.error('✗ Gagal load kecamatan:', err);
+                selectKecamatan.innerHTML = '<option value="">⚠️ Gagal memuat data</option>';
+            }
+        }
+
+        /* ---------- LOAD DESA/KELURAHAN ---------- */
+        async function loadDesa(kecamatanKode) {
+            selectDesa.innerHTML = '<option value="">⏳ Memuat...</option>';
+            selectDesa.disabled = true;
+            
+            try {
+                const res = await fetch(`${BASE_API}/villages/${kecamatanKode}.json`);
+                const json = await res.json();
+                const data = json.data || [];
+                
+                selectDesa.innerHTML = '<option value="">-- Pilih Desa/Kelurahan --</option>';
+                data.forEach(item => {
+                    const opt = document.createElement('option');
+                    opt.value = item.code;
+                    opt.textContent = `${item.code} - ${item.name}`;
+                    selectDesa.appendChild(opt);
+                });
+                selectDesa.disabled = false;
+                console.log('✓ Desa loaded:', data.length);
+            } catch (err) {
+                console.error('✗ Gagal load desa:', err);
+                selectDesa.innerHTML = '<option value="">⚠️ Gagal memuat data</option>';
+            }
+        }
+
+        /* ============================================================
+           GENERATOR NIB-EL 14 DIGIT
+           Struktur: PP.KK.NNNNNNNNN.I
+           - PP       : 2 digit dari kode Provinsi (langsung)
+           - KK       : 2 digit dari kode Kabupaten (ambil bagian setelah titik terakhir)
+           - NNNNNNNNN: Nomor urut 9 digit
+           - I        : Indeks letak 1 digit
+        ============================================================ */
+        function updateNIBPreview() {
+            const prov = (kodeTerpilih.provinsi || '00').padStart(2, '0');
+            
+            let kab = '00';
+            if (kodeTerpilih.kabupaten) {
+                const parts = kodeTerpilih.kabupaten.split('.');
+                const lastPart = parts[parts.length - 1];
+                kab = (lastPart || '00').padStart(2, '0');
+            }
+            
+            let nomorUrut = (inputNomorUrut.value || '0').replace(/\D/g, '');
+            nomorUrut = nomorUrut.padStart(9, '0').slice(-9);
+            
+            const indeks = selectIndeksLetak.value || '0';
+
+            document.getElementById('nibStructProv').textContent = prov;
+            document.getElementById('nibStructKab').textContent = kab;
+            document.getElementById('nibStructUrut').textContent = nomorUrut;
+            document.getElementById('nibStructIdx').textContent = indeks;
+
+            if (kodeTerpilih.provinsi && kodeTerpilih.kabupaten) {
+                const nib = `${prov}.${kab}.${nomorUrut}.${indeks}`;
+                nibPreview.textContent = nib;
+                document.getElementById('inputNIB').value = nib;
+                document.getElementById('outNIB').value = nib;
+            } else {
+                nibPreview.textContent = '--';
+            }
+        }
+
+        /* ============================================================
+           EVENT LISTENERS
+        ============================================================ */
+        
+        selectProvinsi.addEventListener('change', (e) => {
+            const kode = e.target.value;
+            kodeTerpilih.provinsi = kode;
+            kodeTerpilih.kabupaten = '';
+            kodeTerpilih.kecamatan = '';
+            kodeTerpilih.desa = '';
+            
+            selectKabupaten.innerHTML = '<option value="">-- Pilih Provinsi dulu --</option>';
+            selectKabupaten.disabled = true;
+            selectKecamatan.innerHTML = '<option value="">-- Pilih Kabupaten/Kota dulu --</option>';
+            selectKecamatan.disabled = true;
+            selectDesa.innerHTML = '<option value="">-- Pilih Kecamatan dulu --</option>';
+            selectDesa.disabled = true;
+            
+            infoProvinsi.textContent = kode ? `Terpilih: ${kode} - ${e.target.options[e.target.selectedIndex].text.split(' - ')[1]}` : 'Pilih provinsi terlebih dahulu';
+            infoKabupaten.textContent = '-';
+            infoKecamatan.textContent = '-';
+            infoDesa.textContent = '-';
+            
+            if (kode) loadKabupaten(kode);
+            updateNIBPreview();
+        });
+
+        selectKabupaten.addEventListener('change', (e) => {
+            const kode = e.target.value;
+            kodeTerpilih.kabupaten = kode;
+            kodeTerpilih.kecamatan = '';
+            kodeTerpilih.desa = '';
+            
+            selectKecamatan.innerHTML = '<option value="">-- Pilih Kabupaten/Kota dulu --</option>';
+            selectKecamatan.disabled = true;
+            selectDesa.innerHTML = '<option value="">-- Pilih Kecamatan dulu --</option>';
+            selectDesa.disabled = true;
+            
+            infoKabupaten.textContent = kode ? `Terpilih: ${kode}` : '-';
+            infoKecamatan.textContent = '-';
+            infoDesa.textContent = '-';
+            
+            if (kode) loadKecamatan(kode);
+            updateNIBPreview();
+        });
+
+        selectKecamatan.addEventListener('change', (e) => {
+            const kode = e.target.value;
+            kodeTerpilih.kecamatan = kode;
+            kodeTerpilih.desa = '';
+            
+            selectDesa.innerHTML = '<option value="">-- Pilih Kecamatan dulu --</option>';
+            selectDesa.disabled = true;
+            
+            infoKecamatan.textContent = kode ? `Terpilih: ${kode}` : '-';
+            infoDesa.textContent = '-';
+            
+            if (kode) loadDesa(kode);
+        });
+
+        selectDesa.addEventListener('change', (e) => {
+            const kode = e.target.value;
+            kodeTerpilih.desa = kode;
+            infoDesa.textContent = kode ? `Terpilih: ${kode}` : '-';
+        });
+
+        inputNomorUrut.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '').slice(0, 9);
+            updateNIBPreview();
+        });
+
+        selectIndeksLetak.addEventListener('change', updateNIBPreview);
+
+        loadProvinsi();
+
+        /* ============================================================
+           4. BINDING DATA FORM KE DOKUMEN
+        ============================================================ */
+        const bindings = [
+            { input: 'inputEdisi', output: 'outEdisi' },
+            { input: 'inputKodeEdisi', output: 'outKodeEdisi' },
+            { input: 'inputNIB', output: 'outNIB' },
+            { input: 'inputKepalaKantor', output: 'outKepalaKantor' },
+            { input: 'inputNamaPejabat', output: 'outNamaPejabat' },
+            { input: 'inputNIP', output: 'outNIP' },
+            { input: 'inputLokasi', output: 'outLokasi' },
+            { input: 'inputLuas', output: 'outLuas' },
+            { input: 'inputPemegangHak', output: 'outPemegangHak' },
+            { input: 'inputCatatan', output: 'outCatatan' }
+        ];
+
+        bindings.forEach(bind => {
+            const inputEl = document.getElementById(bind.input);
+            const outputEl = document.getElementById(bind.output);
+            
+            if (outputEl.tagName === 'TEXTAREA' || outputEl.tagName === 'INPUT') {
+                outputEl.value = inputEl.value;
+            } else {
+                outputEl.innerText = inputEl.value;
+            }
+
+            inputEl.addEventListener('input', (e) => {
+                if (outputEl.tagName === 'TEXTAREA' || outputEl.tagName === 'INPUT') {
+                    outputEl.value = e.target.value;
+                } else {
+                    outputEl.innerText = e.target.value;
+                }
+            });
+        });
+
+        /* ============================================================
+           5. BINDING TEKS VERIFIKASI (FOOTER) - 3 ARAH SINKRONISASI
+        ============================================================ */
+        const inputTeksVerifikasi = document.getElementById('inputTeksVerifikasi');
+        const outTeksVerifikasiPage1 = document.getElementById('outTeksVerifikasiPage1');
+        const outTeksVerifikasiPage2 = document.getElementById('outTeksVerifikasiPage2');
+
+        outTeksVerifikasiPage1.value = inputTeksVerifikasi.value;
+        outTeksVerifikasiPage2.value = inputTeksVerifikasi.value;
+
+        inputTeksVerifikasi.addEventListener('input', (e) => {
+            outTeksVerifikasiPage1.value = e.target.value;
+            outTeksVerifikasiPage2.value = e.target.value;
+        });
+
+        outTeksVerifikasiPage1.addEventListener('input', (e) => {
+            inputTeksVerifikasi.value = e.target.value;
+            outTeksVerifikasiPage2.value = e.target.value;
+        });
+
+        outTeksVerifikasiPage2.addEventListener('input', (e) => {
+            inputTeksVerifikasi.value = e.target.value;
+            outTeksVerifikasiPage1.value = e.target.value;
+        });
+
+        /* ============================================================
+           6. FUNGSI DOWNLOAD PDF (F4 = 215mm x 330mm, TEPAT 2 HALAMAN)
+        ============================================================ */
+        function generatePDF() {
+            const element = document.getElementById('document-preview');
+            const pages = document.querySelectorAll('.f4-page');
+            
+            pages.forEach(p => {
+                p.dataset.originalMargin = p.style.margin;
+                p.style.margin = '0';
+                p.style.boxShadow = 'none';
+            });
+
+            const opt = {
+                margin: 0,
+                filename: 'Sertifikat_Elektronik_F4.pdf',
+                image: { type: 'jpeg', quality: 1.0 },
+                html2canvas: {
+                    scale: 2, useCORS: true, letterRendering: true,
+                    scrollY: 0, scrollX: 0, backgroundColor: '#ffffff'
+                },
+                jsPDF: { unit: 'mm', format: [215, 330], orientation: 'portrait' },
+                pagebreak: { mode: ['css', 'legacy'], avoid: '.f4-page' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                pages.forEach(p => {
+                    p.style.margin = p.dataset.originalMargin || '15px auto';
+                    p.style.boxShadow = '0 4px 6px rgba(0,0,0,0.1)';
+                });
+            });
+        }
+
+        /* ============================================================
+           7. INISIALISASI AWAL
+        ============================================================ */
+        updateMap();
+        generateQR();
+        updateNIBPreview();
+
+        document.getElementById('inputKoordinat').addEventListener('input', () => {
+            clearTimeout(window._qrTimeout);
+            window._qrTimeout = setTimeout(() => {
+                updateMap();
+                generateQR();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
