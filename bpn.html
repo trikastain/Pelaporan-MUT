@@ -192,18 +192,18 @@
                 
                 <div class="mt-2 p-2 bg-white rounded border border-blue-300">
                     <p class="text-xs text-gray-600">Kode NIB-El (14 digit):</p>
-                    <p id="nibPreview" class="font-bold text-blue-800 text-base tracking-wider">--</p>
+                    <p id="nibPreview" class="font-bold text-blue-800 text-base tracking-wider font-mono">--</p>
                     <p class="text-[10px] text-gray-500 mt-1 font-mono">
-                        <span id="nibStructProv" class="inline-block px-1 bg-yellow-100 rounded">--</span>.
-                        <span id="nibStructKab" class="inline-block px-1 bg-green-100 rounded">--</span>.
-                        <span id="nibStructUrut" class="inline-block px-1 bg-blue-100 rounded">--</span>.
+                        <span id="nibStructProv" class="inline-block px-1 bg-yellow-100 rounded">--</span>
+                        <span id="nibStructKab" class="inline-block px-1 bg-green-100 rounded">--</span>
+                        <span id="nibStructUrut" class="inline-block px-1 bg-blue-100 rounded">--</span>
                         <span id="nibStructIdx" class="inline-block px-1 bg-red-100 rounded">--</span>
                     </p>
                     <p class="text-[9px] text-gray-500 mt-1">
-                        <span class="inline-block px-1 bg-yellow-100">Prov</span> ·
-                        <span class="inline-block px-1 bg-green-100">Kab</span> ·
-                        <span class="inline-block px-1 bg-blue-100">No. Urut</span> ·
-                        <span class="inline-block px-1 bg-red-100">Indeks Letak</span>
+                        <span class="inline-block px-1 bg-yellow-100">Prov (2)</span> ·
+                        <span class="inline-block px-1 bg-green-100">Kab (2)</span> ·
+                        <span class="inline-block px-1 bg-blue-100">No. Urut (9)</span> ·
+                        <span class="inline-block px-1 bg-red-100">Indeks (1)</span>
                     </p>
                 </div>
             </div>
@@ -218,7 +218,7 @@
             <!-- NIB -->
             <div>
                 <label class="block font-semibold">NIB-El (Manual Override)</label>
-                <input type="text" id="inputNIB" class="w-full border p-2 rounded font-mono" value="09.01.000003132.0">
+                <input type="text" id="inputNIB" class="w-full border p-2 rounded font-mono" value="31710000031320">
             </div>
             
             <!-- Kepala Kantor -->
@@ -332,7 +332,7 @@
                     <h1 class="text-2xl font-bold mb-1">SERTIFIKAT HAK MILIK</h1>
                     <div class="nib-inline-wrapper">
                         <span class="nib-label">NIB.</span>
-                        <input type="text" id="outNIB" class="nib-value" value="09.01.000003132.0">
+                        <input type="text" id="outNIB" class="nib-value" value="31710000031320">
                     </div>
                 </div>
 
@@ -418,7 +418,7 @@
                     <div class="flex items-center gap-3" style="width: 70%;">
                         <img src="https://trikastain.github.io/Pelaporan-MUT/sertif.png" 
                              alt="Balai Sertifikat Elektronik" class="h-10 object-contain flex-shrink-0">
-                        <input type="text" id="outTeksVerifikasiPage2" class="footer-edit" value="Telah diperiksa oleh Bagyo Sangguro tanggal 14 Desember 2023">
+                        <input type="text" id="outTeksVerifikasiPage2" class="footer-edit" value="Telah diperiksa oleh Bagyo Sangguru tanggal 14 Desember 2023">
                     </div>
                     <div class="text-center">
                         <p>2 dari 2 Halaman</p>
@@ -526,28 +526,20 @@
         }
 
         /* ============================================================
-           4. API KODE WILAYAH — SUMBER UTAMA: raw.githubusercontent.com
-           
-           Data API emsifa disimpan di branch 'gh-pages', bukan 'master'.
-           Branch 'gh-pages' adalah sumber yang benar untuk file JSON.
-           
-           Referensi: https://github.com/emsifa/api-wilayah-indonesia
+           4. API KODE WILAYAH — raw.githubusercontent.com (gh-pages)
         ============================================================ */
         const API_SOURCES = [
             { 
                 name: 'raw.githubusercontent.com (gh-pages)',
-                base: 'https://raw.githubusercontent.com/emsifa/api-wilayah-indonesia/gh-pages/api',
-                type: 'raw'
+                base: 'https://raw.githubusercontent.com/emsifa/api-wilayah-indonesia/gh-pages/api'
             },
             { 
                 name: 'CORS Proxy (corsproxy.io)',
-                base: 'https://corsproxy.io/?https://raw.githubusercontent.com/emsifa/api-wilayah-indonesia/gh-pages/api',
-                type: 'proxy'
+                base: 'https://corsproxy.io/?https://raw.githubusercontent.com/emsifa/api-wilayah-indonesia/gh-pages/api'
             },
             { 
                 name: 'CORS Proxy (allorigins.win)',
-                base: 'https://api.allorigins.win/raw?url=https://raw.githubusercontent.com/emsifa/api-wilayah-indonesia/gh-pages/api',
-                type: 'proxy'
+                base: 'https://api.allorigins.win/raw?url=https://raw.githubusercontent.com/emsifa/api-wilayah-indonesia/gh-pages/api'
             }
         ];
 
@@ -561,8 +553,7 @@
             let lastError = null;
 
             for (const src of sources) {
-                let url = `${src.base}/${path}`;
-
+                const url = `${src.base}/${path}`;
                 try {
                     console.log(`📡 Coba [${src.name}]: ${path}`);
                     const res = await fetch(url, { cache: 'no-store' });
@@ -624,8 +615,7 @@
             } catch (err) {
                 selectProvinsi.innerHTML = '<option value="">⚠️ Gagal memuat</option>';
                 showStatus(
-                    `❌ <b>Gagal memuat provinsi</b><br>${err.message}<br><br>` +
-                    `Cek koneksi internet atau buka Console (F12) untuk detail.`,
+                    `❌ <b>Gagal memuat provinsi</b><br>${err.message}`,
                     'error'
                 );
             }
@@ -680,31 +670,47 @@
         }
 
         /* ============================================================
-           6. GENERATOR NIB-EL 14 DIGIT
+           6. GENERATOR NIB-EL 14 DIGIT (TANPA TITIK)
+           
+           Struktur: PPKKNNNNNNNNNI
+           - PP        : 2 digit kode Provinsi
+           - KK        : 2 digit kode Kabupaten (2 digit terakhir)
+           - NNNNNNNNN : Nomor urut bidang tanah (9 digit)
+           - I         : Indeks letak (1 digit)
+           
+           Contoh: Provinsi 31, Kabupaten 31.71, No urut 000003132, Indeks 0
+                   → 31710000031320  (14 digit)
         ============================================================ */
         function updateNIBPreview() {
-            const prov = (kodeTerpilih.provinsi || '00').padStart(2, '0');
-            
+            // Digit 1-2: Provinsi
+            const prov = (kodeTerpilih.provinsi || '00').padStart(2, '0').slice(-2);
+
+            // Digit 3-4: Kabupaten (ambil 2 digit terakhir dari kode kabupaten)
             let kab = '00';
             if (kodeTerpilih.kabupaten) {
-                const parts = kodeTerpilih.kabupaten.split('.');
-                const lastPart = parts[parts.length - 1];
-                kab = (lastPart || '00').padStart(2, '0');
+                const clean = kodeTerpilih.kabupaten.replace(/\D/g, '');   // "3171"
+                kab = clean.slice(-2).padStart(2, '0');                     // "71"
             }
-            
+
+            // Digit 5-13: Nomor urut (9 digit)
             let nomorUrut = (inputNomorUrut.value || '0').replace(/\D/g, '');
             nomorUrut = nomorUrut.padStart(9, '0').slice(-9);
-            
-            const indeks = selectIndeksLetak.value || '0';
 
+            // Digit 14: Indeks letak
+            const indeks = (selectIndeksLetak.value || '0').slice(-1);
+
+            // Update visualisasi struktur (dengan spasi sebagai pemisah visual)
             document.getElementById('nibStructProv').textContent = prov;
             document.getElementById('nibStructKab').textContent = kab;
             document.getElementById('nibStructUrut').textContent = nomorUrut;
             document.getElementById('nibStructIdx').textContent = indeks;
 
+            // Generate NIB-El 14 digit (TANPA titik)
             if (kodeTerpilih.provinsi && kodeTerpilih.kabupaten) {
-                const nib = `${prov}.${kab}.${nomorUrut}.${indeks}`;
+                const nib = `${prov}${kab}${nomorUrut}${indeks}`;
                 nibPreview.textContent = nib;
+
+                // Isi ke input manual & output dokumen
                 document.getElementById('inputNIB').value = nib;
                 document.getElementById('outNIB').value = nib;
             } else {
