@@ -526,38 +526,52 @@
         }
 
         /* ============================================================
-           4. API KODE WILAYAH — EMSIFA (GitHub Pages, CORS OK)
+           4. API KODE WILAYAH — MULTI-CDN FALLBACK
            
-           Endpoint:
-           - provinces.json                    → [{"id":"11","name":"ACEH"}, ...]
-           - regencies/{provinceId}.json       → [{"id":"1101","name":"KAB. SIMEULUE"}, ...]
-           - districts/{regencyId}.json        → [{"id":"1101010","name":"TEUPAH SELATAN"}, ...]
-           - villages/{districtId}.json        → [{"id":"1101010001","name":"LATIUNG"}, ...]
+           GitHub Pages (emsifa.github.io) TIDAK mengirim header CORS,
+           jadi browser memblokir fetch dari domain lain.
+           
+           Solusi: akses data yang sama via CDN yang mengirim header
+           CORS (jsDelivr, Statically, githack). Semua mirror dari
+           repo GitHub yang sama → isi identik.
         ============================================================ */
-        const API_BASE = 'https://emsifa.github.io/api-wilayah-indonesia/api';
+        const API_SOURCES = [
+            { name: 'jsDelivr',   base: 'https://cdn.jsdelivr.net/gh/emsifa/api-wilayah-indonesia@master/api' },
+            { name: 'Statically', base: 'https://cdn.statically.io/gh/emsifa/api-wilayah-indonesia/master/api' },
+            { name: 'githack',    base: 'https://raw.githack.com/emsifa/api-wilayah-indonesia/master/api' }
+        ];
 
-        let sudahTerhubung = false;
+        let activeSource = null;
 
         async function fetchWilayah(path) {
-            const url = `${API_BASE}/${path}`;
-            console.log(`📡 Fetch: ${url}`);
+            const sources = activeSource
+                ? [activeSource, ...API_SOURCES.filter(s => s.base !== activeSource.base)]
+                : API_SOURCES;
 
-            const res = await fetch(url, { cache: 'no-store' });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            let lastError = null;
 
-            const json = await res.json();
-            if (!Array.isArray(json) || json.length === 0) {
-                throw new Error('Data kosong atau format salah');
+            for (const src of sources) {
+                const url = `${src.base}/${path}`;
+                try {
+                    console.log(`📡 Coba [${src.name}]: ${path}`);
+                    const res = await fetch(url, { cache: 'no-store' });
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                    const json = await res.json();
+                    if (!Array.isArray(json) || json.length === 0) {
+                        throw new Error('Data kosong');
+                    }
+
+                    activeSource = src;
+                    console.log(`✅ Berhasil via ${src.name}: ${json.length} item`);
+                    return json.map(x => ({ id: String(x.id), name: String(x.name) }));
+                } catch (err) {
+                    console.warn(`✗ ${src.name} gagal: ${err.message}`);
+                    lastError = err;
+                }
             }
 
-            const data = json.map(x => ({ id: String(x.id), name: String(x.name) }));
-            console.log(`✅ Berhasil: ${data.length} item`);
-
-            if (!sudahTerhubung) {
-                sudahTerhubung = true;
-                showStatus(`✅ Terhubung via <b>emsifa API</b>`, 'success');
-            }
-            return data;
+            throw new Error(`Semua CDN gagal: ${lastError?.message}`);
         }
 
         /* ============================================================
@@ -595,9 +609,14 @@
             try {
                 const data = await fetchWilayah('provinces.json');
                 fillSelect(selectProvinsi, data, '-- Pilih Provinsi --');
+                showStatus(`✅ ${data.length} provinsi dimuat`, 'success');
             } catch (err) {
                 selectProvinsi.innerHTML = '<option value="">⚠️ Gagal memuat</option>';
-                showStatus(`❌ Gagal memuat provinsi: ${err.message}`, 'error');
+                showStatus(
+                    `❌ <b>Gagal memuat provinsi</b><br>${err.message}<br><br>` +
+                    `Cek koneksi internet atau buka Console (F12) untuk detail.`,
+                    'error'
+                );
             }
         }
 
