@@ -418,7 +418,7 @@
                     <div class="flex items-center gap-3" style="width: 70%;">
                         <img src="https://trikastain.github.io/Pelaporan-MUT/sertif.png" 
                              alt="Balai Sertifikat Elektronik" class="h-10 object-contain flex-shrink-0">
-                        <input type="text" id="outTeksVerifikasiPage2" class="footer-edit" value="Telah diperiksa oleh Bagyo Sangguru tanggal 14 Desember 2023">
+                        <input type="text" id="outTeksVerifikasiPage2" class="footer-edit" value="Telah diperiksa oleh Bagyo Sangguro tanggal 14 Desember 2023">
                     </div>
                     <div class="text-center">
                         <p>2 dari 2 Halaman</p>
@@ -526,19 +526,29 @@
         }
 
         /* ============================================================
-           4. API KODE WILAYAH — MULTI-CDN FALLBACK
+           4. API KODE WILAYAH — SUMBER UTAMA: raw.githubusercontent.com
            
-           GitHub Pages (emsifa.github.io) TIDAK mengirim header CORS,
-           jadi browser memblokir fetch dari domain lain.
+           Data API emsifa disimpan di branch 'gh-pages', bukan 'master'.
+           Branch 'gh-pages' adalah sumber yang benar untuk file JSON.
            
-           Solusi: akses data yang sama via CDN yang mengirim header
-           CORS (jsDelivr, Statically, githack). Semua mirror dari
-           repo GitHub yang sama → isi identik.
+           Referensi: https://github.com/emsifa/api-wilayah-indonesia
         ============================================================ */
         const API_SOURCES = [
-            { name: 'jsDelivr',   base: 'https://cdn.jsdelivr.net/gh/emsifa/api-wilayah-indonesia@master/api' },
-            { name: 'Statically', base: 'https://cdn.statically.io/gh/emsifa/api-wilayah-indonesia/master/api' },
-            { name: 'githack',    base: 'https://raw.githack.com/emsifa/api-wilayah-indonesia/master/api' }
+            { 
+                name: 'raw.githubusercontent.com (gh-pages)',
+                base: 'https://raw.githubusercontent.com/emsifa/api-wilayah-indonesia/gh-pages/api',
+                type: 'raw'
+            },
+            { 
+                name: 'CORS Proxy (corsproxy.io)',
+                base: 'https://corsproxy.io/?https://raw.githubusercontent.com/emsifa/api-wilayah-indonesia/gh-pages/api',
+                type: 'proxy'
+            },
+            { 
+                name: 'CORS Proxy (allorigins.win)',
+                base: 'https://api.allorigins.win/raw?url=https://raw.githubusercontent.com/emsifa/api-wilayah-indonesia/gh-pages/api',
+                type: 'proxy'
+            }
         ];
 
         let activeSource = null;
@@ -551,7 +561,8 @@
             let lastError = null;
 
             for (const src of sources) {
-                const url = `${src.base}/${path}`;
+                let url = `${src.base}/${path}`;
+
                 try {
                     console.log(`📡 Coba [${src.name}]: ${path}`);
                     const res = await fetch(url, { cache: 'no-store' });
@@ -571,7 +582,7 @@
                 }
             }
 
-            throw new Error(`Semua CDN gagal: ${lastError?.message}`);
+            throw new Error(`Semua sumber gagal: ${lastError?.message}`);
         }
 
         /* ============================================================
