@@ -10,7 +10,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
     
-    <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     
     <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
 
@@ -126,19 +127,6 @@
         .judul-sertifikat:focus {
             outline: 1px dashed #3b82f6;
             background: rgba(243, 244, 246, 0.8);
-        }
-        
-        /* ===== Static text (untuk render PDF) ===== */
-        .pdf-static-text {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            word-break: break-word;
-            font-family: 'Times New Roman', Times, serif;
-            color: #000;
-            display: block;
-            width: 100%;
-            line-height: 1.35;
-            font-size: 12px;
         }
         
         @media print {
@@ -388,7 +376,7 @@
                 <div class="relative mb-4" style="min-height: 100px;">
                     <div class="flex justify-center items-center">
                         <img src="https://thumb.wikimedia.org/wikipedia/commons/thumb/9/90/National_emblem_of_Indonesia_Garuda_Pancasila.svg/250px-National_emblem_of_Indonesia_Garuda_Pancasila.svg.png?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=thumbnail" 
-                             alt="Garuda Pancasila" class="h-20 object-contain">
+                             alt="Garuda Pancasila" class="h-20 object-contain" crossorigin="anonymous">
                     </div>
                     
                     <div class="absolute top-0 right-0 text-right text-sm leading-tight" style="padding-top: 5px;">
@@ -501,7 +489,7 @@
                 <div class="flex justify-between items-end text-[10px] absolute bottom-[15mm] left-[15mm] right-[15mm]">
                     <div class="flex items-center gap-3" style="width: 70%;">
                         <img src="https://trikastain.github.io/Pelaporan-MUT/sertif.png" 
-                             alt="Balai Sertifikat Elektronik" class="h-10 object-contain flex-shrink-0">
+                             alt="Balai Sertifikat Elektronik" class="h-10 object-contain flex-shrink-0" crossorigin="anonymous">
                         <input type="text" id="outTeksVerifikasiPage2" class="footer-edit" value="Telah diperiksa oleh Bagyo Sangguru tanggal 14 Desember 2023">
                     </div>
                     <div class="text-center">
@@ -526,7 +514,8 @@
                     .setView([3.572, 117.079], 14);
 
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-            maxZoom: 19
+            maxZoom: 19,
+            crossOrigin: true
         }).addTo(map);
 
         let polygonLayer = null;
@@ -929,15 +918,135 @@
         });
 
         /* ============================================================
-           10. DOWNLOAD PDF — VERSI DIPERBAIKI
+           10. DOWNLOAD PDF — VERSI PER-PAGE RENDER
            
-           Perbaikan:
-           - Konversi <textarea> → <div> agar tidak terpotong
-           - Konversi <input> → <span> agar tidak ada border/scrollbar
-           - Set page-break DINAMIS (hanya di antara halaman)
-           - Gunakan margin 0, overflow visible selama rendering
-           - Restore semuanya setelah selesai
+           Strategi:
+           - Clone tiap halaman, modifikasi clone (bukan DOM asli)
+           - Konversi textarea → div, input → span di clone
+           - Render tiap clone dengan html2canvas → canvas
+           - Gabungkan tiap canvas ke jsPDF sebagai 1 halaman F4
         ============================================================ */
+        async function createPageClone(page) {
+            const clone = page.cloneNode(true);
+            
+            // Strip IDs
+            clone.removeAttribute('id');
+            clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+            
+            // Style clone: off-screen, ukuran F4 tepat
+            clone.style.margin = '0';
+            clone.style.boxShadow = 'none';
+            clone.style.position = 'fixed';
+            clone.style.left = '0';
+            clone.style.top = '0';
+            clone.style.width = '215mm';
+            clone.style.height = '330mm';
+            clone.style.zIndex = '999999';
+            clone.style.opacity = '0';
+            clone.style.pointerEvents = 'none';
+            
+            // ===== KONVERSI TEXTAREA → DIV =====
+            clone.querySelectorAll('textarea').forEach(ta => {
+                const div = document.createElement('div');
+                div.textContent = ta.value;
+                div.style.whiteSpace = 'pre-wrap';
+                div.style.wordWrap = 'break-word';
+                div.style.overflowWrap = 'break-word';
+                div.style.fontFamily = "'Times New Roman', Times, serif";
+                div.style.fontSize = ta.style.fontSize || '12px';
+                div.style.lineHeight = ta.style.lineHeight || '1.35';
+                div.style.color = '#000000';
+                div.style.width = '100%';
+                div.style.padding = '0';
+                div.style.margin = '0';
+                div.style.border = 'none';
+                div.style.background = 'transparent';
+                div.style.textAlign = 'left';
+                div.style.display = 'block';
+                div.style.overflow = 'visible';
+                ta.parentNode.replaceChild(div, ta);
+            });
+            
+            // ===== KONVERSI INPUT[TEXT] → SPAN =====
+            clone.querySelectorAll('input[type="text"]').forEach(inp => {
+                const computed = window.getComputedStyle(inp);
+                const span = document.createElement('span');
+                span.textContent = inp.value;
+                span.style.fontFamily = "'Times New Roman', Times, serif";
+                span.style.fontSize = inp.style.fontSize || computed.fontSize;
+                span.style.fontWeight = computed.fontWeight;
+                span.style.fontStyle = computed.fontStyle;
+                span.style.color = '#000000';
+                span.style.padding = '0';
+                span.style.margin = '0';
+                span.style.border = 'none';
+                span.style.background = 'transparent';
+                span.style.whiteSpace = 'pre-wrap';
+                span.style.overflow = 'visible';
+                
+                // Tentukan display
+                if (inp.classList.contains('inline-input')) {
+                    span.style.display = 'inline-block';
+                } else if (inp.classList.contains('name-input') || inp.classList.contains('nip-value')) {
+                    span.style.display = 'block';
+                    span.style.width = '100%';
+                } else if (inp.classList.contains('editable-input')) {
+                    span.style.display = 'block';
+                    span.style.width = '100%';
+                } else {
+                    span.style.display = 'inline-block';
+                }
+                
+                // Preserve width eksplisit
+                if (inp.style.width) {
+                    span.style.width = inp.style.width;
+                    span.style.display = 'inline-block';
+                }
+                
+                // Preserve text-align
+                if (inp.classList.contains('text-right') || computed.textAlign === 'right') {
+                    span.style.textAlign = 'right';
+                    span.style.display = 'block';
+                    span.style.width = '100%';
+                }
+                if (inp.classList.contains('text-center') || computed.textAlign === 'center') {
+                    span.style.textAlign = 'center';
+                }
+                
+                inp.parentNode.replaceChild(span, inp);
+            });
+            
+            // Footer edit inputs (yang punya class footer-edit)
+            clone.querySelectorAll('input.footer-edit').forEach(inp => {
+                const computed = window.getComputedStyle(inp);
+                const span = document.createElement('span');
+                span.textContent = inp.value;
+                span.style.fontFamily = "'Times New Roman', Times, serif";
+                span.style.fontSize = '10px';
+                span.style.color = '#000000';
+                span.style.display = 'block';
+                span.style.width = '100%';
+                inp.parentNode.replaceChild(span, inp);
+            });
+            
+            // Judul sertifikat input
+            clone.querySelectorAll('input.judul-sertifikat').forEach(inp => {
+                const span = document.createElement('span');
+                span.textContent = inp.value.toUpperCase();
+                span.style.fontFamily = "'Times New Roman', Times, serif";
+                span.style.fontWeight = 'bold';
+                span.style.fontSize = '1.5rem';
+                span.style.textAlign = 'center';
+                span.style.display = 'block';
+                span.style.width = '100%';
+                span.style.textTransform = 'uppercase';
+                span.style.color = '#000000';
+                inp.parentNode.replaceChild(span, inp);
+            });
+            
+            return clone;
+        }
+
         async function generatePDF() {
             const btn = document.getElementById('btnDownload');
             const originalBtnText = btn.innerHTML;
@@ -945,181 +1054,60 @@
             btn.disabled = true;
             btn.classList.add('opacity-75', 'cursor-wait');
 
-            const element = document.getElementById('document-preview');
-            const pages = document.querySelectorAll('.f4-page');
-            
-            // Simpan state asli
-            const savedStates = [];
-            const createdNodes = [];
-            
-            // Simpan style container
-            const containerOrig = {
-                width: element.style.width,
-                margin: element.style.margin,
-                padding: element.style.padding
-            };
-            
             try {
-                // ============ TRANSFORMASI SEBELUM RENDER ============
-                pages.forEach((page, idx) => {
-                    const state = {
-                        overflow: page.style.overflow,
-                        margin: page.style.margin,
-                        boxShadow: page.style.boxShadow,
-                        breakAfter: page.style.breakAfter,
-                        pageBreakAfter: page.style.pageBreakAfter
-                    };
-                    savedStates.push(state);
-                    
-                    // Set style halaman
-                    page.style.overflow = 'visible';
-                    page.style.margin = '0';
-                    page.style.boxShadow = 'none';
-                    
-                    // Page break hanya di antara halaman (bukan di akhir)
-                    if (idx < pages.length - 1) {
-                        page.style.breakAfter = 'page';
-                        page.style.pageBreakAfter = 'always';
-                    } else {
-                        page.style.breakAfter = 'auto';
-                        page.style.pageBreakAfter = 'auto';
-                    }
-                    
-                    // ============ KONVERSI TEXTAREA → DIV ============
-                    page.querySelectorAll('textarea').forEach(ta => {
-                        const computed = window.getComputedStyle(ta);
-                        const div = document.createElement('div');
-                        div.setAttribute('data-pdf-temp', '1');
-                        div.style.whiteSpace = 'pre-wrap';
-                        div.style.wordWrap = 'break-word';
-                        div.style.overflowWrap = 'break-word';
-                        div.style.fontFamily = "'Times New Roman', Times, serif";
-                        div.style.fontSize = ta.style.fontSize || computed.fontSize || '12px';
-                        div.style.lineHeight = ta.style.lineHeight || computed.lineHeight || '1.35';
-                        div.style.color = '#000000';
-                        div.style.padding = '0';
-                        div.style.margin = '0';
-                        div.style.width = '100%';
-                        div.style.display = 'block';
-                        div.style.border = 'none';
-                        div.style.background = 'transparent';
-                        div.style.textAlign = 'left';
-                        div.textContent = ta.value;
-                        
-                        // Copy class tambahan (untuk identifikasi)
-                        if (ta.className) {
-                            ta.className.split(' ').forEach(c => {
-                                if (c && c !== 'editable-input') div.classList.add(c);
-                            });
-                        }
-                        
-                        ta.parentNode.insertBefore(div, ta);
-                        ta.style.display = 'none';
-                        createdNodes.push({ original: ta, temp: div });
-                    });
-                    
-                    // ============ KONVERSI INPUT[text] → SPAN ============
-                    page.querySelectorAll('input[type="text"]').forEach(inp => {
-                        const computed = window.getComputedStyle(inp);
-                        const span = document.createElement('span');
-                        span.setAttribute('data-pdf-temp', '1');
-                        
-                        // Deteksi display (block untuk editable-input full width, inline untuk sisanya)
-                        const isBlock = inp.classList.contains('editable-input') && 
-                                       inp.style.display !== 'inline-block' &&
-                                       !inp.classList.contains('inline-input');
-                        
-                        span.style.fontFamily = "'Times New Roman', Times, serif";
-                        span.style.fontSize = inp.style.fontSize || computed.fontSize;
-                        span.style.fontWeight = computed.fontWeight;
-                        span.style.fontStyle = computed.fontStyle;
-                        span.style.color = '#000000';
-                        span.style.background = 'transparent';
-                        span.style.border = 'none';
-                        span.style.padding = '0';
-                        span.style.margin = '0';
-                        span.style.whiteSpace = 'pre-wrap';
-                        span.style.display = isBlock ? 'block' : 'inline-block';
-                        span.style.verticalAlign = 'baseline';
-                        
-                        // Copy width jika ada
-                        if (inp.style.width) span.style.width = inp.style.width;
-                        
-                        // Copy text-align
-                        if (inp.classList.contains('text-right')) span.style.textAlign = 'right';
-                        if (inp.classList.contains('text-center')) span.style.textAlign = 'center';
-                        
-                        span.textContent = inp.value;
-                        
-                        inp.parentNode.insertBefore(span, inp);
-                        inp.style.display = 'none';
-                        createdNodes.push({ original: inp, temp: span });
-                    });
+                const pages = document.querySelectorAll('.f4-page');
+                
+                // jsPDF dari UMD build
+                const jsPDFClass = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+                if (!jsPDFClass) throw new Error('jsPDF tidak ditemukan');
+                
+                const pdf = new jsPDFClass({
+                    unit: 'mm',
+                    format: [215, 330],
+                    orientation: 'portrait',
+                    compress: true
                 });
-                
-                // Set container
-                element.style.width = '215mm';
-                element.style.margin = '0';
-                element.style.padding = '0';
-                
-                // Tunggu sebentar agar browser reflow
-                await new Promise(r => setTimeout(r, 150));
-                
-                // ============ GENERATE PDF ============
-                const opt = {
-                    margin: 0,
-                    filename: 'Sertifikat_Elektronik_F4.pdf',
-                    image: { type: 'jpeg', quality: 1.0 },
-                    html2canvas: {
+
+                for (let i = 0; i < pages.length; i++) {
+                    console.log(`📄 Merender halaman ${i + 1} dari ${pages.length}...`);
+                    
+                    const clone = await createPageClone(pages[i]);
+                    document.body.appendChild(clone);
+                    
+                    // Tunggu render (font, peta, gambar)
+                    await new Promise(r => setTimeout(r, 500));
+
+                    const canvas = await html2canvas(clone, {
                         scale: 2,
                         useCORS: true,
-                        letterRendering: true,
-                        scrollY: 0,
-                        scrollX: 0,
+                        allowTaint: false,
                         backgroundColor: '#ffffff',
                         logging: false,
-                        windowWidth: 812,
-                        windowHeight: 1247
-                    },
-                    jsPDF: { 
-                        unit: 'mm', 
-                        format: [215, 330], 
-                        orientation: 'portrait',
-                        compress: true
-                    },
-                    pagebreak: { mode: ['css'], avoid: [] }
-                };
-                
-                await html2pdf().set(opt).from(element).save();
-                
+                        imageTimeout: 15000,
+                        removeContainer: true,
+                        scrollX: 0,
+                        scrollY: 0
+                    });
+                    
+                    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                    
+                    if (i > 0) {
+                        pdf.addPage([215, 330], 'portrait');
+                    }
+                    pdf.addImage(imgData, 'JPEG', 0, 0, 215, 330, undefined, 'FAST');
+                    
+                    document.body.removeChild(clone);
+                    console.log(`✅ Halaman ${i + 1} selesai`);
+                }
+
+                console.log('💾 Menyimpan PDF...');
+                pdf.save('Sertifikat_Elektronik_F4.pdf');
+                console.log('✅ PDF berhasil dibuat');
+
             } catch (err) {
                 console.error('PDF error:', err);
-                alert('Terjadi kesalahan saat membuat PDF: ' + err.message);
+                alert('Gagal membuat PDF: ' + err.message);
             } finally {
-                // ============ RESTORE SEMUA ============
-                
-                // Restore node yang dikonversi
-                createdNodes.forEach(item => {
-                    item.temp.remove();
-                    item.original.style.display = '';
-                });
-                
-                // Restore style halaman
-                pages.forEach((page, idx) => {
-                    const state = savedStates[idx];
-                    page.style.overflow = state.overflow;
-                    page.style.margin = state.margin;
-                    page.style.boxShadow = state.boxShadow;
-                    page.style.breakAfter = state.breakAfter;
-                    page.style.pageBreakAfter = state.pageBreakAfter;
-                });
-                
-                // Restore container
-                element.style.width = containerOrig.width;
-                element.style.margin = containerOrig.margin;
-                element.style.padding = containerOrig.padding;
-                
-                // Restore button
                 btn.innerHTML = originalBtnText;
                 btn.disabled = false;
                 btn.classList.remove('opacity-75', 'cursor-wait');
