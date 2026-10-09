@@ -188,13 +188,13 @@
                     Nomor Urut Bidang Tanah <span class="text-gray-500">(digit 5-13, 9 digit)</span>
                 </label>
                 <input type="text" id="inputNomorUrut" class="select-wilayah mb-2 font-mono" 
-                       maxlength="9" value="000003132" placeholder="Contoh: 000003132">
+                       maxlength="9" value="000004207" placeholder="Contoh: 000004207">
                 
                 <label class="block font-semibold text-xs mb-1">
                     Indeks Letak Bidang Tanah <span class="text-gray-500">(digit 14)</span>
                 </label>
                 <select id="selectIndeksLetak" class="select-wilayah mb-2">
-                    <option value="0">0 - Bidang tanah terletak di permukaan bumi</option>
+                    <option value="0" selected>0 - Bidang tanah terletak di permukaan bumi</option>
                     <option value="1">1 - Ruang atas tanah</option>
                     <option value="2">2 - Ruang bawah tanah</option>
                     <option value="3">3 - Satuan rumah susun</option>
@@ -224,20 +224,20 @@
             <!-- Edisi & Kode -->
             <div>
                 <label class="block font-semibold">Edisi & Kode</label>
-                <input type="text" id="inputEdisi" class="w-full border p-2 rounded" value="Edisi 1 | Pengakuan Hak">
-                <input type="text" id="inputKodeEdisi" class="w-full border p-2 rounded mt-1" value="Q019H8">
+                <input type="text" id="inputEdisi" class="w-full border p-2 rounded" value="Edisi 1 | Pemberian Hak">
+                <input type="text" id="inputKodeEdisi" class="w-full border p-2 rounded mt-1" value="P024K7">
             </div>
 
             <!-- Judul Sertifikat -->
             <div>
                 <label class="block font-semibold">Judul Sertifikat</label>
-                <input type="text" id="inputJudulSertifikat" class="w-full border p-2 rounded" value="SERTIFIKAT HAK MILIK">
+                <input type="text" id="inputJudulSertifikat" class="w-full border p-2 rounded" value="SERTIFIKAT HAK PAKAI">
             </div>
             
             <!-- NIB -->
             <div>
                 <label class="block font-semibold">NIB-El (Manual Override)</label>
-                <input type="text" id="inputNIB" class="w-full border p-2 rounded font-mono" value="65.04.000003132.0">
+                <input type="text" id="inputNIB" class="w-full border p-2 rounded font-mono" value="65.04.000004207.0">
             </div>
             
             <!-- Kepala Kantor -->
@@ -275,7 +275,51 @@
             
             <div>
                 <label class="block font-semibold">Luas (Angka & Huruf)</label>
-                <input type="text" id="inputLuas" class="w-full border p-2 rounded" value="248 M² (dua ratus empat puluh delapan meter persegi)">
+                <input type="text" id="inputLuas" class="w-full border p-2 rounded" value="3.704 M² (tiga ribu tujuh ratus empat meter persegi)">
+            </div>
+
+            <hr class="my-4">
+            <h3 class="font-bold text-blue-800">Status Tanah Objek</h3>
+
+            <div>
+                <label class="block font-semibold">Asal Tanah</label>
+                <select id="inputStatusTanah" class="w-full border p-2 rounded">
+                    <option value="Tanah Negara" selected>Tanah Negara</option>
+                    <option value="Tanah Hak Milik">Tanah Hak Milik</option>
+                    <option value="Tanah Hak Pengelolaan (HPL)">Tanah Hak Pengelolaan (HPL)</option>
+                    <option value="Tanah Hak Guna Bangunan">Tanah Hak Guna Bangunan</option>
+                    <option value="Tanah Hak Pakai">Tanah Hak Pakai</option>
+                    <option value="Tanah Wakaf">Tanah Wakaf</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block font-semibold">Keterangan Tambahan</label>
+                <textarea id="inputStatusTanahKet" class="w-full border p-2 rounded" rows="2">Berasal dari Tanah Negara yang dikuasai langsung oleh Negara berdasarkan Pasal 33 ayat (3) UUD 1945 dan ketentuan Undang-Undang Nomor 5 Tahun 1960 tentang Peraturan Dasar Pokok-Pokok Agraria (UUPA).</textarea>
+            </div>
+
+            <hr class="my-4">
+            <h3 class="font-bold text-blue-800">Masa Berlaku Hak</h3>
+
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block font-semibold text-xs mb-1">Tanggal Mulai</label>
+                    <input type="text" id="inputMasaMulai" class="w-full border p-2 rounded" value="15 Maret 2024">
+                </div>
+                <div>
+                    <label class="block font-semibold text-xs mb-1">Tanggal Berakhir</label>
+                    <input type="text" id="inputMasaBerakhir" class="w-full border p-2 rounded" value="14 Maret 2054">
+                </div>
+            </div>
+
+            <div class="mt-2">
+                <label class="block font-semibold text-xs mb-1">Jangka Waktu</label>
+                <input type="text" id="inputMasaJangka" class="w-full border p-2 rounded" value="30 (tiga puluh) tahun">
+            </div>
+
+            <div class="mt-2">
+                <label class="block font-semibold text-xs mb-1">Keterangan Masa Berlaku</label>
+                <textarea id="inputMasaKet" class="w-full border p-2 rounded" rows="2">Diberikan untuk jangka waktu paling lama 30 (tiga puluh) tahun, dapat diperpanjang untuk jangka waktu paling lama 20 (dua puluh) tahun, dan dapat diperbarui untuk jangka waktu paling lama 30 (tiga puluh) tahun sesuai ketentuan Peraturan Pemerintah Nomor 18 Tahun 2021 tentang Hak Pengelolaan, Hak Atas Tanah, Satuan Rumah Susun, dan Pendaftaran Tanah.</textarea>
             </div>
 
             <hr class="my-4">
@@ -283,7 +327,7 @@
             
             <div>
                 <label class="block font-semibold">Data Pemegang Hak</label>
-                <textarea id="inputPemegangHak" class="w-full border p-2 rounded" rows="3">1) FINANSI MAHILA - NABIRE, 18 Juli 1993 - 1 bagian</textarea>
+                <textarea id="inputPemegangHak" class="w-full border p-2 rounded" rows="3">PT KARAK UNGOL BARA - Akta Pendirian Nomor 27 tanggal 12 Januari 2018 - 1 bagian (penuh)</textarea>
             </div>
 
             <hr class="my-4">
@@ -291,7 +335,10 @@
             
             <div>
                 <label class="block font-semibold">Catatan</label>
-                <textarea id="inputCatatan" class="w-full border p-2 rounded" rows="2">1) Pengakuan Hak yang diperoleh atas dasar Letter C Nomor 3931</textarea>
+                <textarea id="inputCatatan" class="w-full border p-2 rounded" rows="6">1) Pemberian Hak Pakai berdasarkan Keputusan Kepala Kantor Wilayah Badan Pertanahan Nasional Provinsi Kalimantan Utara Nomor 27/HP/KALTARA/2024 tanggal 15 Maret 2024.
+2) Diterbitkan melalui kegiatan Pendaftaran Tanah Sistematis Lengkap (PTSL) Tahun Anggaran 2024.
+3) Surat Ukur Nomor 00456/Tana Tidung/2024 tanggal 20 Februari 2024 dengan luas 3.704 M².
+4) Wajib didaftarkan peralihan, pembebanan, dan hapusnya hak kepada Kantor Pertanahan Kabupaten Tana Tidung.</textarea>
             </div>
 
             <hr class="my-4">
@@ -335,10 +382,10 @@
                     
                     <div class="absolute top-0 right-0 text-right text-sm leading-tight" style="padding-top: 5px;">
                         <p class="font-bold">
-                            <input type="text" id="outEdisi" class="editable-input text-right inline-input" style="width: 180px;" value="Edisi 1 | Pengakuan Hak">
+                            <input type="text" id="outEdisi" class="editable-input text-right inline-input" style="width: 180px;" value="Edisi 1 | Pemberian Hak">
                         </p>
                         <p>
-                            <input type="text" id="outKodeEdisi" class="editable-input text-right inline-input" style="width: 180px;" value="Q019H8">
+                            <input type="text" id="outKodeEdisi" class="editable-input text-right inline-input" style="width: 180px;" value="P024K7">
                         </p>
                     </div>
                 </div>
@@ -349,19 +396,19 @@
 
                 <div class="text-center mb-6">
                     <h1 class="mb-1">
-                        <input type="text" id="outJudulSertifikat" class="judul-sertifikat" value="SERTIFIKAT HAK MILIK">
+                        <input type="text" id="outJudulSertifikat" class="judul-sertifikat" value="SERTIFIKAT HAK PAKAI">
                     </h1>
                     <div class="nib-inline-wrapper">
                         <span class="nib-label">NIB.</span>
-                        <input type="text" id="outNIB" class="nib-value" value="65.04.000003132.0">
+                        <input type="text" id="outNIB" class="nib-value" value="65.04.000004207.0">
                     </div>
                 </div>
 
-                <div class="text-justify text-sm mb-8 leading-relaxed">
-                    <p>Hak Milik ini terdaftar atas nama pemegang hak yang tertera pada PEMEGANG HAK, atas sebagian tanah yang letaknya diuraikan pada bagian BIDANG TANAH, serta batasan dan kewajiban, pembebanan dan pencatatan lainnya yang tertera pada tanda bukti hak ini</p>
+                <div class="text-justify text-sm mb-6 leading-relaxed">
+                    <p>Hak Pakai ini terdaftar atas nama pemegang hak yang tertera pada PEMEGANG HAK, atas sebagian tanah yang letaknya diuraikan pada bagian BIDANG TANAH, serta batasan dan kewajiban, pembebanan dan pencatatan lainnya yang tertera pada tanda bukti hak ini</p>
                 </div>
 
-                <div class="text-right mb-8 pr-16">
+                <div class="text-right mb-6 pr-16">
                     <p class="text-sm mb-4">
                         <input type="text" id="outKepalaKantor" class="editable-input text-right" value="Kepala Kantor Pertanahan Kabupaten Tana Tidung">
                     </p>
@@ -376,24 +423,50 @@
                     </div>
                 </div>
 
-                <div class="text-sm mb-6">
+                <div class="text-sm mb-4">
                     <h4 class="font-bold mb-1">BIDANG TANAH</h4>
                     <p class="text-justify">
                         Bidang tanah ini terletak di 
                         <input type="text" id="outLokasi" class="editable-input mt-1 mb-1" value="Desa Bebatu Kecamatan Sesayap Hilir Kabupaten Tana Tidung Provinsi Kalimantan Utara"> 
                         seluas 
-                        <input type="text" id="outLuas" class="editable-input inline-input" style="width: 280px;" value="248 M² (dua ratus empat puluh delapan meter persegi)">
+                        <input type="text" id="outLuas" class="editable-input inline-input" style="width: 320px;" value="3.704 M² (tiga ribu tujuh ratus empat meter persegi)">
                     </p>
                 </div>
 
-                <div class="text-sm mb-6">
-                    <h4 class="font-bold mb-1">PEMEGANG HAK</h4>
-                    <textarea id="outPemegangHak" class="editable-input w-full" rows="2">1) FINANSI MAHILA - NABIRE, 18 Juli 1993 - 1 bagian</textarea>
+                <div class="text-sm mb-4">
+                    <h4 class="font-bold mb-1">STATUS TANAH OBJEK</h4>
+                    <p class="text-justify">
+                        Asal tanah: 
+                        <input type="text" id="outStatusTanah" class="editable-input inline-input font-semibold" style="width: 200px;" value="Tanah Negara">
+                    </p>
+                    <textarea id="outStatusTanahKet" class="editable-input w-full mt-1" rows="2">Berasal dari Tanah Negara yang dikuasai langsung oleh Negara berdasarkan Pasal 33 ayat (3) UUD 1945 dan ketentuan Undang-Undang Nomor 5 Tahun 1960 tentang Peraturan Dasar Pokok-Pokok Agraria (UUPA).</textarea>
                 </div>
 
-                <div class="text-sm mb-12">
+                <div class="text-sm mb-4">
+                    <h4 class="font-bold mb-1">MASA BERLAKU HAK</h4>
+                    <p class="text-justify mb-1">
+                        Hak Pakai ini diberikan untuk jangka waktu 
+                        <input type="text" id="outMasaJangka" class="editable-input inline-input font-semibold" style="width: 140px;" value="30 (tiga puluh) tahun">
+                        , terhitung mulai tanggal 
+                        <input type="text" id="outMasaMulai" class="editable-input inline-input font-semibold" style="width: 140px;" value="15 Maret 2024">
+                        sampai dengan tanggal 
+                        <input type="text" id="outMasaBerakhir" class="editable-input inline-input font-semibold" style="width: 140px;" value="14 Maret 2054">
+                        .
+                    </p>
+                    <textarea id="outMasaKet" class="editable-input w-full" rows="2">Diberikan untuk jangka waktu paling lama 30 (tiga puluh) tahun, dapat diperpanjang untuk jangka waktu paling lama 20 (dua puluh) tahun, dan dapat diperbarui untuk jangka waktu paling lama 30 (tiga puluh) tahun sesuai ketentuan Peraturan Pemerintah Nomor 18 Tahun 2021 tentang Hak Pengelolaan, Hak Atas Tanah, Satuan Rumah Susun, dan Pendaftaran Tanah.</textarea>
+                </div>
+
+                <div class="text-sm mb-4">
+                    <h4 class="font-bold mb-1">PEMEGANG HAK</h4>
+                    <textarea id="outPemegangHak" class="editable-input w-full" rows="2">PT KARAK UNGOL BARA - Akta Pendirian Nomor 27 tanggal 12 Januari 2018 - 1 bagian (penuh)</textarea>
+                </div>
+
+                <div class="text-sm mb-6">
                     <h4 class="font-bold mb-1">CATATAN PENDAFTARAN</h4>
-                    <textarea id="outCatatan" class="editable-input w-full" rows="2">1) Pengakuan Hak yang diperoleh atas dasar Letter C Nomor 3931</textarea>
+                    <textarea id="outCatatan" class="editable-input w-full" rows="5">1) Pemberian Hak Pakai berdasarkan Keputusan Kepala Kantor Wilayah Badan Pertanahan Nasional Provinsi Kalimantan Utara Nomor 27/HP/KALTARA/2024 tanggal 15 Maret 2024.
+2) Diterbitkan melalui kegiatan Pendaftaran Tanah Sistematis Lengkap (PTSL) Tahun Anggaran 2024.
+3) Surat Ukur Nomor 00456/Tana Tidung/2024 tanggal 20 Februari 2024 dengan luas 3.704 M².
+4) Wajib didaftarkan peralihan, pembebanan, dan hapusnya hak kepada Kantor Pertanahan Kabupaten Tana Tidung.</textarea>
                 </div>
 
                 <div class="flex justify-between items-end text-[10px] absolute bottom-[15mm] left-[15mm] right-[15mm]">
@@ -468,15 +541,12 @@
 
         let polygonLayer = null;
 
-        /* Helper: parse koordinat, dukung "lat,lng" dan "lng,lat,alt" */
         function parseCoordinates(coordString) {
             return coordString.split(';').map(pair => {
                 const parts = pair.split(',').map(s => Number(s.trim()));
                 if (parts.length >= 3) {
-                    // Format: lng, lat, alt (GeoJSON style) → [lat, lng]
                     return [parts[1], parts[0]];
                 }
-                // Format: lat, lng
                 return [parts[0], parts[1]];
             });
         }
@@ -533,7 +603,7 @@
         }
 
         /* ============================================================
-           3. STATUS UI — tampilkan pesan di panel kiri
+           3. STATUS UI
         ============================================================ */
         function showStatus(message, type = 'info') {
             let box = document.getElementById('apiStatusBox');
@@ -781,6 +851,12 @@
             { input: 'inputNIP', output: 'outNIP' },
             { input: 'inputLokasi', output: 'outLokasi' },
             { input: 'inputLuas', output: 'outLuas' },
+            { input: 'inputStatusTanah', output: 'outStatusTanah' },
+            { input: 'inputStatusTanahKet', output: 'outStatusTanahKet' },
+            { input: 'inputMasaMulai', output: 'outMasaMulai' },
+            { input: 'inputMasaBerakhir', output: 'outMasaBerakhir' },
+            { input: 'inputMasaJangka', output: 'outMasaJangka' },
+            { input: 'inputMasaKet', output: 'outMasaKet' },
             { input: 'inputPemegangHak', output: 'outPemegangHak' },
             { input: 'inputCatatan', output: 'outCatatan' }
         ];
@@ -789,14 +865,21 @@
             const inputEl = document.getElementById(bind.input);
             const outputEl = document.getElementById(bind.output);
             
-            if (outputEl.tagName === 'TEXTAREA' || outputEl.tagName === 'INPUT') {
+            if (outputEl.tagName === 'TEXTAREA' || outputEl.tagName === 'INPUT' || outputEl.tagName === 'SELECT') {
                 outputEl.value = inputEl.value;
             } else {
                 outputEl.innerText = inputEl.value;
             }
 
             inputEl.addEventListener('input', (e) => {
-                if (outputEl.tagName === 'TEXTAREA' || outputEl.tagName === 'INPUT') {
+                if (outputEl.tagName === 'TEXTAREA' || outputEl.tagName === 'INPUT' || outputEl.tagName === 'SELECT') {
+                    outputEl.value = e.target.value;
+                } else {
+                    outputEl.innerText = e.target.value;
+                }
+            });
+            inputEl.addEventListener('change', (e) => {
+                if (outputEl.tagName === 'TEXTAREA' || outputEl.tagName === 'INPUT' || outputEl.tagName === 'SELECT') {
                     outputEl.value = e.target.value;
                 } else {
                     outputEl.innerText = e.target.value;
